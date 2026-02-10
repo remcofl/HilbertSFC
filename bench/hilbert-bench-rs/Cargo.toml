@@ -1,0 +1,18 @@
+[package]
+name = "hilbert-bench-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fast_hilbert = "2.0.2"
+hilbert_2d = "1.1.0"
+rayon = "1.10.0"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+cast_sign_loss = "allow"

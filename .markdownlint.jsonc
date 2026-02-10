@@ -1,0 +1,7 @@
+{
+    "default": true,
+    // Disable line length (MD013)
+    "MD013": false,
+    // Disable heading-increment (MD001)
+    "MD001": false
+}

@@ -1,0 +1,42 @@
+site_name: HilbertSFC
+site_description: Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).
+repo_url: https://github.com/remcofl/HilbertSFC
+repo_name: remcofl/HilbertSFC
+
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Quick start: quickstart.md
+  - API Reference:
+      - Package: api/package.md
+      - 2D: api/2d.md
+      - 3D: api/3d.md
+      - Types: api/types.md
+
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_source: false
+            show_signature_annotations: true
+            separate_signature: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc:
+      permalink: true
