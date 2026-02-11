@@ -33,6 +33,7 @@ plugins:
             show_source: false
             show_signature_annotations: true
             separate_signature: true
+            show_overloads: false
 
 markdown_extensions:
   - admonition

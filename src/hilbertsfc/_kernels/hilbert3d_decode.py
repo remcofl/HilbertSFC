@@ -8,7 +8,7 @@ import numpy as np
 from .._cache import kernel_cache
 from .._luts import lut_3d2b_so_sb
 from .._nbits import validate_nbits_3d
-from .._typing import LutUIntDTypeLike, UIntArray
+from .._typing import IntScalar, LutUIntDTypeLike, UIntArray
 
 
 @nb.njit(inline="always")
@@ -49,7 +49,7 @@ def build_hilbert_decode_3d_impl(
     lut = lut_3d2b_so_sb(lut_dtype)
 
     @nb.njit(inline="always", cache=True)
-    def decode_3d(index: int) -> tuple[int, int, int]:
+    def decode_3d(index: IntScalar) -> tuple[int, int, int]:
         return _hilbert_decode_3d_2bit_sb(index, nbits, lut)
 
     return decode_3d
@@ -70,7 +70,7 @@ def build_hilbert_decode_3d_batch_impl(
         indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
     ) -> None:
         n = indices.shape[0]
-        for i in nb.prange(n):  # ty:ignore[not-iterable]
+        for i in nb.prange(n):  # type: ignore[not-iterable]
             xs[i], ys[i], zs[i] = decode_scalar(indices[i])
 
     return decode_3d_batch

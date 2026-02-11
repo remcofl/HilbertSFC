@@ -5,7 +5,7 @@ from __future__ import annotations
 import numba as nb
 import numpy as np
 
-from hilbertsfc._typing import UIntArray
+from hilbertsfc._typing import IntScalar, UIntArray
 
 from .._cache import kernel_cache
 from .._luts import lut_2d4b_b_qs_u64
@@ -33,7 +33,7 @@ def _hilbert_encode_2d_4bit_compacted_qs(x, y, nbits, lut):
         idx |= q << (bit << 1)  # Append 8 quadrant bits to idx
         state = qs & 0xFF  # advance state
 
-    return idx
+    return np.uint64(idx)
 
 
 @kernel_cache
@@ -45,8 +45,8 @@ def build_hilbert_encode_2d_impl(nbits: int):
     lut = lut_2d4b_b_qs_u64()
 
     @nb.njit(inline="always", cache=True)
-    def encode_2d(x: int, y: int) -> int:
-        return _hilbert_encode_2d_4bit_compacted_qs(x, y, nbits, lut)
+    def encode_2d(x: IntScalar, y: IntScalar) -> int:
+        return _hilbert_encode_2d_4bit_compacted_qs(x, y, nbits, lut)  # type: ignore[reportReturnType]
 
     return encode_2d
 
@@ -62,7 +62,7 @@ def build_hilbert_encode_2d_batch_impl(nbits: int, *, parallel: bool = False):
     @nb.njit(parallel=parallel, cache=True)
     def encode_2d_batch(xs: UIntArray, ys: UIntArray, out: UIntArray) -> None:
         n = xs.shape[0]
-        for i in nb.prange(n):  # ty:ignore[not-iterable]
+        for i in nb.prange(n):  # type: ignore[not-iterable]
             out[i] = encode_scalar(xs[i], ys[i])
 
     return encode_2d_batch

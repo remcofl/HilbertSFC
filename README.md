@@ -31,7 +31,7 @@ It provides both convenient Python APIs and *kernel accessors* designed to be em
 
 ## Performance
 
-**HilbertSFC** is orders of magnitude faster than existing Python implementations. It also outperforms the **Fast Hilbert** implementation in Rust by a factor of ~7x. In fact, **HilbertSFC** takes only ~5 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
+**HilbertSFC** is orders of magnitude faster than existing Python implementations. It also outperforms the **Fast Hilbert** implementation in Rust by a factor of ~7x. In fact, **HilbertSFC** takes only ~8 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
 
 #### 2D Points - Random, `nbits=32`, `n=5,000,000`
 
@@ -65,9 +65,9 @@ uv add hilbertsfc
 
 ### Usage
 
-Hilbert curves map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides an encode and decode API for 2D and 3D coordinates that support for both scalar values and vectorized array inputs.
+Hilbert curves map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides an encode and decode API for 2D and 3D coordinates that support both scalar values and vectorized array inputs.
 
-The examples below use `nbits`, the number of bits per coordinate. This is an upper bound on the coordinate values. Valid coordinates must lie in `[0, 2**nbits)`.
+The `nbits` parameter specifies the number of bits per coordinate, defining the grid domain as `[0, 2**nbits)`. If omitted, it's inferred from the input array dtype (for arrays) or defaults to the maximum (32 for 2D, 21 for 3D).
 
 #### Scalar 2D
 
@@ -76,10 +76,8 @@ Encode a single `(x, y)` coordinate into a Hilbert index, and decode it back:
 ```python
 from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
 
-nbits = 10
-
-index = hilbert_encode_2d(17, 23, nbits)  # → 534
-x, y = hilbert_decode_2d(index, nbits)    # → (17, 23)
+index = hilbert_encode_2d(17, 23, nbits=10)  # index = 534
+x, y = hilbert_decode_2d(index, nbits=10)    # x, y = (17, 23)
 ```
 
 #### Batch 2D
@@ -90,12 +88,11 @@ The same functions operate **elementwise on NumPy arrays**, preserving shape and
 import numpy as np
 from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
 
-nbits = 10
-xs = np.arrange(1024, dtype=np.uint32)
+xs = np.arange(1024, dtype=np.uint16)
 ys = xs[::-1]
 
-indices = hilbert_encode_2d(xs, ys, nbits)
-xs2, ys2 = hilbert_decode_2d(indices, nbits)  # xs2 = xs, ys2 = ys
+indices = hilbert_encode_2d(xs, ys, nbits=10)    # shape (1024,), dtype uint32
+xs2, ys2 = hilbert_decode_2d(indices, nbits=10)  # xs2 = xs, ys2 = ys
 ```
 
 This is the preferred use for high-throughput workloads. It can be further accelerated with `parallel=True`.
@@ -116,8 +113,8 @@ xs = rng.integers(0, 2**nbits, size=n, dtype=np.uint32)
 ys = rng.integers(0, 2**nbits, size=n, dtype=np.uint32)
 zs = rng.integers(0, 2**nbits, size=n, dtype=np.uint32)
 
-indices = hilbert_encode_3d(xs, ys, zs, nbits)
-xs2, ys2, zs2 = hilbert_decode_3d(indices, nbits)
+indices = hilbert_encode_3d(xs, ys, zs, nbits=nbits)      # shape (10000,), dtype uint32
+xs2, ys2, zs2 = hilbert_decode_3d(indices, nbits=nbits)   # xs2 = xs, ys2 = ys, zs2 = zs
 ```
 
 This is can be useful for applications like 3D spatial indexing, volumetric data processing, compression, and more.
@@ -128,9 +125,9 @@ For more examples, see the [demo notebook](notebooks/hilbertsfc_demo.ipynb) whic
 
 ## API notes
 
-- `nbits` is the number of bits per coordinate, so coordinates are in `[0, 2**nbits)`. Any excess bits in the input are ignored.
-- Hilbert indices that are obtained with a certain `nbits` are compatible with those from higher `nbits` (e.g., `hilbert_encode_2d(1, 2, nbits=5)` produces the same index as `hilbert_encode_2d(1, 2, nbits=10)`). This is because the kernels resolve the starting state parity to ensure compatibility.
-- Batch functions accept arbitrary shapes and preserve the input shape. The requirement is that inputs/outputs support a *zero-copy* 1D view. Most strided views are supported but they can reduce performance since the kernels are close to memory-bandwidth bound.
+- `nbits` specifies the number of bits per coordinate. Coordinates must be in `[0, 2**nbits)`. A tighter `nbits` improves performance and reduces output dtypes. Excess bits are ignored.
+- Hilbert indices obtained with a certain `nbits` are compatible with those from another `nbits`, given that the coordinates are within the valid range. This is because the kernels resolve the starting state parity to ensure compatibility.
+- The batched API accepts arbitrary shapes and preserves the input shape. The requirement is that inputs/outputs support a *zero-copy* 1D view. Most strided views are supported but they can reduce performance since the kernels are close to memory-bandwidth bound.
 - You can pass `out=...` buffers for batch encode, and `out_xs/out_ys/out_zs` for batch decode. This can for example be useful to write into memory-mapped arrays or to reuse buffers across multiple calls.
 - `parallel=True` dispatches the parallel version of the kernel (when available). The number of threads can be controlled with the environment variable `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.
 

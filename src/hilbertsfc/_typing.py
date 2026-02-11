@@ -31,6 +31,19 @@ type UInt32Array = NDArray[np.uint32]
 type UInt64Array = NDArray[np.uint64]
 """NumPy ``uint64`` array."""
 
+type Int8Array = NDArray[np.int8]
+"""NumPy ``int8`` array."""
+
+type Int16Array = NDArray[np.int16]
+"""NumPy ``int16`` array."""
+
+type Int32Array = NDArray[np.int32]
+"""NumPy ``int32`` array."""
+
+type Int64Array = NDArray[np.int64]
+"""NumPy ``int64`` array."""
+
+
 # Supported LUT dtypes: keep this narrow so we can reject accidental signed types.
 type LutUIntType = type[np.uint16] | type[np.uint32] | type[np.uint64]
 """LUT dtype as a *type* (``np.uint16``/``np.uint32``/``np.uint64``)."""

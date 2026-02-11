@@ -8,7 +8,7 @@ import numpy as np
 from .._cache import kernel_cache
 from .._luts import lut_3d2b_sb_so
 from .._nbits import validate_nbits_3d
-from .._typing import LutUIntDTypeLike, UIntArray
+from .._typing import IntScalar, LutUIntDTypeLike, UIntArray
 
 
 @nb.njit(inline="always")
@@ -37,7 +37,7 @@ def _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut):
         idx |= o << (3 * bit)  # Append 6 octant bits to idx
         state = so & 0x7C0  # Update state
 
-    return idx
+    return np.uint64(idx)
 
 
 @kernel_cache
@@ -51,8 +51,8 @@ def build_hilbert_encode_3d_impl(
     lut = lut_3d2b_sb_so(lut_dtype)
 
     @nb.njit(inline="always", cache=True)
-    def encode_3d(x: int, y: int, z: int) -> int:
-        return _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut)
+    def encode_3d(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
+        return _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut)  # type: ignore[reportReturnType]
 
     return encode_3d
 
@@ -72,7 +72,7 @@ def build_hilbert_encode_3d_batch_impl(
         xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
     ) -> None:
         n = xs.shape[0]
-        for i in nb.prange(n):  # ty:ignore[not-iterable]
+        for i in nb.prange(n):  # type: ignore[not-iterable]
             out[i] = encode_scalar(xs[i], ys[i], zs[i])
 
     return encode_3d_batch

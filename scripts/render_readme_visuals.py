@@ -214,7 +214,7 @@ def render_2d_grid(out_path: Path, cfg: RenderConfig) -> None:
         for ax, nbits in zip(axes, nbits_list, strict=True):
             n = 2 ** (2 * nbits)
             indices = np.arange(n, dtype=np.uint32)
-            xs, ys = hilbert_decode_2d(indices, nbits)
+            xs, ys = hilbert_decode_2d(indices, nbits=nbits)
 
             pts = np.column_stack((xs.astype(np.float32), ys.astype(np.float32)))
             segs, t = _segments_with_gradient(pts, cfg.subdiv_per_segment_2d)
@@ -261,7 +261,7 @@ def render_3d(out_path: Path, cfg: RenderConfig) -> None:
     nbits = 3
     n = 2 ** (3 * nbits)
     indices = np.arange(n, dtype=np.uint32)
-    xs, ys, zs = hilbert_decode_3d(indices, nbits)
+    xs, ys, zs = hilbert_decode_3d(indices, nbits=nbits)
 
     pts = np.column_stack(
         (xs.astype(np.float32), ys.astype(np.float32), zs.astype(np.float32))
@@ -382,7 +382,7 @@ def render_3d_grid_anim(
 
         n = 2 ** (3 * nbits)
         indices = np.arange(n, dtype=np.uint32)
-        xs, ys, zs = hilbert_decode_3d(indices, nbits)
+        xs, ys, zs = hilbert_decode_3d(indices, nbits=nbits)
 
         # Map integer grid coordinates to *cell centers* in the max-nbits cube.
         # For a unit cube this corresponds to centers at:

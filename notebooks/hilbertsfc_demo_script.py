@@ -38,7 +38,7 @@ NBITS_2D = 5  # 32x32 => 1024 points
 nbits = NBITS_2D  # 2D grid: side = 2**nbits
 n = 2 ** (2 * nbits)
 indices = np.arange(n, dtype=np.uint32)
-xs, ys = hilbert_decode_2d(indices, nbits)
+xs, ys = hilbert_decode_2d(indices, nbits=nbits)
 
 xs = xs.astype(np.int32)
 ys = ys.astype(np.int32)
@@ -123,8 +123,8 @@ print(
 nbits3d = NBITS_3D
 n3d = 2 ** (3 * nbits3d)
 indices3d = np.arange(n3d, dtype=np.uint32)
-xs3d, ys3d, zs3d = hilbert_decode_3d(indices3d, nbits3d)
-xs3d, ys3d, zs3d = hilbert_decode_3d(indices3d, nbits3d)
+xs3d, ys3d, zs3d = hilbert_decode_3d(indices3d, nbits=nbits3d)
+xs3d, ys3d, zs3d = hilbert_decode_3d(indices3d, nbits=nbits3d)
 
 pts = np.column_stack(
     (xs3d.astype(np.float32), ys3d.astype(np.float32), zs3d.astype(np.float32))
@@ -283,7 +283,7 @@ h_tiles = encode_points_to_tiles(points_xy, min_x, min_y, TILES_SIZE)
 # Cross-check: compute tile coords explicitly and use the array form
 tile_xs = ((points_xy[:, 0] - min_x) // TILES_SIZE).astype(np.uint32)
 tile_ys = ((points_xy[:, 1] - min_y) // TILES_SIZE).astype(np.uint32)
-h_tiles_batch = hilbert_encode_2d(tile_xs, tile_ys, nbits)
+h_tiles_batch = hilbert_encode_2d(tile_xs, tile_ys, nbits=nbits)
 
 print("tile_xs:", tile_xs)
 print("tile_ys:", tile_ys)
@@ -337,7 +337,7 @@ def _timeit(fn, repeats: int = 20) -> float:
 def _sequential_numpy() -> np.ndarray:
     tx = ((points_big[:, 0] - min_x) // TILES_SIZE).astype(np.uint32)
     ty = ((points_big[:, 1] - min_y) // TILES_SIZE).astype(np.uint32)
-    return hilbert_encode_2d(tx, ty, nbits)
+    return hilbert_encode_2d(tx, ty, nbits=nbits)
 
 
 def _fused_numba() -> np.ndarray:

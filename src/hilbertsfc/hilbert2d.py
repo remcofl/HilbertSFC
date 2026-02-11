@@ -19,6 +19,7 @@ code), this module also exposes kernel accessors:
 from __future__ import annotations
 
 import warnings
+from collections.abc import Callable
 from typing import cast
 
 import numpy as np
@@ -38,14 +39,15 @@ from ._dtype import (
 )
 from ._flatten import flatten_nocopy as _flatten_nocopy
 from ._input_checks import is_int_scalar_or_0d_array
+from ._nbits import MAX_NBITS_2D, validate_nbits_2d
 from ._typing import IntArray, IntScalar
 
 
 def hilbert_encode_2d(
     x: IntScalar | IntArray,
     y: IntScalar | IntArray,
-    nbits: int,
     *,
+    nbits: int | None = None,
     out: IntArray | None = None,
     parallel: bool = False,
 ) -> int | IntArray:
@@ -68,7 +70,22 @@ def hilbert_encode_2d(
         Boolean inputs are rejected.
     nbits
         Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
-        Must satisfy ``1 <= nbits <= 32``. Bits outside the domain are ignored.
+        For best performance and tighter output dtypes, set this to the tightest
+        bound that fits your coordinate range.
+
+        Must satisfy ``1 <= nbits <= 32``. When specified, it must also
+        fit in the effective bits of the largest coordinate dtype. Bits outside the
+        domain are ignored.
+
+        If ``None`` (default), inferred from the input dtype:
+
+        - For arrays: uses the effective bits of the coordinate dtype, capped at 32.
+            For example, ``uint16`` → 16 bits, ``int16`` → 15 bits (sign bit excluded),
+            ``uint64`` or ``int64`` → 32 bits (algorithm maximum).
+        - For Python scalars: defaults to 32.
+
+        For array mode, if the inferred value exceeds the algorithm maximum
+        (32 bits), a ``UserWarning`` is emitted and ``nbits`` is capped at 32.
     out
         Optional output array for array mode. Must have the same shape as ``x``/``y``
         and an integer dtype wide enough to hold ``2*nbits`` bits (unsigned).
@@ -80,6 +97,9 @@ def hilbert_encode_2d(
         Scalar mode: accepted for API consistency, but ignored. If ``True``, a
         ``UserWarning`` is emitted.
 
+        The number of threads can be controlled with the environment variable
+        `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.
+
     Returns
     -------
     int or numpy.ndarray
@@ -88,10 +108,10 @@ def hilbert_encode_2d(
 
         When ``out`` is not provided, the output dtype is chosen automatically:
 
-        - ``uint8``  if ``2*nbits <= 8``  (i.e. ``nbits <= 4``)
-        - ``uint16`` if ``2*nbits <= 16`` (i.e. ``nbits <= 8``)
-        - ``uint32`` if ``2*nbits <= 32`` (i.e. ``nbits <= 16``)
-        - ``uint64`` otherwise (up to ``nbits <= 32``)
+        - ``uint8``  if ``nbits <= 4``
+        - ``uint16`` if ``nbits <= 8``
+        - ``uint32`` if ``nbits <= 16``
+        - ``uint64`` otherwise up to ``nbits <= 32``
 
     Raises
     ------
@@ -117,9 +137,15 @@ def hilbert_encode_2d(
                 UserWarning,
                 stacklevel=2,
             )
+        # For Python scalars, default to maximum
+        if nbits is None:
+            nbits = MAX_NBITS_2D
+        if x > np.iinfo(np.uint32).max or y > np.iinfo(np.uint32).max:
+            raise ValueError(f"Scalar inputs must fit in uint32; got x={x}, y={y}")
+
         builder = get_encode_2d_scalar_builder()
         impl = builder(nbits)
-        return int(impl(int(x), int(y)))
+        return impl(np.uint32(x), np.uint32(y))
 
     return _hilbert_encode_2d_batch(
         cast(IntArray, x),
@@ -132,8 +158,8 @@ def hilbert_encode_2d(
 
 def hilbert_decode_2d(
     index: IntScalar | IntArray,
-    nbits: int,
     *,
+    nbits: int | None = None,
     out_xs: IntArray | None = None,
     out_ys: IntArray | None = None,
     parallel: bool = False,
@@ -158,7 +184,19 @@ def hilbert_decode_2d(
         Boolean inputs are rejected.
     nbits
         Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
-        Must satisfy ``1 <= nbits <= 32``. Bits outside the domain are ignored.
+        For best performance and tighter output dtypes, set this to the tightest
+        bound that fits your coordinate range.
+
+        Must satisfy ``1 <= nbits <= 32``. When specified, it must not
+        exceed the effective bits supported by the index dtype. Bits outside the
+        domain are ignored.
+
+        If ``None`` (default), inferred from the index dtype:
+
+        - For arrays: uses ``index_bits / 2``, where index_bits is the effective
+            bits of the index dtype. For example, ``uint16`` → 8 bits, ``uint64`` → 32 bits,
+            ``int64`` → 31 bits (sign bit excluded).
+        - For Python scalars: defaults to 32.
     out_xs, out_ys
         Optional output buffers for array mode. Either provide both or neither.
         Must have the same shape as ``index`` and an integer dtype wide enough to
@@ -170,6 +208,9 @@ def hilbert_decode_2d(
 
         Scalar mode: accepted for API consistency, but ignored. If ``True``, a
         ``UserWarning`` is emitted.
+
+        The number of threads can be controlled with the environment variable
+        `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.
 
     Returns
     -------
@@ -196,17 +237,21 @@ def hilbert_decode_2d(
     index_is_scalar = is_int_scalar_or_0d_array(index)
     if index_is_scalar:
         if out_xs is not None or out_ys is not None:
-            raise TypeError("out_xs/out_ys are only valid for batch decode")
+            raise TypeError("out_xs/out_ys are only valid for array mode")
         if parallel:
             warnings.warn(
                 "parallel=True has no effect in scalar mode",
                 UserWarning,
                 stacklevel=2,
             )
+        # For Python scalars, default to maximum
+        if nbits is None:
+            nbits = MAX_NBITS_2D
+        if index > np.iinfo(np.uint64).max:
+            raise ValueError(f"Scalar index must fit in uint64; got index={index}")
         builder = get_decode_2d_scalar_builder()
         impl = builder(nbits)
-        x, y = impl(int(index))
-        return int(x), int(y)
+        return impl(np.uint64(index))
 
     return _hilbert_decode_2d_batch(
         cast(IntArray, index),
@@ -220,22 +265,39 @@ def hilbert_decode_2d(
 def _hilbert_encode_2d_batch(
     xs: IntArray,
     ys: IntArray,
-    nbits: int,
+    nbits: int | None,
     *,
     out: IntArray | None = None,
     parallel: bool = False,
 ) -> IntArray:
-    """Internal batch 2D Hilbert encode (implementation detail)."""
+    """Internal batch 2D Hilbert encode."""
     if xs.shape != ys.shape:
         raise ValueError("xs and ys must have the same shape")
 
-    max_coord_nbits = min(
+    max_coord_nbits = max(
         dtype_effective_bits(xs.dtype), dtype_effective_bits(ys.dtype)
     )
-    if nbits > max_coord_nbits:
-        raise ValueError(
-            f"nbits={nbits} does not fit in coordinate dtype(s); max is {max_coord_nbits}"
-        )
+    if nbits is None:
+        nbits = max_coord_nbits
+        if nbits > MAX_NBITS_2D:
+            warnings.warn(
+                f"The maximum effective bits of the coordinate dtype is {nbits}, "
+                f"which exceeds the algorithm maximum of {MAX_NBITS_2D}. "
+                f"Using nbits={MAX_NBITS_2D} instead. This means that excess bits in the input coordinates "
+                f"will be ignored. To silence this warning, explicitly set nbits<={MAX_NBITS_2D}.",
+                UserWarning,
+                stacklevel=2,
+            )
+            nbits = MAX_NBITS_2D
+    else:
+        validate_nbits_2d(nbits)
+        if nbits > max_coord_nbits:
+            raise ValueError(
+                f"nbits={nbits} does not fit in coordinate dtypes; "
+                f"got xs.dtype={xs.dtype} with {dtype_effective_bits(xs.dtype)} effective bits, "
+                f"ys.dtype={ys.dtype} with {dtype_effective_bits(ys.dtype)} effective bits; "
+                f"max nbits is {max_coord_nbits}."
+            )
 
     xs_u = unsigned_view(xs)
     ys_u = unsigned_view(ys)
@@ -249,8 +311,11 @@ def _hilbert_encode_2d_batch(
             )
         max_index_nbits = max_nbits_for_index_dtype(out.dtype, dims=2)
         if nbits > max_index_nbits:
+            viable_dtype = np.dtype(choose_uint_index_dtype(nbits=nbits, dims=2))
             raise ValueError(
-                f"nbits={nbits} does not fit in out dtype {out.dtype}; max is {max_index_nbits}"
+                f"nbits={nbits} does not fit in out dtype; got out.dtype={out.dtype} "
+                f"which supports up to nbits={max_index_nbits}; "
+                f"consider using {viable_dtype} or a wider dtype, or reduce nbits to fit the out dtype."
             )
 
     out_u = unsigned_view(out)
@@ -267,18 +332,25 @@ def _hilbert_encode_2d_batch(
 
 def _hilbert_decode_2d_batch(
     indices: IntArray,
-    nbits: int,
+    nbits: int | None,
     *,
     out_xs: IntArray | None = None,
     out_ys: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[IntArray, IntArray]:
-    """Internal batch 2D Hilbert decode (implementation detail)."""
+    """Internal batch 2D Hilbert decode."""
+
     max_index_nbits = max_nbits_for_index_dtype(indices.dtype, dims=2)
-    if nbits > max_index_nbits:
-        raise ValueError(
-            f"nbits={nbits} does not fit in indices dtype {indices.dtype}; max is {max_index_nbits}"
-        )
+    if nbits is None:
+        nbits = max_index_nbits
+    else:
+        validate_nbits_2d(nbits)
+        if nbits > max_index_nbits:
+            raise ValueError(
+                f"nbits={nbits} exceeds the effective bits of the index dtype; "
+                f"got indices.dtype={indices.dtype} which supports up to {max_index_nbits} bits for 2D coordinates. "
+                f"max nbits is {max_index_nbits}."
+            )
 
     indices_u = unsigned_view(indices)
 
@@ -300,7 +372,10 @@ def _hilbert_decode_2d_batch(
         )
         if nbits > max_coord_nbits:
             raise ValueError(
-                f"nbits={nbits} does not fit in coordinate dtype(s); max is {max_coord_nbits}"
+                f"nbits={nbits} does not fit in out_xs/out_ys dtypes; "
+                f"got out_xs.dtype={out_xs.dtype} with {dtype_effective_bits(out_xs.dtype)} effective bits, "
+                f"out_ys.dtype={out_ys.dtype} with {dtype_effective_bits(out_ys.dtype)} effective bits; "
+                f"max nbits is {max_coord_nbits}"
             )
 
     out_xs_u = unsigned_view(out_xs)
@@ -316,7 +391,7 @@ def _hilbert_decode_2d_batch(
     return out_xs, out_ys
 
 
-def get_hilbert_encode_2d_kernel(nbits: int):
+def get_hilbert_encode_2d_kernel(nbits: int) -> Callable[[IntScalar, IntScalar], int]:
     """Return a Numba-compiled *scalar* 2D Hilbert encoder.
 
     This is the low-level kernel used by :func:`hilbert_encode_2d` in scalar mode.
@@ -336,7 +411,7 @@ def get_hilbert_encode_2d_kernel(nbits: int):
     return builder(nbits)
 
 
-def get_hilbert_decode_2d_kernel(nbits: int):
+def get_hilbert_decode_2d_kernel(nbits: int) -> Callable[[IntScalar], tuple[int, int]]:
     """Return a Numba-compiled *scalar* 2D Hilbert decoder.
 
     This is the low-level kernel used by :func:`hilbert_decode_2d` in scalar mode.

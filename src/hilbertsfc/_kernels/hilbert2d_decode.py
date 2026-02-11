@@ -8,7 +8,7 @@ import numpy as np
 from .._cache import kernel_cache
 from .._luts import lut_2d4b_q_bs_u64
 from .._nbits import validate_nbits_2d
-from .._typing import UIntArray
+from .._typing import IntScalar, UIntArray
 
 
 @nb.njit(inline="always")
@@ -46,7 +46,7 @@ def build_hilbert_decode_2d_impl(nbits: int):
     lut = lut_2d4b_q_bs_u64()
 
     @nb.njit(inline="always", cache=True)
-    def decode_2d(index: int) -> tuple[int, int]:
+    def decode_2d(index: IntScalar) -> tuple[int, int]:
         return _hilbert_decode_2d_4bit_compacted_bs(index, nbits, lut)
 
     return decode_2d
@@ -63,7 +63,7 @@ def build_hilbert_decode_2d_batch_impl(nbits: int, *, parallel: bool = False):
     @nb.njit(parallel=parallel, cache=True)
     def decode_2d_batch(indices: UIntArray, xs: UIntArray, ys: UIntArray) -> None:
         n = indices.shape[0]
-        for i in nb.prange(n):  # ty:ignore[not-iterable]
+        for i in nb.prange(n):  # type: ignore[not-iterable]
             xs[i], ys[i] = decode_scalar(indices[i])
 
     return decode_2d_batch

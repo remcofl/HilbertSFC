@@ -1,0 +1,9 @@
+{
+    "default": true,
+    // Disable line length (MD013)
+    "MD013": false,
+    // Disable heading-increment (MD001)
+    "MD001": false,
+    // Set unordered list indentation to 4 spaces (MD007)
+    "MD007": { "indent": 4 }
+}
