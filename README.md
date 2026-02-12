@@ -45,7 +45,7 @@ It provides both convenient Python APIs and *kernel accessors* designed to be em
 | [numpy-hilbert-curve (Python)](https://pypi.org/project/numpy-hilbert-curve/) | 7606.88 | 5075.58 | 0.131 | 0.197 |
 | [hilbertcurve (Python)](https://pypi.org/project/hilbertcurve/) | 14355.76 | 10411.20 | 0.0697 | 0.0961 |
 
-> **System info:** Intel Core Ultra 7 258v, Ubuntu 24.04.2, Python 3.12.12, Numba 0.63.1
+> **System info:** Intel Core Ultra 7 258v, Ubuntu 24.04.4, Python 3.12.12, Numba 0.63.1
 
 ## Quickstart
 
