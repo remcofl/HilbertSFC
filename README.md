@@ -37,15 +37,17 @@ It provides both convenient Python APIs and *kernel accessors* designed to be em
 
 | Implementation | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc (multi-threaded)** | 0.86 | 0.85 | 1160.39 | 1183.25 |
-| 🔥**hilbertsfc (Python)** | 1.88 | 1.92 | 531.42 | 519.80 |
+| 🔥**hilbertsfc (multi-threaded)** | 0.53 | 0.57 | 1883.52 | 1742.08 |
+| 🔥**hilbertsfc (Python)** | 1.84 | 1.88 | 543.60 | 532.77 |
 | [fast_hilbert (Rust)](https://crates.io/crates/fast_hilbert) | 13.71 | 13.47 | 72.92 | 74.23 |
 | [hilbert_2d (Rust)](https://crates.io/crates/hilbert_2d) | 121.23 | 101.34 | 8.25 | 9.87 |
-| [hilbert-bytes (Python)](https://pypi.org/project/hilbert-bytes/) | 6990.13 | 2642.86 | 0.143 | 0.378 |
+| [hilbert-bytes (Python)](https://pypi.org/project/hilbert-bytes/) | 2997.51 | 2642.86 | 0.334 | 0.378 |
 | [numpy-hilbert-curve (Python)](https://pypi.org/project/numpy-hilbert-curve/) | 7606.88 | 5075.58 | 0.131 | 0.197 |
 | [hilbertcurve (Python)](https://pypi.org/project/hilbertcurve/) | 14355.76 | 10411.20 | 0.0697 | 0.0961 |
 
 > **System info:** Intel Core Ultra 7 258v, Ubuntu 24.04.4, Python 3.12.12, Numba 0.63.1
+
+Additional benchmarks and details are available in the [benchmark.md](benchmark.md).
 
 ## Quickstart
 
@@ -82,7 +84,7 @@ x, y = hilbert_decode_2d(index, nbits=10)    # x, y = (17, 23)
 
 #### Batch 2D
 
-The same functions operate **elementwise on NumPy arrays**, preserving shape and avoiding Python loops:
+The same functions operate elementwise on NumPy arrays, preserving shape and avoiding Python loops:
 
 ```python
 import numpy as np

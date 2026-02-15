@@ -1,13 +1,8 @@
-"""Example pluggable implementations for scripts/hilbert/bench_cli.py.
+"""Pluggable 2d hilbert implementations for scripts/hilbert/bench_cli.py.
 
 Usage:
-  python scripts/hilbert/bench_cli.py --builtin pack --nbits 16 --n 200000 --threads 8
+  python scripts/hilbert/bench_cli.py --impl scripts/hilbert/hilbert_impls_2d.py:<impl> --nbits 16 --n 200000
 
-Or as a plugin module:
-  python scripts/hilbert/bench_cli.py --impl scripts/hilbert/hilbert_impls_example.py:IMPLS --nbits 16 --n 200000
-
-This file is intentionally NOT Hilbert; it's just a template showing how to
-export a `HilbertImplementation` or dict of them.
 """
 
 from __future__ import annotations
@@ -16,7 +11,7 @@ import numpy as np
 from hilbert_bench import HilbertImplementation
 
 
-def get_hilbertsfc_impl(nbits: int):
+def get_hilbertsfc_impl_2d(nbits: int):
     from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
 
     def enc(xs, ys, out):
@@ -29,7 +24,7 @@ def get_hilbertsfc_impl(nbits: int):
     return {name: HilbertImplementation(name=name, encode=enc, decode=dec)}
 
 
-def get_numpy_hilbert_curve_impl(nbits: int):
+def get_numpy_hilbert_curve_impl_2d(nbits: int):
     from hilbert import decode, encode
 
     def enc(xs, ys):
@@ -44,27 +39,40 @@ def get_numpy_hilbert_curve_impl(nbits: int):
     return {name: HilbertImplementation(name=name, encode=enc, decode=dec)}
 
 
-def get_hilbert_bytes_impl(nbits: int):
+def get_hilbert_bytes_impl_2d(nbits: int):
     from hilbert_bytes import decode, encode
+
+    def to_big_endian_bytes(arr: np.ndarray) -> np.ndarray:
+        dt = arr.dtype
+        be = arr.astype(arr.dtype.newbyteorder(">"), copy=False)
+        return be.view(np.uint8).reshape(arr.shape + (dt.itemsize,))
+
+    def bytes_to_uint(arr_bytes, byteorder=">"):
+        width = arr_bytes.shape[-1]
+        dt = np.dtype(f"{byteorder}u{width}")
+        native = np.dtype(f"u{width}")
+        return arr_bytes.view(dt).astype(native)[..., -1]
 
     def enc(xs, ys):
         coords = np.stack([xs, ys], axis=-1)
-        coords_bytes = coords[..., None].astype(">u8").view("u1")
+        coords_bytes = to_big_endian_bytes(coords)
         idx_bytes = encode(coords_bytes)
-        return idx_bytes.view(">u8").astype("u8")[..., -1]
+        return bytes_to_uint(idx_bytes)
 
     def dec(idx):
-        idx_bytes = idx[..., None].astype(">u8").view("u1")
+        idx_bytes = to_big_endian_bytes(idx)
         res = decode(idx_bytes, ndim=2)
-        x = np.ascontiguousarray(res[:, 0]).view(">u4").astype("u4")[..., 0]
-        y = np.ascontiguousarray(res[:, 1]).view(">u4").astype("u4")[..., 0]
+        x = np.ascontiguousarray(res[:, 0])
+        y = np.ascontiguousarray(res[:, 1])
+        x = bytes_to_uint(x)
+        y = bytes_to_uint(y)
         return x, y
 
     name = f"hilbert-bytes/2d/nbits{int(nbits)}"
     return {name: HilbertImplementation(name=name, encode=enc, decode=dec)}
 
 
-def get_hilbertcurve_impl(nbits: int):
+def get_hilbertcurve_impl_2d(nbits: int):
     from hilbertcurve.hilbertcurve import HilbertCurve
 
     def enc(xs, ys):

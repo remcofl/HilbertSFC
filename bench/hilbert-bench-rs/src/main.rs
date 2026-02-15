@@ -8,7 +8,7 @@ use hilbert_2d::Variant;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Mode {
     Grid,
-    Arrange,
+    Arange,
     Random,
 }
 
@@ -78,7 +78,7 @@ fn usage() -> &'static str {
         r#"hilbert-bench-rs (fast_hilbert, hilbert_2d)
 
 Mirrors this repo's Python bench semantics (bench/bench_cli.py):
-- modes: grid|arrange|random
+- modes: grid|arange|random
 - trials: N full-pass trials
 - min-time: minimum *total* wall time across all trials
 - reports median + sample stddev across trials
@@ -87,7 +87,7 @@ Usage:
     cargo run --release --manifest-path bench/hilbert-bench-rs/Cargo.toml -- [options]
 
 Options:
-  --mode <grid|arrange|random>   Input generation mode (default: random)
+  --mode <grid|arange|random>   Input generation mode (default: random)
     --ndim <2>                     Number of dimensions (only 2 supported) (default: 2)
   --nbits <1..32>               Bits per coordinate (default: 16)
   --n <N>                       Number of points for arange/random (default: 5000000)
@@ -130,7 +130,7 @@ fn parse_args() -> Result<Args, String> {
                     .ok_or_else(|| "--mode requires a value".to_string())?;
                 args.mode = match v.as_str() {
                     "grid" => Mode::Grid,
-                    "arrange" => Mode::Arrange,
+                    "arange" => Mode::Arange,
                     "random" => Mode::Random,
                     _ => return Err(format!("invalid --mode: {v}")),
                 };
@@ -358,7 +358,7 @@ fn print_setup(args: &Args, n: usize) {
     println!("hilbert bench");
     match args.mode {
         Mode::Grid => println!("- mode: grid"),
-        Mode::Arrange => println!("- mode: arrange"),
+        Mode::Arange => println!("- mode: arange"),
         Mode::Random => println!("- mode: random"),
     }
     println!("- ndim: {}", args.ndim);
@@ -478,7 +478,7 @@ fn make_points_grid_u32(nbits: u32) -> Result<(Vec<u32>, Vec<u32>), String> {
     Ok((xs, ys))
 }
 
-fn make_points_arrange_u8(nbits: u32, n: usize) -> (Vec<u8>, Vec<u8>) {
+fn make_points_arange_u8(nbits: u32, n: usize) -> (Vec<u8>, Vec<u8>) {
     let mask: u64 = (1u64 << nbits) - 1;
     let mut xs = Vec::with_capacity(n);
     let mut ys = Vec::with_capacity(n);
@@ -489,7 +489,7 @@ fn make_points_arrange_u8(nbits: u32, n: usize) -> (Vec<u8>, Vec<u8>) {
     (xs, ys)
 }
 
-fn make_points_arrange_u16(nbits: u32, n: usize) -> (Vec<u16>, Vec<u16>) {
+fn make_points_arange_u16(nbits: u32, n: usize) -> (Vec<u16>, Vec<u16>) {
     let mask: u64 = (1u64 << nbits) - 1;
     let mut xs = Vec::with_capacity(n);
     let mut ys = Vec::with_capacity(n);
@@ -500,7 +500,7 @@ fn make_points_arrange_u16(nbits: u32, n: usize) -> (Vec<u16>, Vec<u16>) {
     (xs, ys)
 }
 
-fn make_points_arrange_u32(nbits: u32, n: usize) -> (Vec<u32>, Vec<u32>) {
+fn make_points_arange_u32(nbits: u32, n: usize) -> (Vec<u32>, Vec<u32>) {
     let mask: u64 = (1u64 << nbits) - 1;
     let mut xs = Vec::with_capacity(n);
     let mut ys = Vec::with_capacity(n);
@@ -544,7 +544,7 @@ fn run_bench_u8(args: &Args, impls: &[Implementation], order: u8, min_total: Dur
                 std::process::exit(2);
             }
         },
-        Mode::Arrange => make_points_arrange_u8(args.nbits, args.n),
+        Mode::Arange => make_points_arange_u8(args.nbits, args.n),
         Mode::Random => make_points_random_u8(args.nbits, args.n, args.seed),
     };
 
@@ -643,7 +643,7 @@ fn run_bench_u16(args: &Args, impls: &[Implementation], order: u8, min_total: Du
                 std::process::exit(2);
             }
         },
-        Mode::Arrange => make_points_arrange_u16(args.nbits, args.n),
+        Mode::Arange => make_points_arange_u16(args.nbits, args.n),
         Mode::Random => make_points_random_u16(args.nbits, args.n, args.seed),
     };
 
@@ -741,7 +741,7 @@ fn run_bench_u32(args: &Args, impls: &[Implementation], order: u8, min_total: Du
                 std::process::exit(2);
             }
         },
-        Mode::Arrange => make_points_arrange_u32(args.nbits, args.n),
+        Mode::Arange => make_points_arange_u32(args.nbits, args.n),
         Mode::Random => make_points_random_u32(args.nbits, args.n, args.seed),
     };
 
