@@ -59,16 +59,18 @@ dev = [
     "nox>=2025.11.12",
 ]
 docs = [
-    "mkdocs>=1.6.1",
+    "mkdocs>=1.6.1,<2",
     "mkdocs-material>=9.6.0",
     "mkdocstrings[python]>=0.30.0",
     "pymdown-extensions>=10.14.0",
+    "ruff>=0.15.0",
 ]
 notebooks = [
     "ipykernel>=7.2.0",
     "matplotlib>=3.10.8",
     "rich>=14.3.2",
     "numpy>=2.3.5",
+    "pandas>=3.0.1",
 ]
 scripts = [
     "matplotlib>=3.10.8",
