@@ -24,7 +24,7 @@ This project is **performance-first** and **implemented entirely in Python**. Th
 - **Branchless, fully unrolled inner loops**
 - **SIMD via LLVM vector intrinsics**
 - **Small, L1-cache-friendly lookup tables (LUTs)**
-- **Reduced dependency chains for better ILP, e.g., state-independent gather**
+- **Reduced dependency chains for better ILP and MLP, e.g., state-independent gather**
 - **Optional multi-threading for batch operations**
 
 It provides both convenient Python APIs and *kernel accessors* designed to be embedded into other Numba kernels.
@@ -121,6 +121,30 @@ xs2, ys2, zs2 = hilbert_decode_3d(indices, nbits=nbits)   # xs2 = xs, ys2 = ys, 
 
 This is can be useful for applications like 3D spatial indexing, volumetric data processing, compression, and more.
 
+#### Embedding kernels in your own Numba code
+
+While the main API is designed for ease of use, the package also provides *kernel accessors* that expose the scalar encode/decode kernels. This allows you to embed the Hilbert curve logic directly into your own Numba kernels, enabling further optimizations like loop fusion and reduced Python call overhead.
+
+Example embedding the 2D encode kernel:
+
+```python
+import numpy as np
+import numba as nb
+
+from hilbertsfc import get_hilbert_encode_2d_kernel
+
+encode_2d_10 = get_hilbert_encode_2d_kernel(nbits=10)
+
+@nb.njit
+def encode_many(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
+    out = np.empty(xs.shape, dtype=np.uint32)
+    for i in range(xs.size):
+        out[i] = encode_2d_10(xs[i], ys[i])
+    return out
+```
+
+The same pattern works for decode and for 3D kernels.
+
 ### Demo Notebook
 
 For more examples, see the [demo notebook](notebooks/hilbertsfc_demo.ipynb) which includes visualizations of the curves and embedding the kernels into custom Numba code.
@@ -148,30 +172,6 @@ Build a static site into `site/`:
 ```bash
 uv run --no-dev --group docs mkdocs build
 ```
-
-## Embedding kernels in your own Numba code
-
-While the main API is designed for ease of use, the package also provides *kernel accessors* that expose the scalar encode/decode kernels. This allows you to embed the Hilbert curve logic directly into your own Numba kernels, enabling further optimizations like loop fusion and reduced Python call overhead.
-
-### Example embedding the 2D encode kernel
-
-```python
-import numpy as np
-import numba as nb
-
-from hilbertsfc import get_hilbert_encode_2d_kernel
-
-encode_2d_10 = get_hilbert_encode_2d_kernel(nbits=10)
-
-@nb.njit
-def encode_many(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
-    out = np.empty(xs.shape, dtype=np.uint32)
-    for i in range(xs.size):
-        out[i] = encode_2d_10(xs[i], ys[i])
-    return out
-```
-
-The same pattern works for decode and for 3D kernels.
 
 ## Cache control
 

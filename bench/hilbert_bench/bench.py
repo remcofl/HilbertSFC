@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast
 
 import numba as nb
 import numpy as np
@@ -18,11 +18,6 @@ def _coord_dtype(nbits: int) -> np.dtype:
     if nbits <= 16:
         return np.dtype(np.uint16)
     return np.dtype(np.uint32)
-
-
-def _index_dtype(nbits: int) -> np.dtype:
-    # Back-compat for older code: 2D indices need 2*nbits bits.
-    return _index_dtype_ndim(int(nbits), 2)
 
 
 def _index_dtype_ndim(nbits: int, ndim: int) -> np.dtype:
@@ -43,7 +38,7 @@ _SM64_MUL1 = np.uint64(0xBF58476D1CE4E5B9)
 _SM64_MUL2 = np.uint64(0x94D049BB133111EB)
 
 
-@nb.njit("uint64(uint64)", inline="always", cache=True)
+@nb.njit("uint64(uint64)", inline="always")
 def splitmix64_mix(z: np.uint64) -> np.uint64:
     z ^= z >> 30
     z *= _SM64_MUL1
@@ -53,7 +48,7 @@ def splitmix64_mix(z: np.uint64) -> np.uint64:
     return z
 
 
-@nb.njit(parallel=True, cache=True)
+@nb.njit(parallel=True)
 def splitmix64_fill_xy(
     xs: np.ndarray, ys: np.ndarray, mask: np.uint64, seed: np.uint64
 ) -> None:
@@ -74,7 +69,7 @@ def splitmix64_fill_xy(
         ys[i] = splitmix64_mix(s2) & mask
 
 
-@nb.njit(parallel=True, cache=True)
+@nb.njit(parallel=True)
 def splitmix64_fill_xyz(
     xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, mask: np.uint64, seed: np.uint64
 ) -> None:
@@ -169,7 +164,7 @@ class HilbertBenchConfig:
     nbits: int = 16
     n: int = 5_000_000
     seed: int = 123
-    threads: int = 0  # 0 = leave default
+    threads: int = 1  # 0 = leave default
     trials: int = 5
     # Minimum total wall time spent across all trials (0 = disabled).
     min_time_s: float = 0.25
@@ -303,27 +298,31 @@ class HilbertBench:
     def _call_encode(
         self, encode: EncodeBatch, coords: tuple[np.ndarray, ...], out: np.ndarray
     ) -> None:
-        """Call encode with either (..., out) or (...) returning an array."""
+        """Call encode with strict signature: encode(*coords, out, nbits=...)."""
+        nbits = int(self.config.nbits)
         try:
-            encode(*coords, out)
-            return
-        except TypeError:
-            res = encode(*coords)
-            if isinstance(res, np.ndarray):
-                out[:] = res
+            res = encode(*coords, out, nbits=nbits)
+        except TypeError as exc:
+            raise TypeError(
+                "encode must accept signature encode(*coords, out, nbits=int)"
+            ) from exc
+        if isinstance(res, np.ndarray) and res is not out:
+            out[:] = res
 
     def _call_decode(
         self, decode: DecodeBatch, idx: np.ndarray, coords_out: tuple[np.ndarray, ...]
     ) -> None:
-        """Call decode with either (idx, ...out) or (idx) returning a tuple."""
+        """Call decode with strict signature: decode(idx, *coords_out, nbits=...)."""
+        nbits = int(self.config.nbits)
         try:
-            decode(idx, *coords_out)
-            return
-        except TypeError:
-            res = decode(idx)
-            if isinstance(res, tuple) and len(res) == len(coords_out):
-                for dst, src in zip(coords_out, res):
-                    dst[:] = src
+            res = decode(idx, *coords_out, nbits=nbits)
+        except TypeError as exc:
+            raise TypeError(
+                "decode must accept signature decode(idx, *coords_out, nbits=int)"
+            ) from exc
+        if isinstance(res, tuple) and len(res) == len(coords_out):
+            for dst, src in zip(coords_out, res):
+                dst[:] = src
 
     def run_one(
         self,
@@ -423,7 +422,7 @@ class HilbertBench:
 
     def run_many(
         self,
-        impls: dict[str, HilbertImplementation],
+        impls: Mapping[str, HilbertImplementation] | Iterable[HilbertImplementation],
         *,
         print_setup: bool = True,
         print_results: bool = True,
@@ -431,7 +430,14 @@ class HilbertBench:
     ) -> dict[str, dict[str, BenchResult]]:
         all_results: dict[str, dict[str, BenchResult]] = {}
         first = True
-        for name, impl in impls.items():
+        if isinstance(impls, Mapping):
+            impl_items = cast(
+                Iterable[tuple[str, HilbertImplementation]], impls.items()
+            )
+        else:
+            impl_items = ((impl.name, impl) for impl in impls)
+
+        for name, impl in impl_items:
             impl2 = HilbertImplementation(
                 name=impl.name or name,
                 encode=impl.encode,

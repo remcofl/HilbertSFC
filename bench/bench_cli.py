@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import importlib
 import importlib.util
-import inspect
 import json
 import sys
 from dataclasses import asdict
@@ -12,9 +11,30 @@ from types import ModuleType
 from typing import Any, Literal, cast
 
 import numba as nb
-import numpy as np
 
 RateUnit = Literal["m", "k", "auto"]
+
+_BUILTIN_IMPL_SPECS: dict[int, dict[str, str]] = {
+    2: {
+        "hilbertsfc": "hilbert_impls_2d:HILBERTSFC_2D",
+        "hilbert-bytes": "hilbert_impls_2d:HILBERT_BYTES_2D",
+        "numpy-hilbert-curve": "hilbert_impls_2d:NUMPY_HILBERT_CURVE_2D",
+        "hilbertcurve": "hilbert_impls_2d:HILBERTCURVE_2D",
+    },
+    3: {
+        "hilbertsfc": "hilbert_impls_3d:HILBERTSFC_3D",
+        "hilbert-bytes": "hilbert_impls_3d:HILBERT_BYTES_3D",
+        "numpy-hilbert-curve": "hilbert_impls_3d:NUMPY_HILBERT_CURVE_3D",
+        "hilbertcurve": "hilbert_impls_3d:HILBERTCURVE_3D",
+    },
+}
+
+
+def _builtin_impl_names() -> list[str]:
+    names: set[str] = set()
+    for specs in _BUILTIN_IMPL_SPECS.values():
+        names.update(specs.keys())
+    return sorted(names)
 
 
 def _load_module_from_file(file_path: Path) -> ModuleType:
@@ -56,9 +76,6 @@ def _load_object(spec: str) -> Any:
 def _resolve_impls(
     obj: Any,
     hilbert_implementation_type: type,
-    *,
-    nbits: int,
-    config: Any,
 ) -> dict[str, Any]:
     """Resolve an object into one or more HilbertImplementation instances."""
     if isinstance(obj, hilbert_implementation_type):
@@ -78,146 +95,12 @@ def _resolve_impls(
     if isinstance(obj, (list, tuple)):
         out: dict[str, Any] = {}
         for item in obj:
-            out.update(
-                _resolve_impls(
-                    item,
-                    hilbert_implementation_type,
-                    nbits=nbits,
-                    config=config,
-                )
-            )
+            out.update(_resolve_impls(item, hilbert_implementation_type))
         return out
-
-    if callable(obj):
-        # Allow factories that depend on `nbits` and/or `config`.
-        try:
-            sig = inspect.signature(obj)
-            pos_params = [
-                p
-                for p in sig.parameters.values()
-                if p.kind
-                in (
-                    inspect.Parameter.POSITIONAL_ONLY,
-                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                )
-            ]
-        except (TypeError, ValueError):
-            # Fall back to a few common call conventions.
-            for args in ((), (nbits,), (config,), (nbits, config), (config, nbits)):
-                try:
-                    return _resolve_impls(
-                        obj(*args),
-                        hilbert_implementation_type,
-                        nbits=nbits,
-                        config=config,
-                    )
-                except TypeError:
-                    continue
-            raise
-
-        argc = len(pos_params)
-        if argc == 0:
-            produced = obj()
-        elif argc == 1:
-            pname = pos_params[0].name
-            if pname in {"nbits"}:
-                produced = obj(nbits)
-            elif pname in {"cfg", "config"}:
-                produced = obj(config)
-            else:
-                # Try config first, then nbits.
-                try:
-                    produced = obj(config)
-                except TypeError:
-                    produced = obj(nbits)
-        elif argc == 2:
-            p0 = pos_params[0].name
-            p1 = pos_params[1].name
-            if p0 in {"nbits"} and p1 in {"cfg", "config"}:
-                produced = obj(nbits, config)
-            elif p0 in {"cfg", "config"} and p1 in {"nbits"}:
-                produced = obj(config, nbits)
-            else:
-                produced = obj(nbits, config)
-        else:
-            raise TypeError(
-                "Implementation factory must take 0, 1, or 2 positional args: "
-                "(), (nbits|config), or (nbits, config)"
-            )
-
-        return _resolve_impls(
-            produced,
-            hilbert_implementation_type,
-            nbits=nbits,
-            config=config,
-        )
 
     raise TypeError(
         "Implementation object must be HilbertImplementation, dict[str, HilbertImplementation], "
-        "a list/tuple of those, or a callable returning one of those"
-    )
-
-
-def _make_pack_impl(nbits: int, ndim: int, hilbert_implementation_type: type) -> Any:
-    """A simple reversible baseline (NOT Hilbert).
-
-    - ndim=2: idx = (x<<nbits) | y
-    - ndim=3: idx = (x<<(2*nbits)) | (y<<nbits) | z
-    """
-
-    ndim = int(ndim)
-    if ndim not in (2, 3):
-        raise ValueError("ndim must be 2 or 3")
-
-    if ndim == 2:
-
-        @nb.njit
-        def encode2(xs: np.ndarray, ys: np.ndarray, out: np.ndarray) -> None:
-            sh = np.uint64(nbits)
-            for i in range(xs.shape[0]):
-                out[i] = (np.uint64(xs[i]) << sh) | np.uint64(ys[i])
-
-        @nb.njit
-        def decode2(idx: np.ndarray, xs: np.ndarray, ys: np.ndarray) -> None:
-            sh = np.uint64(nbits)
-            mask = np.uint64((1 << nbits) - 1)
-            for i in range(idx.shape[0]):
-                v = np.uint64(idx[i])
-                xs[i] = np.uint64((v >> sh) & mask)
-                ys[i] = np.uint64(v & mask)
-
-        return hilbert_implementation_type(
-            name=f"pack{nbits}", encode=encode2, decode=decode2
-        )
-
-    # ndim == 3
-
-    @nb.njit
-    def encode3(
-        xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, out: np.ndarray
-    ) -> None:
-        sh = np.uint64(nbits)
-        sh2 = np.uint64(2 * nbits)
-        for i in range(xs.shape[0]):
-            out[i] = (
-                (np.uint64(xs[i]) << sh2) | (np.uint64(ys[i]) << sh) | np.uint64(zs[i])
-            )
-
-    @nb.njit
-    def decode3(
-        idx: np.ndarray, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray
-    ) -> None:
-        sh = np.uint64(nbits)
-        sh2 = np.uint64(2 * nbits)
-        mask = np.uint64((1 << nbits) - 1)
-        for i in range(idx.shape[0]):
-            v = np.uint64(idx[i])
-            xs[i] = np.uint64((v >> sh2) & mask)
-            ys[i] = np.uint64((v >> sh) & mask)
-            zs[i] = np.uint64(v & mask)
-
-    return hilbert_implementation_type(
-        name=f"pack3d{nbits}", encode=encode3, decode=decode3
+        "or a list/tuple of those"
     )
 
 
@@ -234,13 +117,13 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "Standalone Hilbert bench runner.\n\n"
             "Pluggable implementations:\n"
+            "  --impl-name hilbertsfc\n"
             "  --impl mymodule:IMPLS\n"
-            "  --impl path/to/file.py:get_impls\n\n"
+            "  --impl path/to/file.py:IMPLS\n\n"
             "Where the loaded object is either:\n"
             "  - HilbertImplementation\n"
             "  - dict[str, HilbertImplementation]\n"
             "  - list/tuple of HilbertImplementation\n"
-            "  - callable returning any of the above\n"
         )
     )
 
@@ -255,7 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--nbits", type=int, default=16)
     p.add_argument("--n", type=int, default=5_000_000)
     p.add_argument("--seed", type=int, default=123)
-    p.add_argument("--threads", type=int, default=0)
+    p.add_argument("--threads", type=int, default=1)
     # Back-compat: --repeats used to exist; keep it as an alias for trials.
     p.add_argument(
         "--repeats",
@@ -292,11 +175,19 @@ def main(argv: list[str] | None = None) -> int:
         help="Alias an implementation spec: name=module:object (repeatable)",
     )
     p.add_argument(
-        "--builtin",
+        "--impl-name",
         action="append",
         default=[],
-        choices=["pack"],
-        help="Add builtin implementation(s) (repeatable). 'pack' is a reversible baseline, not Hilbert.",
+        choices=_builtin_impl_names(),
+        help=(
+            "Builtin implementation name (repeatable). Options: "
+            + ", ".join(_builtin_impl_names())
+        ),
+    )
+    p.add_argument(
+        "--list-impls",
+        action="store_true",
+        help="List builtin implementation names for the selected ndim and exit",
     )
 
     p.add_argument("--no-setup", action="store_true", help="Do not print setup")
@@ -316,6 +207,14 @@ def main(argv: list[str] | None = None) -> int:
 
     args = p.parse_args(argv)
 
+    if args.list_impls:
+        ndim = int(args.ndim)
+        specs = _BUILTIN_IMPL_SPECS.get(ndim, {})
+        print(f"builtin implementations for ndim={ndim}:")
+        for name in sorted(specs.keys()):
+            print(f"- {name}")
+        return 0
+
     cfg = HilbertBenchConfig(
         mode=args.mode,
         ndim=int(args.ndim),
@@ -332,25 +231,26 @@ def main(argv: list[str] | None = None) -> int:
 
     impls: dict[str, HilbertImplementation] = {}
 
-    # builtins
-    for b in args.builtin:
-        if b == "pack":
-            impl = _make_pack_impl(
-                int(args.nbits), int(args.ndim), HilbertImplementation
+    # --impl-name
+    for name in args.impl_name:
+        specs = _BUILTIN_IMPL_SPECS[int(cfg.ndim)]
+        spec = specs.get(name)
+        if not spec:
+            raise SystemExit(
+                f"Builtin implementation {name!r} is not available for ndim={int(cfg.ndim)}"
             )
-            impls[impl.name] = impl
+        obj = _load_object(spec)
+        resolved = _resolve_impls(obj, HilbertImplementation)
+        if len(resolved) != 1:
+            raise SystemExit(
+                f"Builtin implementation {name!r} must resolve to exactly one implementation"
+            )
+        impls[name] = next(iter(resolved.values()))
 
     # --impl
     for spec in args.impl:
         obj = _load_object(spec)
-        impls.update(
-            _resolve_impls(
-                obj,
-                HilbertImplementation,
-                nbits=int(cfg.nbits),
-                config=cfg,
-            )
-        )
+        impls.update(_resolve_impls(obj, HilbertImplementation))
 
     # --impl-as
     for item in args.impl_as:
@@ -362,12 +262,7 @@ def main(argv: list[str] | None = None) -> int:
         if not name:
             raise SystemExit("--impl-as must include a non-empty NAME")
         obj = _load_object(spec)
-        resolved = _resolve_impls(
-            obj,
-            HilbertImplementation,
-            nbits=int(cfg.nbits),
-            config=cfg,
-        )
+        resolved = _resolve_impls(obj, HilbertImplementation)
         if len(resolved) != 1:
             raise SystemExit("--impl-as must resolve to exactly one implementation")
         impl = next(iter(resolved.values()))
@@ -377,7 +272,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if not impls:
         raise SystemExit(
-            "No implementations provided. Use --impl and/or --builtin pack"
+            "No implementations provided. Use --impl-name, --impl, and/or --impl-as. "
+            "Use --list-impls to see builtin names for the selected --ndim."
         )
 
     all_results = bench.run_many(
