@@ -175,6 +175,24 @@ Build a static site into `site/`:
 uv run --no-dev --group docs mkdocs build
 ```
 
+## Development
+
+The repo uses `uv` for environment management. CI and local development workflows (lint, tests, type checking, docs) are automated with `nox`.
+
+Sync a local environment with dev dependencies:
+
+```bash
+uv sync
+```
+
+Run the full `nox` suite:
+
+```bash
+uvx nox
+```
+
+More details are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Cache control
 
 If you want to clear cached kernels and lookup tables (e.g., for benchmarking or testing), you can use the `clear_all_caches()` function:
