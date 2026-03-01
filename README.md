@@ -24,7 +24,7 @@ This project is **performance-first** and **implemented entirely in Python**. Th
 - **Branchless, fully unrolled inner loops**
 - **SIMD via LLVM vector intrinsics**
 - **Small, L1-cache-friendly lookup tables (LUTs)**
-- **Reduced dependency chains for better ILP and MLP, e.g., state-independent gather**
+- **Reduced dependency chains for better ILP and MLP**
 - **Optional multi-threading for batch operations**
 
 It provides both convenient Python APIs and *kernel accessors* designed to be embedded into other Numba kernels.
@@ -48,6 +48,8 @@ It provides both convenient Python APIs and *kernel accessors* designed to be em
 > **System info:** Intel Core Ultra 7 258v, Ubuntu 24.04.4, Python 3.12.12, Numba 0.63.1
 
 Additional benchmarks and details are available in the [benchmark.md](benchmark.md).
+
+For a deep dive into how the HilbertSFC kernels are derived and why the implementation maps well to modern CPUs (FSM/LUT formulation, dependency chains, ILP/MLP, unrolling, constant folding, vectorization, gathers), see the [performance deep dive notebook](notebooks/hilbertsfc_performance_deep_dive.ipynb).
 
 ## Quickstart
 
