@@ -6,13 +6,20 @@ on:
       - test-* # TestPyPI tags
       - v* # Real PyPI tags
 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to create a GitHub Release for (e.g., v0.1.0)"
+        required: true
+        type: string
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: ${{ startsWith(github.ref_name, 'v') && 'pypi' || 'testpypi' }}
     permissions:
       id-token: write
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout
@@ -40,3 +47,26 @@ jobs:
           else
             uv publish
           fi
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref_name, 'v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: Create GitHub Release (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
