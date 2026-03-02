@@ -5,6 +5,24 @@ HilbertSFC
 </h1>
 
 <p align="center">
+  <a href="https://github.com/remcofl/HilbertSFC/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-97ca00?style=flat-square" alt="License">
+  </a>
+  <a href="https://remcofl.github.io/HilbertSFC/">
+    <img src="https://img.shields.io/badge/Docs-API%20%26%20Guide-0A7F8E?style=flat-square" alt="Documentation">
+  </a>
+  <a href="https://pypi.org/project/hilbertsfc/">
+    <img src="https://img.shields.io/pypi/v/hilbertsfc?label=PyPI&style=flat-square" alt="PyPI">
+  </a>
+  <a href="https://pypi.org/project/hilbertsfc/">
+    <img src="https://img.shields.io/pypi/pyversions/hilbertsfc?label=Python&style=flat-square" alt="Python versions">
+  </a>
+  <a href="https://github.com/remcofl/HilbertSFC/actions/workflows/ci.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/remcofl/HilbertSFC/ci.yml?branch=main&label=CI&style=flat-square" alt="CI">
+  </a>
+</p>
+
+<p align="center">
     <strong>Ultra-fast 2D &amp; 3D Hilbert space-filling curve encode/decode kernels for Python.</strong>
 </p>
 
