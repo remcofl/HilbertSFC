@@ -47,9 +47,9 @@ It provides both convenient Python APIs and *kernel accessors* designed to be em
 
 > **System info:** Intel Core Ultra 7 258v, Ubuntu 24.04.4, Python 3.12.12, Numba 0.63.1
 
-Additional benchmarks and details are available in the [benchmark.md](benchmark.md).
+Additional benchmarks and details are available in the [benchmark.md](https://github.com/remcofl/HilbertSFC/blob/main/benchmark.md).
 
-For a deep dive into how the HilbertSFC kernels are derived and why the implementation maps well to modern CPUs (FSM/LUT formulation, dependency chains, ILP/MLP, unrolling, constant folding, vectorization, gathers), see the [performance deep dive notebook](notebooks/hilbertsfc_performance_deep_dive.ipynb).
+For a deep dive into how the HilbertSFC kernels are derived and why the implementation maps well to modern CPUs (FSM/LUT formulation, dependency chains, ILP/MLP, unrolling, constant folding, vectorization, gathers), see the [performance deep dive notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_performance_deep_dive.ipynb).
 
 ## Quickstart
 
@@ -149,7 +149,7 @@ The same pattern works for decode and for 3D kernels.
 
 ### Demo Notebook
 
-For more examples, see the [demo notebook](notebooks/hilbertsfc_demo.ipynb) which includes visualizations of the curves and embedding the kernels into custom Numba code.
+For more examples, see the [demo notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_demo.ipynb) which includes visualizations of the curves and embedding the kernels into custom Numba code.
 
 ## API notes
 
@@ -191,7 +191,7 @@ Run the full `nox` suite:
 uvx nox
 ```
 
-More details are in [CONTRIBUTING.md](CONTRIBUTING.md).
+More details are in [CONTRIBUTING.md](https://github.com/remcofl/HilbertSFC/blob/main/CONTRIBUTING.md).
 
 ## Cache control
 
