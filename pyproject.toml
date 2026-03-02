@@ -1,6 +1,6 @@
 [project]
 name = "hilbertsfc"
-version = "0.1.1"
+version = "0.1.2"
 description = "Ultra-fast 2D and 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba)."
 readme = "README.md"
 authors = [{ name = "Remco Leijenaar" }]
