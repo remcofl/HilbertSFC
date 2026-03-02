@@ -9,8 +9,8 @@ HilbertSFC
 </p>
 
 <p align="center">
-    <img src="docs/img/hilbert2d_grid.png" width="420" align="middle" alt="2D Hilbert curves for nbits 1..5" />
-    <img src="docs/img/hilbert3d_grid.webp" width="340" align="middle" hspace="5" alt="3D Hilbert curves animation grid for nbits 1..4" />
+    <img src="https://raw.githubusercontent.com/remcofl/HilbertSFC/refs/heads/main/docs/img/hilbert2d_grid.png" width="420" align="middle" alt="2D Hilbert curves for nbits 1..5" />
+    <img src="https://raw.githubusercontent.com/remcofl/HilbertSFC/refs/heads/main/docs/img/hilbert3d_grid.webp" width="340" align="middle" hspace="5" alt="3D Hilbert curves animation grid for nbits 1..4" />
 </p>
 
 <p align="center">
