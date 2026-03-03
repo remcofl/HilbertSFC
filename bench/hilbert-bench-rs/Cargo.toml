@@ -8,6 +8,11 @@ fast_hilbert = "2.0.2"
 hilbert_2d = "1.1.0"
 rayon = "1.10.0"
 
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
+
 [lints.rust]
 unsafe_code = "forbid"
 

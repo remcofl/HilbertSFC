@@ -11,14 +11,15 @@ Current implementations:
 
 From the repository root:
 
-```powershell
+```bash
+export RUSTFLAGS='-C target-cpu=native'
 cargo run --release --manifest-path bench/hilbert-bench-rs/Cargo.toml -- \
   --mode random --ndim 2 --nbits 16 --n 5000000 --seed 123 --threads 1 --trials 5 --min-time 0.25
 ```
 
 Run a subset of implementations (repeat `--only` as needed):
 
-```powershell
+```bash
 cargo run --release --manifest-path bench/hilbert-bench-rs/Cargo.toml -- \
   --only fast_hilbert --only hilbert_2d --mode random --nbits 16 --n 5000000
 ```
@@ -29,3 +30,4 @@ cargo run --release --manifest-path bench/hilbert-bench-rs/Cargo.toml -- \
 - `--min-time` is the minimum total wall time across all trials.
 - `--threads` controls Rayon worker threads (`0` = Rayon default).
 - `--validate` checks `decode(encode(coords))` on `--validate-n` points.
+- `target-cpu=native` (CPU-specific codegen) is recommended for peak throughput on one machine.

@@ -71,7 +71,7 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
 | 🔥**hilbertsfc** | **Python (+ Numba)** | **0.50** | **0.65** | **2004.892** | **1537.232** |
-| fast_hilbert | Rust | 4.52 | 4.81 | 221.36 | 207.90 |
+| fast_hilbert | Rust | 4.46 | 4.43 | 224.36 | 225.52 |
 | hilbert_2d | Rust | 29.94 | 25.17 | 33.40 | 39.74 |
 | hilbert-bytes | Python (+ Numba) | 601.24 | 498.04 | 1.663 | 2.008 |
 | numpy-hilbert-curve | Python (+ NumPy) | 1203.58 | 646.73 | 0.831 | 1.546 |
@@ -85,7 +85,7 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
 | 🔥**hilbertsfc** | **Python (+ Numba)** | **0.86** | **1.04** | **1156.203** | **958.231** |
-| fast_hilbert | Rust | 8.12 | 7.72 | 123.21 | 129.58 |
+| fast_hilbert | Rust | 7.65 | 7.27 | 130.79 | 137.64 |
 | hilbert_2d | Rust | 60.93 | 54.20 | 16.41 | 18.45 |
 | hilbert-bytes | Python (+ Numba) | 1303.20 | 1091.04 | 0.767 | 0.917 |
 | numpy-hilbert-curve | Python (+ NumPy) | 2925.62 | 1639.47 | 0.342 | 0.610 |
@@ -99,7 +99,7 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
 | 🔥**hilbertsfc (Python)** | **Python (+ Numba)** | **1.84** | **1.88** | **543.60** | **532.77** |
-| fast_hilbert | Rust | 13.71 | 13.47 | 72.92 | 74.23 |
+| fast_hilbert | Rust | 12.24 | 12.03 | 81.67 | 83.11 |
 | hilbert_2d | Rust | 121.23 | 101.34 | 8.25 | 9.87 |
 | hilbert-bytes | Python (+ Numba) | 2997.51 | 2642.86 | 0.334 | 0.378 |
 | numpy-hilbert-curve | Python (+ NumPy) | 7606.88 | 5075.58 | 0.131 | 0.197 |
