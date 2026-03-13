@@ -5,8 +5,6 @@ Centralizes kernel builder caching so:
 - caches can be cleared in one call (useful for benchmarks/tests)
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from functools import cache, lru_cache
 from threading import RLock

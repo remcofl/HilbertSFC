@@ -4,8 +4,6 @@ Usage:
     python bench/bench_cli.py --impl bench/hilbert_impls_3d.py:IMPLS --ndim 3 --nbits 16 --n 200000
 """
 
-from __future__ import annotations
-
 import numpy as np
 from hilbert_bench import HilbertImplementation
 

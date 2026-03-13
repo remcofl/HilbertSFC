@@ -6,8 +6,6 @@ currently preferred for a given nbits/dtype/shape.
 For now this is intentionally simple and returns the default stubs.
 """
 
-from __future__ import annotations
-
 
 def get_encode_2d_scalar_builder():
     from ._kernels.hilbert2d_encode import build_hilbert_encode_2d_impl

@@ -8,8 +8,6 @@ Public API lives in:
 - ``hilbertsfc.hilbert3d``
 """
 
-from __future__ import annotations
-
 from ._cache import clear_all_caches, clear_kernel_caches, clear_lut_caches
 from .hilbert2d import (
     get_hilbert_decode_2d_kernel,

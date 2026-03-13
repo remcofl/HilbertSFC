@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import numpy as np
 
 from hilbertsfc.hilbert2d import hilbert_decode_2d, hilbert_encode_2d

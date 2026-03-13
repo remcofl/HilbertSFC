@@ -1,7 +1,5 @@
 """3D encode kernel builders."""
 
-from __future__ import annotations
-
 import numba as nb
 import numpy as np
 
