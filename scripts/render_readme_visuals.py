@@ -43,8 +43,6 @@ Notes:
     - Dependencies are declared in the inline script header above.
 """
 
-from __future__ import annotations
-
 import argparse
 from dataclasses import dataclass
 from pathlib import Path

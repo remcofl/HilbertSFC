@@ -16,8 +16,6 @@ code), this module also exposes kernel accessors:
 
 """
 
-from __future__ import annotations
-
 import warnings
 from collections.abc import Callable
 from typing import cast

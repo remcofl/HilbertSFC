@@ -4,8 +4,6 @@ These functions are used in the public encode/decode APIs (array mode) to keep
 validation constant-time (i.e., based only on dtype metadata, not by scanning arrays).
 """
 
-from __future__ import annotations
-
 import numpy as np
 
 

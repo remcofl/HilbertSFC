@@ -3,8 +3,6 @@
 These helpers are performance-sensitive and shared between the 2D/3D public APIs.
 """
 
-from __future__ import annotations
-
 import numpy as np
 
 

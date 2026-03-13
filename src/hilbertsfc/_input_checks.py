@@ -3,8 +3,6 @@
 These helpers keep scalar-vs-array dispatch consistent across modules.
 """
 
-from __future__ import annotations
-
 import numpy as np
 
 

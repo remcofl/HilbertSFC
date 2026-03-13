@@ -1,7 +1,5 @@
 """Low-overhead `nbits` validation helpers."""
 
-from __future__ import annotations
-
 MAX_NBITS_2D = 32
 MAX_NBITS_3D = 21
 

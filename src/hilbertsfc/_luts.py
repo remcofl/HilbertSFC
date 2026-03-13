@@ -5,8 +5,6 @@ Access through these functions to keep imports cheap and to ensure a single
 shared array instance per process.
 """
 
-from __future__ import annotations
-
 from importlib.resources import as_file, files
 
 import numpy as np
