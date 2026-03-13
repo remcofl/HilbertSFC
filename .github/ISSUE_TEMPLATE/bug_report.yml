@@ -1,0 +1,52 @@
+name: "Bug report"
+description: "Report something that is broken or incorrect."
+title: "[BUG] - "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected to happen instead.
+      placeholder: "When I call ..., I expected ..., but got ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the issue.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Version info helps a lot.
+      placeholder: |
+        - OS:
+        - Python:
+        - hilbertsfc version:
+        - numpy and numba versions:
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / tracebacks
+      description: Paste any stack traces or errors (formatted as text).
+      render: shell
+    validations:
+      required: false
