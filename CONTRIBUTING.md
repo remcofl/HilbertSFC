@@ -2,9 +2,35 @@
 
 Thanks for contributing to **HilbertSFC**.
 
+## Proposing changes (issue first)
+
+To keep maintenance manageable (and to avoid drive-by automated/AI-generated PRs), this project generally requires an issue before a pull request.
+
+- **Open an issue first** for anything beyond a tiny typo/doc fix.
+- Wait for maintainers to triage the issue and apply the **`actionable`** label.
+- Only then open a PR that references the issue (e.g. `Fixes #123` or `Refs #123`).
+
+If you're unsure whether something warrants an issue first, open an issue anyway. This is the fastest way to confirm direction.
+
+### About AI-assisted changes
+
+Using AI tools while developing is fine, but:
+
+- Please don't open PRs that are effectively "generated and dumped" without fully understanding the changes.
+- You are responsible for the code you submit (correctness, tests, style).
+- Maintainers may close PRs that don't follow the issue-first / `actionable` flow.
+
+### What makes an issue `actionable`
+
+Typically an `actionable` issue has:
+
+- a clear problem statement,
+- agreement on the expected behavior / API,
+- and at least a rough approach (or acceptance criteria).
+
 ## Development workflow
 
-This repo uses **uv** for environment management and **nox** for repeatable task automation (`noxfile.py` sets `default_venv_backend = "uv"`).
+This repo uses **uv** for environment management and **nox** for repeatable task automation.
 
 For quick one-off checks (or to match CI closely), `uvx nox` is convenient.
 
