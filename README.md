@@ -210,13 +210,3 @@ uvx nox
 ```
 
 More details are in [CONTRIBUTING.md](https://github.com/remcofl/HilbertSFC/blob/main/CONTRIBUTING.md).
-
-## Cache control
-
-If you want to clear cached kernels and lookup tables (e.g., for benchmarking or testing), you can use the `clear_all_caches()` function:
-
-```python
-from hilbertsfc import clear_all_caches
-
-clear_all_caches()
-```

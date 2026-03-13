@@ -91,6 +91,16 @@ indices = hilbert_encode_3d(xs, ys, zs, nbits=nbits)
 xs2, ys2, zs2 = hilbert_decode_3d(indices, nbits=nbits)
 ```
 
+### Cache control
+
+If you want to clear cached kernels and lookup tables (e.g., for benchmarking or testing), you can use the `clear_all_caches()` function:
+
+```python
+from hilbertsfc import clear_all_caches
+
+clear_all_caches()
+```
+
 ## Tips
 
 - Extra bits in the input outside the range `[0, 2**nbits)` are ignored, so you can pass wider integer dtypes if that's convenient
