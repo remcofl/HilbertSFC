@@ -24,11 +24,9 @@ Optionally choose a different output directory:
 from pathlib import Path
 
 import numpy as np
-from hilbertsfc_gen.lut_2d4b import generate_luts_2d4b_compacted
+from hilbertsfc_gen.lut_2dnb import generate_luts_2dnb_compacted
 from hilbertsfc_gen.lut_3d2b import generate_luts_3d2b
 
-LUT_2D4B_B_QS_U64_NPY = "lut_2d4b_b_qs_u64.npy"
-LUT_2D4B_Q_BS_U64_NPY = "lut_2d4b_q_bs_u64.npy"
 LUT_3D2B_SB_SO_U16_NPY = "lut_3d2b_sb_so_u16.npy"
 LUT_3D2B_SO_SB_U16_NPY = "lut_3d2b_so_sb_u16.npy"
 
@@ -45,6 +43,15 @@ def _main() -> int:
         description="Generate all hilbertsfc lookup tables"
     )
     parser.add_argument(
+        "--2d-n",
+        "--2d-nbits",
+        dest="tile_nbits_2d",
+        nargs="+",
+        type=int,
+        default=[4, 7],
+        help="2D tile sizes in bits (iterations per lookup). Default: 4 7",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=_default_out_dir(),
@@ -55,23 +62,33 @@ def _main() -> int:
     out_dir: Path = args.out
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    lut_2d4b_b_qs_u64, lut_2d4b_q_bs_u64 = generate_luts_2d4b_compacted()
+    # 2D LUTs
+    nbits_2d = list(dict.fromkeys(args.tile_nbits_2d))  # stable unique
+    for n in nbits_2d:
+        if n < 1 or n > 7:
+            raise SystemExit(f"--2d-n values must be in [1, 7]; got {n}")
+
+    written: list[Path] = []
+    for n in nbits_2d:
+        lut_b_qs_u64, lut_q_bs_u64 = generate_luts_2dnb_compacted(n)
+
+        p_b_qs = out_dir / f"lut_2d{n}b_b_qs_u64.npy"
+        p_q_bs = out_dir / f"lut_2d{n}b_q_bs_u64.npy"
+        np.save(p_b_qs, lut_b_qs_u64, allow_pickle=False)
+        np.save(p_q_bs, lut_q_bs_u64, allow_pickle=False)
+        written.extend([p_b_qs, p_q_bs])
+
+    # 3D LUTs
     lut_3d2b_sb_so_u16, lut_3d2b_so_sb_u16 = generate_luts_3d2b()
 
-    p1 = out_dir / LUT_2D4B_B_QS_U64_NPY
-    p2 = out_dir / LUT_2D4B_Q_BS_U64_NPY
     p3 = out_dir / LUT_3D2B_SB_SO_U16_NPY
     p4 = out_dir / LUT_3D2B_SO_SB_U16_NPY
-
-    np.save(p1, lut_2d4b_b_qs_u64, allow_pickle=False)
-    np.save(p2, lut_2d4b_q_bs_u64, allow_pickle=False)
     np.save(p3, lut_3d2b_sb_so_u16, allow_pickle=False)
     np.save(p4, lut_3d2b_so_sb_u16, allow_pickle=False)
+    written.extend([p3, p4])
 
-    print(f"Wrote {p1}")
-    print(f"Wrote {p2}")
-    print(f"Wrote {p3}")
-    print(f"Wrote {p4}")
+    for p in written:
+        print(f"Wrote {p}")
     return 0
 
 

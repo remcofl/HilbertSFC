@@ -88,25 +88,25 @@ def generate_luts_3d2b() -> tuple[np.ndarray, np.ndarray]:
     lut_so_sb = np.zeros(TABLE_SIZE, dtype=np.uint16)
 
     for state in range(N_STATES):
-        for bb in range(BB_ENTRIES):
-            oo = 0
+        for b_packed in range(BB_ENTRIES):
+            o_packed = 0
             s_next = state
 
             for bit in range(NBITS_CHUNK - 1, -1, -1):
-                b_x = (bb >> (2 * NBITS_CHUNK + bit)) & 0x1
-                b_y = (bb >> (1 * NBITS_CHUNK + bit)) & 0x1
-                b_z = (bb >> (0 * NBITS_CHUNK + bit)) & 0x1
+                b_x = (b_packed >> (2 * NBITS_CHUNK + bit)) & 0x1
+                b_y = (b_packed >> (1 * NBITS_CHUNK + bit)) & 0x1
+                b_z = (b_packed >> (0 * NBITS_CHUNK + bit)) & 0x1
                 b = (b_x << 2) | (b_y << 1) | b_z
 
                 sb = (s_next << 3) | b
                 o = int(LUT3D_SB_TO_O[sb])
-                oo = (oo << 3) | o
+                o_packed = (o_packed << 3) | o
                 s_next = int(LUT3D_SB_TO_NEXT[sb])
 
-            packed_so = np.uint16((s_next << 6) | oo)
-            lut_sb_so[(state << 6) | bb] = packed_so
+            packed_so = np.uint16((s_next << 6) | o_packed)
+            lut_sb_so[(state << 6) | b_packed] = packed_so
 
-            packed_sb = np.uint16((s_next << 6) | bb)
-            lut_so_sb[(state << 6) | oo] = packed_sb
+            packed_sb = np.uint16((s_next << 6) | b_packed)
+            lut_so_sb[(state << 6) | o_packed] = packed_sb
 
     return lut_sb_so, lut_so_sb
