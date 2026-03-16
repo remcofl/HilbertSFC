@@ -38,7 +38,7 @@ from ._dtype import (
 from ._flatten import flatten_nocopy as _flatten_nocopy
 from ._input_checks import is_int_scalar_or_0d_array
 from ._nbits import MAX_NBITS_2D, validate_nbits_2d
-from ._typing import IntArray, IntScalar
+from ._typing import IntArray, IntScalar, TileNBits2D
 
 
 def hilbert_encode_2d(
@@ -389,7 +389,9 @@ def _hilbert_decode_2d_batch(
     return out_xs, out_ys
 
 
-def get_hilbert_encode_2d_kernel(nbits: int) -> Callable[[IntScalar, IntScalar], int]:
+def get_hilbert_encode_2d_kernel(
+    nbits: int, *, tile_nbits: TileNBits2D = 7
+) -> Callable[[IntScalar, IntScalar], int]:
     """Return a Numba-compiled *scalar* 2D Hilbert encoder.
 
     This is the low-level kernel used by :func:`hilbert_encode_2d` in scalar mode.
@@ -399,6 +401,15 @@ def get_hilbert_encode_2d_kernel(nbits: int) -> Callable[[IntScalar, IntScalar],
     ----------
     nbits
         Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+    tile_nbits
+        Select the tile size (in bits) / kernel variant.
+
+        - ``7`` (default/fastest): uses 7-bit compacted LUTs (~65 KiB).
+        - ``4``: uses 4-bit compacted LUTs (~1 KiB).
+
+        The 7-bit variant uses a larger LUT and is generally faster.
+        The 4-bit variant uses a smaller LUT, which may be preferable in
+        cache-sensitive environments.
 
     Returns
     -------
@@ -406,10 +417,12 @@ def get_hilbert_encode_2d_kernel(nbits: int) -> Callable[[IntScalar, IntScalar],
         A Numba-compiled function with signature ``(x: int, y: int) -> int``.
     """
     builder = get_encode_2d_scalar_builder()
-    return builder(nbits)
+    return builder(nbits, tile_nbits=tile_nbits)
 
 
-def get_hilbert_decode_2d_kernel(nbits: int) -> Callable[[IntScalar], tuple[int, int]]:
+def get_hilbert_decode_2d_kernel(
+    nbits: int, *, tile_nbits: TileNBits2D = 7
+) -> Callable[[IntScalar], tuple[int, int]]:
     """Return a Numba-compiled *scalar* 2D Hilbert decoder.
 
     This is the low-level kernel used by :func:`hilbert_decode_2d` in scalar mode.
@@ -419,6 +432,15 @@ def get_hilbert_decode_2d_kernel(nbits: int) -> Callable[[IntScalar], tuple[int,
     ----------
     nbits
         Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+    tile_nbits
+        Select the tile size (in bits) / kernel variant.
+
+        - ``7`` (default/fastest): uses 7-bit compacted LUTs (~65 KiB).
+        - ``4``: uses 4-bit compacted LUTs (~1 KiB).
+
+        The 7-bit variant uses a larger LUT and is generally faster.
+        The 4-bit variant uses a smaller LUT, which may be preferable in
+        cache-sensitive environments.
 
     Returns
     -------
@@ -426,4 +448,4 @@ def get_hilbert_decode_2d_kernel(nbits: int) -> Callable[[IntScalar], tuple[int,
         A Numba-compiled function with signature ``(index: int) -> (x: int, y: int)``.
     """
     builder = get_decode_2d_scalar_builder()
-    return builder(nbits)
+    return builder(nbits, tile_nbits=tile_nbits)

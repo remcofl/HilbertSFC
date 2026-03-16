@@ -11,6 +11,7 @@ from ._typing import (
     Int64Array,
     IntArray,
     IntScalar,
+    TileNBits2D,
     UInt8Array,
     UInt16Array,
     UInt32Array,
@@ -229,7 +230,11 @@ def hilbert_decode_2d(
 # --- Kernel accessors:
 def get_hilbert_encode_2d_kernel(
     nbits: int,
+    *,
+    tile_nbits: TileNBits2D = 7,
 ) -> Callable[[IntScalar, IntScalar], int]: ...
 def get_hilbert_decode_2d_kernel(
     nbits: int,
+    *,
+    tile_nbits: TileNBits2D = 7,
 ) -> Callable[[IntScalar], tuple[int, int]]: ...

@@ -39,15 +39,25 @@ def _load_npy(filename: str) -> NDArray[np.generic]:
 @lut_cache
 def lut_2d4b_b_qs_u64() -> NDArray[np.uint64]:
     """Encode LUT: bbbb -> packed (qqqq, next_state) lanes."""
-
     return _load_npy("lut_2d4b_b_qs_u64.npy").astype(np.uint64, copy=False)
 
 
 @lut_cache
 def lut_2d4b_q_bs_u64() -> NDArray[np.uint64]:
     """Decode LUT: qqqq -> packed (bbbb, next_state) lanes."""
-
     return _load_npy("lut_2d4b_q_bs_u64.npy").astype(np.uint64, copy=False)
+
+
+@lut_cache
+def lut_2d7b_b_qs_u64() -> NDArray[np.uint64]:
+    """Encode LUT: bbbbbbb -> packed (qqqqqqq, next_state) lanes."""
+    return _load_npy("lut_2d7b_b_qs_u64.npy").astype(np.uint64, copy=False)
+
+
+@lut_cache
+def lut_2d7b_q_bs_u64() -> NDArray[np.uint64]:
+    """Decode LUT: qqqqqqq -> packed (bbbbbbb, next_state) lanes."""
+    return _load_npy("lut_2d7b_q_bs_u64.npy").astype(np.uint64, copy=False)
 
 
 @lut_cache

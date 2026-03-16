@@ -4,6 +4,8 @@ Type aliases used throughout the public API to keep function signatures readable
 
 """
 
+from typing import Literal
+
 import numpy as np
 from numpy.typing import NDArray
 
@@ -56,4 +58,11 @@ type LutUIntDTypeLike = LutUIntType | LutUIntDType
 
 Allows either the dtype *type* (e.g. ``np.uint32``) or a ``numpy.dtype`` instance
 (e.g. ``np.dtype(np.uint32)``).
+"""
+
+
+type TileNBits2D = Literal[4, 7]
+"""2D tile size in bits.
+
+This selects the 2D kernel/LUT variant.
 """

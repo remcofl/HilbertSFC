@@ -4,9 +4,9 @@ import numba as nb
 import numpy as np
 
 from .._cache import kernel_cache
-from .._luts import lut_2d4b_q_bs_u64
+from .._luts import lut_2d4b_q_bs_u64, lut_2d7b_q_bs_u64
 from .._nbits import validate_nbits_2d
-from .._typing import IntScalar, UIntArray
+from .._typing import IntScalar, TileNBits2D, UIntArray
 
 
 @nb.njit(inline="always")
@@ -35,28 +35,63 @@ def _hilbert_decode_2d_4bit_compacted_bs(idx, nbits, lut):
     return x, y
 
 
+@nb.njit(inline="always")
+def _hilbert_decode_2d_7bit_compacted_bs(idx, nbits, lut):
+    x = y = 0
+    start_bit = (nbits - 1) // 7 * 7
+    state = (start_bit + 7) & 0x1  # Start state is either 0 or 1 based on nbits parity
+
+    drop_bits = start_bit - nbits + 7
+    if drop_bits > 0:
+        idx &= np.uint64((1 << (nbits << 1)) - 1)
+
+    # Process quadrants from MSB to LSB (..., 14, 7, 0)
+    for bit in range(start_bit, -1, -7):
+        q = (idx >> (bit << 1)) & 0x3FFF
+        bs = lut[q] >> (state << 4)
+
+        b_x = (bs & 0xFE00) >> 9
+        b_y = (bs & 0x01FC) >> 2
+        x |= b_x << bit  # Append 7 bits to x
+        y |= b_y << bit  # Append 7 bits to y
+
+        state = bs & 0x3
+
+    return x, y
+
+
 @kernel_cache
-def build_hilbert_decode_2d_impl(nbits: int):
+def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D = 7):
     """Return a specialized scalar decoder: index -> (x, y)."""
 
     validate_nbits_2d(nbits)
 
-    lut = lut_2d4b_q_bs_u64()
+    if tile_nbits == 7:
+        lut = lut_2d7b_q_bs_u64()
+        kernel = _hilbert_decode_2d_7bit_compacted_bs
+    elif tile_nbits == 4:
+        lut = lut_2d4b_q_bs_u64()
+        kernel = _hilbert_decode_2d_4bit_compacted_bs
+    else:
+        # Should be unreachable due to type + normalization.
+        raise ValueError("tile_nbits must be 4 or 7")
 
     @nb.njit(inline="always", cache=True)
     def decode_2d(index: IntScalar) -> tuple[int, int]:
-        return _hilbert_decode_2d_4bit_compacted_bs(index, nbits, lut)
+        return kernel(index, nbits, lut)
 
     return decode_2d
 
 
 @kernel_cache
-def build_hilbert_decode_2d_batch_impl(nbits: int, *, parallel: bool = False):
+def build_hilbert_decode_2d_batch_impl(
+    nbits: int, *, parallel: bool = False, tile_nbits: TileNBits2D = 7
+):
     """Return a specialized batch decoder: (indices, xs, ys) -> (xs, ys)."""
 
     validate_nbits_2d(nbits)
 
-    decode_scalar = build_hilbert_decode_2d_impl(nbits)
+    decode_scalar = build_hilbert_decode_2d_impl(nbits, tile_nbits=tile_nbits)
 
     @nb.njit(parallel=parallel, cache=True)
     def decode_2d_batch(indices: UIntArray, xs: UIntArray, ys: UIntArray) -> None:
