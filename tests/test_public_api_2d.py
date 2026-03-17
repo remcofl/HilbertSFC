@@ -36,6 +36,15 @@ def test_2d_scalar_invalid_nbits_raises() -> None:
         hilbert_decode_2d(0, nbits=33)
 
 
+def test_2d_scalar_negative_inputs_raise_value_error() -> None:
+    with pytest.raises(ValueError, match="non-negative"):
+        hilbert_encode_2d(-1, 2)
+    with pytest.raises(ValueError, match="non-negative"):
+        hilbert_encode_2d(1, -2)
+    with pytest.raises(ValueError, match="non-negative"):
+        hilbert_decode_2d(-1)
+
+
 def test_2d_scalar_out_rejected_and_parallel_warns() -> None:
     out = np.empty(1, dtype=np.uint8)
     with pytest.raises(TypeError, match="out is only valid"):
