@@ -138,8 +138,13 @@ def hilbert_encode_2d(
         # For Python scalars, default to maximum
         if nbits is None:
             nbits = MAX_NBITS_2D
-        if x > np.iinfo(np.uint32).max or y > np.iinfo(np.uint32).max:
-            raise ValueError(f"Scalar inputs must fit in uint32; got x={x}, y={y}")
+        x, y = int(x), int(y)
+        max_v = np.iinfo(np.uint32).max
+        if x < 0 or y < 0 or x > max_v or y > max_v:
+            raise ValueError(
+                "Scalar inputs must be non-negative and fit in uint32; "
+                f"got x={x}, y={y}"
+            )
 
         builder = get_encode_2d_scalar_builder()
         impl = builder(nbits)
@@ -245,8 +250,13 @@ def hilbert_decode_2d(
         # For Python scalars, default to maximum
         if nbits is None:
             nbits = MAX_NBITS_2D
-        if index > np.iinfo(np.uint64).max:
-            raise ValueError(f"Scalar index must fit in uint64; got index={index}")
+        index = int(index)
+        max_v = np.iinfo(np.uint64).max
+        if index < 0 or index > max_v:
+            raise ValueError(
+                "Scalar index must be non-negative and fit in uint64; "
+                f"got index={index}"
+            )
         builder = get_decode_2d_scalar_builder()
         impl = builder(nbits)
         return impl(np.uint64(index))
