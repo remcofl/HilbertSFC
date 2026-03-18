@@ -400,7 +400,7 @@ def _hilbert_decode_2d_batch(
 
 
 def get_hilbert_encode_2d_kernel(
-    nbits: int, *, tile_nbits: TileNBits2D = 7
+    nbits: int, *, tile_nbits: TileNBits2D | None = None
 ) -> Callable[[IntScalar, IntScalar], int]:
     """Return a Numba-compiled *scalar* 2D Hilbert encoder.
 
@@ -414,7 +414,9 @@ def get_hilbert_encode_2d_kernel(
     tile_nbits
         Select the tile size (in bits) / kernel variant.
 
-        - ``7`` (default/fastest): uses 7-bit compacted LUTs (~65 KiB).
+        - ``None`` (default): auto-select (``4`` for ``nbits <= 4`` or ``nbits == 8``, else ``7``).
+
+        - ``7``: uses 7-bit compacted LUTs (~65 KiB).
         - ``4``: uses 4-bit compacted LUTs (~1 KiB).
 
         The 7-bit variant uses a larger LUT and is generally faster.
@@ -431,7 +433,7 @@ def get_hilbert_encode_2d_kernel(
 
 
 def get_hilbert_decode_2d_kernel(
-    nbits: int, *, tile_nbits: TileNBits2D = 7
+    nbits: int, *, tile_nbits: TileNBits2D | None = None
 ) -> Callable[[IntScalar], tuple[int, int]]:
     """Return a Numba-compiled *scalar* 2D Hilbert decoder.
 
@@ -445,7 +447,9 @@ def get_hilbert_decode_2d_kernel(
     tile_nbits
         Select the tile size (in bits) / kernel variant.
 
-        - ``7`` (default/fastest): uses 7-bit compacted LUTs (~65 KiB).
+        - ``None`` (default): auto-select (``4`` for ``nbits <= 4`` or ``nbits == 8``, else ``7``).
+
+        - ``7``: uses 7-bit compacted LUTs (~65 KiB).
         - ``4``: uses 4-bit compacted LUTs (~1 KiB).
 
         The 7-bit variant uses a larger LUT and is generally faster.

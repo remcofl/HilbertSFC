@@ -60,11 +60,27 @@ def _hilbert_decode_2d_7bit_compacted_bs(idx, nbits, lut):
     return x, y
 
 
+def _auto_tile_nbits_2d(nbits: int) -> TileNBits2D:
+    """Determine the best tile size for 2D *decode* kernels given ``nbits``.
+
+    Policy ``ceil(nbits/4) == ceil(nbits/7)`` -> 4, else 7. This means:
+    - ``4`` for very small domains (``nbits <= 4``) and for ``nbits == 8``.
+    - ``7`` otherwise.
+    """
+
+    if nbits <= 4 or nbits == 8:
+        return 4
+    return 7
+
+
 @kernel_cache
-def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D = 7):
+def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None = None):
     """Return a specialized scalar decoder: index -> (x, y)."""
 
     validate_nbits_2d(nbits)
+
+    if tile_nbits is None:
+        tile_nbits = _auto_tile_nbits_2d(nbits)
 
     if tile_nbits == 7:
         lut = lut_2d7b_q_bs_u64()
@@ -73,8 +89,7 @@ def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D = 7):
         lut = lut_2d4b_q_bs_u64()
         kernel = _hilbert_decode_2d_4bit_compacted_bs
     else:
-        # Should be unreachable due to type + normalization.
-        raise ValueError("tile_nbits must be 4 or 7")
+        raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")
 
     @nb.njit(inline="always", cache=True)
     def decode_2d(index: IntScalar) -> tuple[int, int]:
@@ -85,7 +100,7 @@ def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D = 7):
 
 @kernel_cache
 def build_hilbert_decode_2d_batch_impl(
-    nbits: int, *, parallel: bool = False, tile_nbits: TileNBits2D = 7
+    nbits: int, *, parallel: bool = False, tile_nbits: TileNBits2D | None = None
 ):
     """Return a specialized batch decoder: (indices, xs, ys) -> (xs, ys)."""
 
