@@ -231,10 +231,10 @@ def hilbert_decode_2d(
 def get_hilbert_encode_2d_kernel(
     nbits: int,
     *,
-    tile_nbits: TileNBits2D = 7,
+    tile_nbits: TileNBits2D | None = None,
 ) -> Callable[[IntScalar, IntScalar], int]: ...
 def get_hilbert_decode_2d_kernel(
     nbits: int,
     *,
-    tile_nbits: TileNBits2D = 7,
+    tile_nbits: TileNBits2D | None = None,
 ) -> Callable[[IntScalar], tuple[int, int]]: ...
