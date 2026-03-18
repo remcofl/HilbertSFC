@@ -3,6 +3,10 @@
 
 This page provides additional benchmark results for Hilbert curve encoding and decoding for 2D and 3D coordinates across multiple Python and Rust implementations, including **HilbertSFC**. The goal of these benchmarks is to compare raw kernel throughput under controlled and reproducible conditions.
 
+## Changelog
+
+- **2026-03-18 (v0.2):** Updated **hilbertsfc** benchmark results.
+
 ## Test Methodology
 
 ### Experiments
@@ -14,10 +18,8 @@ For each implementation, two experiments are executed:
 
 For each experiment, the following metrics are recorded:
 
-- **Throughput**: Mpts/s (millions of points per second)
-- **Latency**: ns/pt (nanoseconds per point)
-
-If multiple trials are executed, median execution times are reported.
+- **Throughput**: average Mpts/s (millions of points per second)
+- **Latency**: median ns/pt (nanoseconds per point)
 
 ### Benchmark Configuration
 
@@ -59,7 +61,7 @@ Minor differences in runtime plumbing may exist, but measurements are designed t
 
 ### 2D Coordinates
 
-These are the results for the implementations on 2D coordinates across different number of coordinate bits (`nbits`). These results show that HilbertSFC is an impressive 3-4 orders of magnitude faster than existing Python implementations, and ~7-10x faster than the fastest Rust implementation.
+These are the results for the implementations on 2D coordinates across different number of coordinate bits (`nbits`). These results show that HilbertSFC is an impressive 3-4 orders of magnitude faster than existing Python implementations, and ~8-11x faster than the fastest Rust implementation.
 
 HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and around **500 million** `uint32` points per second, on a single thread. This equates to roughly 8 GB/s of combined read/write bandwidth for 2D encode.
 
@@ -70,7 +72,7 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc** | **Python (+ Numba)** | **0.50** | **0.65** | **2004.892** | **1537.232** |
+| 🔥**hilbertsfc** | **Python (+ Numba)** | **0.49** | **0.65** | **2028.64** | **1549.33** |
 | fast_hilbert | Rust | 4.46 | 4.43 | 224.36 | 225.52 |
 | hilbert_2d | Rust | 29.94 | 25.17 | 33.40 | 39.74 |
 | hilbert-bytes | Python (+ Numba) | 601.24 | 498.04 | 1.663 | 2.008 |
@@ -84,7 +86,7 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc** | **Python (+ Numba)** | **0.86** | **1.04** | **1156.203** | **958.231** |
+| 🔥**hilbertsfc** | **Python (+ Numba)** | **0.78** | **1.00** | **1280.51** | **1002.74** |
 | fast_hilbert | Rust | 7.65 | 7.27 | 130.79 | 137.64 |
 | hilbert_2d | Rust | 60.93 | 54.20 | 16.41 | 18.45 |
 | hilbert-bytes | Python (+ Numba) | 1303.20 | 1091.04 | 0.767 | 0.917 |
@@ -98,7 +100,7 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc (Python)** | **Python (+ Numba)** | **1.84** | **1.88** | **543.60** | **532.77** |
+| 🔥**hilbertsfc (Python)** | **Python (+ Numba)** | **1.38** | **1.59** | **726.68** | **629.52** |
 | fast_hilbert | Rust | 12.24 | 12.03 | 81.67 | 83.11 |
 | hilbert_2d | Rust | 121.23 | 101.34 | 8.25 | 9.87 |
 | hilbert-bytes | Python (+ Numba) | 2997.51 | 2642.86 | 0.334 | 0.378 |
@@ -147,12 +149,13 @@ Due to the hybrid architecture of the Intel CPU (Lion Cove + Skymont cores) used
 
 | Threads | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 2.88 | 2.11 | 346.77 | 472.97 |
-| 2 | 1.44 | 1.06 | 692.06 | 938.98 |
-| 4 | 0.73 | 0.66 | 1368.46 | 1506.19 |
-| 6 | 0.75 | 0.75 | 1338.60 | 1332.84 |
+| 1 | 2.13 | 1.75 | 470.41 | 571.36 |
+| (-50%) 2 | 1.06 | 0.87 | 940.07 | 1153.01 |
+| (-66%) 3 | 0.72 | 0.66 | 1389.22 | 1513.24 |
+| (-71%) 4 | 0.62 | 0.62 | 1614.83 | 1615.04 |
+| (-71%) 5 | 0.61 | 0.61 | 1629.04 | 1627.76 |
 
-At 6 threads, encode throughput reaches ~**1.3 Gpts/s**. For 2D encode with `uint32` coordinates and `uint64` indices, the memory traffic per point is:
+At 4 threads, encode throughput reaches ~**1.6 Gpts/s**. For 2D encode with `uint32` coordinates and `uint64` indices, the memory traffic per point is:
 
 - Read: 2 × `uint32` = 8 bytes
 - Write: 1 × `uint64` = 8 bytes
@@ -160,6 +163,6 @@ At 6 threads, encode throughput reaches ~**1.3 Gpts/s**. For 2D encode with `uin
 
 This implies an effective combined memory bandwidth of:
 
-$1.3 \times 10^9 \:\mathrm{pts/s} \times 16 \: \mathrm{bytes/pts} ≈ 20.8 \:\mathrm{GB/s}$
+$1.6 \times 10^9 \:\mathrm{pts/s} \times 16 \: \mathrm{bytes/pts} \approx 25.6 \:\mathrm{GB/s}$
 
-This is around 75% of sustained STREAM copy bandwidth (not `memcpy`) for this system, indicating the kernel is fundamentally memory-bandwidth bound at higher thread counts. 3D encoding/decoding may benefit from higher thread counts before saturating bandwidth, due to its higher compute intensity.
+This is around 80% of sustained STREAM copy bandwidth (not `memcpy`) for this system, indicating the kernel is fundamentally memory-bandwidth bound at higher thread counts. 3D encoding/decoding may benefit from higher thread counts before saturating bandwidth, due to its higher compute intensity.

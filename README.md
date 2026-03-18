@@ -49,14 +49,14 @@ It provides both convenient Python APIs and *kernel accessors* designed to be em
 
 ## Performance
 
-**HilbertSFC** is orders of magnitude faster than existing Python implementations. It also outperforms the **Fast Hilbert** implementation in Rust by a factor of ~6x. In fact, **HilbertSFC** takes only ~8 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
+HilbertSFC is orders of magnitude faster than existing Python implementations. It also outperforms the *Fast Hilbert* implementation in Rust by a factor of ~8x. In fact, HilbertSFC takes only ~6 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
 
 #### 2D Points - Random, `nbits=32`, `n=5,000,000`
 
 | Implementation | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc (multi-threaded)** | 0.53 | 0.57 | 1883.52 | 1742.08 |
-| 🔥**hilbertsfc (Python)** | 1.84 | 1.88 | 543.60 | 532.77 |
+| 🔥**hilbertsfc (multi-threaded)** | 0.41 | 0.48 | 2410.39 | 2084.98 |
+| 🔥**hilbertsfc (Python)** | 1.38 | 1.59 | 726.68 | 629.52 |
 | [fast_hilbert (Rust)](https://crates.io/crates/fast_hilbert) | 12.24 | 12.03 | 81.67 | 83.11 |
 | [hilbert_2d (Rust)](https://crates.io/crates/hilbert_2d) | 121.23 | 101.34 | 8.25 | 9.87 |
 | [hilbert-bytes (Python)](https://pypi.org/project/hilbert-bytes/) | 2997.51 | 2642.86 | 0.334 | 0.378 |
