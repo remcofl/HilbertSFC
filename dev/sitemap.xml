@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://remcofl.github.io/HilbertSFC/dev/</loc>
+         <lastmod>2026-03-18</lastmod>
+    </url>
+    <url>
+         <loc>https://remcofl.github.io/HilbertSFC/dev/quickstart/</loc>
+         <lastmod>2026-03-18</lastmod>
+    </url>
+    <url>
+         <loc>https://remcofl.github.io/HilbertSFC/dev/api/2d/</loc>
+         <lastmod>2026-03-18</lastmod>
+    </url>
+    <url>
+         <loc>https://remcofl.github.io/HilbertSFC/dev/api/3d/</loc>
+         <lastmod>2026-03-18</lastmod>
+    </url>
+    <url>
+         <loc>https://remcofl.github.io/HilbertSFC/dev/api/package/</loc>
+         <lastmod>2026-03-18</lastmod>
+    </url>
+    <url>
+         <loc>https://remcofl.github.io/HilbertSFC/dev/api/types/</loc>
+         <lastmod>2026-03-18</lastmod>
+    </url>
+</urlset>
