@@ -3,30 +3,24 @@ name: Docs
 on:
   push:
     branches: [main]
-    paths:
-      - "docs/**"
-      - "mkdocs.yml"
-      - "README.md"
-      - "src/hilbertsfc/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/docs.yml"
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: docs
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -39,21 +33,23 @@ jobs:
           version: "latest"
           enable-cache: true
 
-      - name: Build docs
-        run: uv run --no-dev --group docs mkdocs build
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
+      - name: Fetch gh-pages (if it exists)
+        run: |
+          git fetch origin gh-pages --depth=1 || true
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy versioned docs with mike
+        env:
+          NO_MKDOCS_2_WARNING: "1"
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            uv run --no-dev --group docs mike deploy --push --update-aliases --alias-type=copy "${VERSION}" latest
+            uv run --no-dev --group docs mike set-default --push latest
+          else
+            uv run --no-dev --group docs mike deploy --push --alias-type=copy main
+          fi
