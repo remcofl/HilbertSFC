@@ -7,11 +7,14 @@ site_url: https://remcofl.github.io/HilbertSFC/
 extra:
   version:
     provider: mike
+    default: latest
+    alias: true
 
 docs_dir: docs
 
 theme:
   name: material
+  custom_dir: docs/overrides
   logo: img/logo.png
   favicon: img/favicon.png
   features:
