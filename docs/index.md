@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD033 MD041 -->
 ---
 <h1 align="center">
-🧩HilbertSFC
+HilbertSFC
 </h1>
 
 <p align="center">

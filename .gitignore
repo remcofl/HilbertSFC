@@ -19,3 +19,6 @@ site/
 
 # VS Code settings
 .vscode/launch.json
+
+# Git worktrees
+.worktrees/

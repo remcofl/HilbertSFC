@@ -1,9 +1,8 @@
 # Quick start
 
-If you're here, you probably have a pile of 2D/3D coordinates and you want a 1D ordering that preserves locality.
-That's exactly what the Hilbert space-filling curve is good at: points that are close to each other in Euclidean space tend to stay close after mapping them to a 1D Hilbert index.
+If you have 2D or 3D coordinates and need a 1D ordering that preserves spatial locality, the Hilbert space-filling curve is a good fit: points that are close in Euclidean space tend to remain close after mapping to a Hilbert index.
 
-HilbertSFC gives you that mapping with a performance-first implementation (NumPy + Numba) with straightforward APIs for both scalar and array operations. It's designed to be fast and easy to use for a wide range of applications, from spatial indexing to data compression and more.
+HilbertSFC provides a fast, NumPy + Numba–accelerated implementation with simple APIs for both scalar and batch inputs, making it useful for tasks like spatial indexing, clustering, and compression.
 
 ## Install
 
