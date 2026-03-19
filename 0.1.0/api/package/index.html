@@ -845,7 +845,7 @@ lookup tables as lazily-loaded package resources.</p>
 
 
 <a href="#hilbertsfc.get_hilbert_decode_2d_kernel" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_decode_2d_kernel</span><span class="p">(</span><span class="n">nbits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tile_nbits</span><span class="p">:</span> <span class="n">TileNBits2D</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IntScalar</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_decode_2d_kernel</span><span class="p">(</span><span class="n">nbits</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IntScalar</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -880,34 +880,6 @@ It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
             </td>
             <td>
                 <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tile_nbits</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="TileNBits2D (hilbertsfc._typing.TileNBits2D)" href="../types/#hilbertsfc._typing.TileNBits2D">TileNBits2D</a> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Select the tile size (in bits) / kernel variant.</p>
-<ul>
-<li>
-<p><code>None</code> (default): auto-select (<code>4</code> for <code>nbits &lt;= 4</code> or <code>nbits == 8</code>, else <code>7</code>).</p>
-</li>
-<li>
-<p><code>7</code>: uses 7-bit compacted LUTs (~65 KiB).</p>
-</li>
-<li><code>4</code>: uses 4-bit compacted LUTs (~1 KiB).</li>
-</ul>
-<p>The 7-bit variant uses a larger LUT and is generally faster.
-The 4-bit variant uses a smaller LUT, which may be preferable in
-cache-sensitive environments.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -1042,7 +1014,7 @@ and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
 
 
 <a href="#hilbertsfc.get_hilbert_encode_2d_kernel" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_encode_2d_kernel</span><span class="p">(</span><span class="n">nbits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tile_nbits</span><span class="p">:</span> <span class="n">TileNBits2D</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IntScalar</span><span class="p">,</span> <span class="n">IntScalar</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_encode_2d_kernel</span><span class="p">(</span><span class="n">nbits</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IntScalar</span><span class="p">,</span> <span class="n">IntScalar</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1077,34 +1049,6 @@ It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
             </td>
             <td>
                 <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>tile_nbits</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="TileNBits2D (hilbertsfc._typing.TileNBits2D)" href="../types/#hilbertsfc._typing.TileNBits2D">TileNBits2D</a> | None</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Select the tile size (in bits) / kernel variant.</p>
-<ul>
-<li>
-<p><code>None</code> (default): auto-select (<code>4</code> for <code>nbits &lt;= 4</code> or <code>nbits == 8</code>, else <code>7</code>).</p>
-</li>
-<li>
-<p><code>7</code>: uses 7-bit compacted LUTs (~65 KiB).</p>
-</li>
-<li><code>4</code>: uses 4-bit compacted LUTs (~1 KiB).</li>
-</ul>
-<p>The 7-bit variant uses a larger LUT and is generally faster.
-The 4-bit variant uses a smaller LUT, which may be preferable in
-cache-sensitive environments.</p>
-              </div>
-            </td>
-            <td>
-                  <code>None</code>
             </td>
           </tr>
       </tbody>
