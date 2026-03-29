@@ -138,19 +138,12 @@ def hilbert_encode_3d(
                 UserWarning,
                 stacklevel=2,
             )
-        # For Python scalars, default to maximum
-        if nbits is None:
-            nbits = MAX_NBITS_3D
-        x, y, z = int(x), int(y), int(z)
-        max_v = np.iinfo(np.uint32).max
-        if x < 0 or y < 0 or z < 0 or x > max_v or y > max_v or z > max_v:
-            raise ValueError(
-                "Scalar inputs must be non-negative and fit in uint32; "
-                f"got x={x}, y={y}, z={z}"
-            )
-        builder = get_encode_3d_scalar_builder()
-        impl = builder(nbits)
-        return impl(np.uint32(x), np.uint32(y), np.uint32(z))
+        return _hilbert_encode_3d_scalar(
+            cast(IntScalar, x),
+            cast(IntScalar, y),
+            cast(IntScalar, z),
+            nbits,
+        )
 
     return _hilbert_encode_3d_batch(
         cast(IntArray, x),
@@ -251,19 +244,7 @@ def hilbert_decode_3d(
                 UserWarning,
                 stacklevel=2,
             )
-        # For Python scalars, default to maximum
-        if nbits is None:
-            nbits = MAX_NBITS_3D
-        index = int(index)
-        max_v = np.iinfo(np.uint64).max
-        if index < 0 or index > max_v:
-            raise ValueError(
-                "Scalar index must be non-negative and fit in uint64; "
-                f"got index={index}"
-            )
-        builder = get_decode_3d_scalar_builder()
-        impl = builder(nbits)
-        return impl(np.uint64(index))
+        return _hilbert_decode_3d_scalar(cast(IntScalar, index), nbits)
 
     return _hilbert_decode_3d_batch(
         cast(IntArray, index),
@@ -273,6 +254,53 @@ def hilbert_decode_3d(
         out_zs=out_zs,
         parallel=parallel,
     )
+
+
+def _hilbert_encode_3d_scalar(
+    x: IntScalar,
+    y: IntScalar,
+    z: IntScalar,
+    nbits: int | None,
+) -> int:
+    """Internal scalar 3D Hilbert encode."""
+
+    if nbits is None:
+        # For Python scalars, default to maximum
+        nbits = MAX_NBITS_3D
+
+    x_i, y_i, z_i = int(x), int(y), int(z)
+    max_v = np.iinfo(np.uint32).max
+    if x_i < 0 or y_i < 0 or z_i < 0 or x_i > max_v or y_i > max_v or z_i > max_v:
+        raise ValueError(
+            "Scalar inputs must be non-negative and fit in uint32; "
+            f"got x={x_i}, y={y_i}, z={z_i}"
+        )
+
+    builder = get_encode_3d_scalar_builder()
+    impl = builder(nbits)
+    return impl(np.uint32(x_i), np.uint32(y_i), np.uint32(z_i))
+
+
+def _hilbert_decode_3d_scalar(
+    index: IntScalar,
+    nbits: int | None,
+) -> tuple[int, int, int]:
+    """Internal scalar 3D Hilbert decode."""
+
+    if nbits is None:
+        # For Python scalars, default to maximum
+        nbits = MAX_NBITS_3D
+
+    index_i = int(index)
+    max_v = np.iinfo(np.uint64).max
+    if index_i < 0 or index_i > max_v:
+        raise ValueError(
+            f"Scalar index must be non-negative and fit in uint64; got index={index_i}"
+        )
+
+    builder = get_decode_3d_scalar_builder()
+    impl = builder(nbits)
+    return impl(np.uint64(index_i))
 
 
 def _hilbert_encode_3d_batch(
