@@ -321,11 +321,9 @@ def _hilbert_encode_2d_batch(
                 f"max nbits is {max_coord_nbits}."
             )
 
-    xs_u = unsigned_view(xs)
-    ys_u = unsigned_view(ys)
-
     if out is None:
-        out = np.empty(xs.shape, dtype=choose_uint_index_dtype(nbits=nbits, dims=2))
+        index_dtype = choose_uint_index_dtype(nbits=nbits, dims=2)
+        out_u = out = np.empty(xs.shape, dtype=index_dtype, order="C")
     else:
         if out.shape != xs.shape:
             raise ValueError(
@@ -339,16 +337,19 @@ def _hilbert_encode_2d_batch(
                 f"which supports up to nbits={max_index_nbits}; "
                 f"consider using {viable_dtype} or a wider dtype, or reduce nbits to fit the out dtype."
             )
+        out_u = unsigned_view(out)
 
-    out_u = unsigned_view(out)
+    xs_u = unsigned_view(xs)
+    ys_u = unsigned_view(ys)
 
-    xs_1d = _flatten_nocopy(xs_u, "xs")
-    ys_1d = _flatten_nocopy(ys_u, "ys")
-    out_1d = _flatten_nocopy(out_u, "out")
+    xs_1d = _flatten_nocopy(xs_u, "xs", order="C", strict=False)
+    ys_1d = _flatten_nocopy(ys_u, "ys", order="C", strict=False)
+    out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
     builder = get_encode_2d_batch_builder()
     impl = builder(nbits, parallel=parallel)
     impl(xs_1d, ys_1d, out_1d)
+
     return out
 
 
@@ -374,15 +375,13 @@ def _hilbert_decode_2d_batch(
                 f"max nbits is {max_index_nbits}."
             )
 
-    indices_u = unsigned_view(indices)
-
     if (out_xs is None) != (out_ys is None):
         raise ValueError("out_xs and out_ys must be provided together")
 
     if out_xs is None or out_ys is None:
         coord_dtype = choose_uint_coord_dtype(nbits=nbits)
-        out_xs = np.empty(indices.shape, dtype=coord_dtype)
-        out_ys = np.empty(indices.shape, dtype=coord_dtype)
+        out_xs_u = out_xs = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_ys_u = out_ys = np.empty(indices.shape, dtype=coord_dtype, order="C")
     else:
         if out_xs.shape != indices.shape or out_ys.shape != indices.shape:
             raise ValueError(
@@ -400,16 +399,19 @@ def _hilbert_decode_2d_batch(
                 f"max nbits is {max_coord_nbits}"
             )
 
-    out_xs_u = unsigned_view(out_xs)
-    out_ys_u = unsigned_view(out_ys)
+        out_xs_u = unsigned_view(out_xs)
+        out_ys_u = unsigned_view(out_ys)
 
-    indices_1d = _flatten_nocopy(indices_u, "indices")
-    out_xs_1d = _flatten_nocopy(out_xs_u, "out_xs")
-    out_ys_1d = _flatten_nocopy(out_ys_u, "out_ys")
+    indices_u = unsigned_view(indices)
+
+    indices_1d = _flatten_nocopy(indices_u, "indices", order="C", strict=False)
+    out_xs_1d = _flatten_nocopy(out_xs_u, "out_xs", order="C", strict=False)
+    out_ys_1d = _flatten_nocopy(out_ys_u, "out_ys", order="C", strict=False)
 
     builder = get_decode_2d_batch_builder()
     impl = builder(nbits, parallel=parallel)
     impl(indices_1d, out_xs_1d, out_ys_1d)
+    assert out_xs is not None and out_ys is not None
     return out_xs, out_ys
 
 

@@ -104,6 +104,6 @@ clear_all_caches()
 
 - Extra bits in the input outside the range `[0, 2**nbits)` are ignored, so you can pass wider integer dtypes if that's convenient
 - Hilbert indices obtained with a certain `nbits` are compatible with those from another `nbits`, given that the coordinates are within the valid range. This is because the kernels resolve the starting state parity to ensure compatibility.
-- The batched API accepts arbitrary shapes and preserves the input shape. The requirement is that inputs/outputs support a *zero-copy* 1D view. Most strided views are supported but they can reduce performance since the kernels are close to memory-bandwidth bound.
+- The batched API accepts arbitrary shapes and preserves the input shape with *zero-copy* access. All strided views are supported but they can reduce performance since the kernels are close to memory-bandwidth bound. Arrays are traversed in C-order (last axis fastest), so C-contiguous arrays are the fastest path.
 - You can pass `out=...` buffers for batch encode, and `out_xs/out_ys/out_zs` for batch decode. This can for example be useful to write into memory-mapped arrays or to reuse buffers across multiple calls.
 - `parallel=True` dispatches the parallel version of the kernel (when available). The number of threads can be controlled with the environment variable `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.

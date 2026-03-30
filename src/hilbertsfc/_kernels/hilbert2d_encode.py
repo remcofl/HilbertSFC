@@ -108,8 +108,8 @@ def build_hilbert_encode_2d_batch_impl(
 
     @nb.njit(parallel=parallel, cache=True)
     def encode_2d_batch(xs: UIntArray, ys: UIntArray, out: UIntArray) -> None:
-        n = xs.shape[0]
+        n = xs.size
         for i in nb.prange(n):  # type: ignore[not-iterable]
-            out[i] = encode_scalar(xs[i], ys[i])
+            out.flat[i] = encode_scalar(xs.flat[i], ys.flat[i])
 
     return encode_2d_batch

@@ -345,12 +345,9 @@ def _hilbert_encode_3d_batch(
                 f"max nbits is {max_coord_nbits}."
             )
 
-    xs_u = unsigned_view(xs)
-    ys_u = unsigned_view(ys)
-    zs_u = unsigned_view(zs)
-
     if out is None:
-        out = np.empty(xs.shape, dtype=choose_uint_index_dtype(nbits=nbits, dims=3))
+        index_dtype = choose_uint_index_dtype(nbits=nbits, dims=3)
+        out_u = out = np.empty(xs.shape, dtype=index_dtype, order="C")
     else:
         if out.shape != xs.shape:
             raise ValueError(
@@ -364,13 +361,16 @@ def _hilbert_encode_3d_batch(
                 f"which supports up to nbits={max_index_nbits}; "
                 f"consider using {viable_dtype} out dtype, or reduce nbits to fit the out dtype."
             )
+        out_u = unsigned_view(out)
 
-    out_u = unsigned_view(out)
+    xs_u = unsigned_view(xs)
+    ys_u = unsigned_view(ys)
+    zs_u = unsigned_view(zs)
 
-    xs_1d = _flatten_nocopy(xs_u, "xs")
-    ys_1d = _flatten_nocopy(ys_u, "ys")
-    zs_1d = _flatten_nocopy(zs_u, "zs")
-    out_1d = _flatten_nocopy(out_u, "out")
+    xs_1d = _flatten_nocopy(xs_u, "xs", order="C", strict=False)
+    ys_1d = _flatten_nocopy(ys_u, "ys", order="C", strict=False)
+    zs_1d = _flatten_nocopy(zs_u, "zs", order="C", strict=False)
+    out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
     builder = get_encode_3d_batch_builder()
     impl = builder(
@@ -405,17 +405,15 @@ def _hilbert_decode_3d_batch(
                 f"max nbits is {max_index_nbits}."
             )
 
-    indices_u = unsigned_view(indices)
-
     provided = (out_xs is not None) + (out_ys is not None) + (out_zs is not None)
     if provided not in (0, 3):
         raise ValueError("out_xs, out_ys, out_zs must be provided together")
 
     if out_xs is None or out_ys is None or out_zs is None:
         coord_dtype = choose_uint_coord_dtype(nbits=nbits)
-        out_xs = np.empty(indices.shape, dtype=coord_dtype)
-        out_ys = np.empty(indices.shape, dtype=coord_dtype)
-        out_zs = np.empty(indices.shape, dtype=coord_dtype)
+        out_xs_u = out_xs = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_ys_u = out_ys = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_zs_u = out_zs = np.empty(indices.shape, dtype=coord_dtype, order="C")
     else:
         if (
             out_xs.shape != indices.shape
@@ -440,14 +438,16 @@ def _hilbert_decode_3d_batch(
                 f"max nbits is {max_coord_nbits}"
             )
 
-    out_xs_u = unsigned_view(out_xs)
-    out_ys_u = unsigned_view(out_ys)
-    out_zs_u = unsigned_view(out_zs)
+        out_xs_u = unsigned_view(out_xs)
+        out_ys_u = unsigned_view(out_ys)
+        out_zs_u = unsigned_view(out_zs)
 
-    indices_1d = _flatten_nocopy(indices_u, "indices")
-    out_xs_1d = _flatten_nocopy(out_xs_u, "out_xs")
-    out_ys_1d = _flatten_nocopy(out_ys_u, "out_ys")
-    out_zs_1d = _flatten_nocopy(out_zs_u, "out_zs")
+    indices_u = unsigned_view(indices)
+
+    indices_1d = _flatten_nocopy(indices_u, "indices", order="C", strict=False)
+    out_xs_1d = _flatten_nocopy(out_xs_u, "out_xs", order="C", strict=False)
+    out_ys_1d = _flatten_nocopy(out_ys_u, "out_ys", order="C", strict=False)
+    out_zs_1d = _flatten_nocopy(out_zs_u, "out_zs", order="C", strict=False)
 
     builder = get_decode_3d_batch_builder()
     impl = builder(

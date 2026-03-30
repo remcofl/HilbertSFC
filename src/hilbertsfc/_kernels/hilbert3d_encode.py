@@ -69,8 +69,8 @@ def build_hilbert_encode_3d_batch_impl(
     def encode_3d_batch(
         xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
     ) -> None:
-        n = xs.shape[0]
+        n = xs.size
         for i in nb.prange(n):  # type: ignore[not-iterable]
-            out[i] = encode_scalar(xs[i], ys[i], zs[i])
+            out.flat[i] = encode_scalar(xs.flat[i], ys.flat[i], zs.flat[i])
 
     return encode_3d_batch

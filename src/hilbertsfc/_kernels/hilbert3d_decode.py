@@ -67,8 +67,8 @@ def build_hilbert_decode_3d_batch_impl(
     def decode_3d_batch(
         indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
     ) -> None:
-        n = indices.shape[0]
+        n = indices.size
         for i in nb.prange(n):  # type: ignore[not-iterable]
-            xs[i], ys[i], zs[i] = decode_scalar(indices[i])
+            xs.flat[i], ys.flat[i], zs.flat[i] = decode_scalar(indices.flat[i])
 
     return decode_3d_batch

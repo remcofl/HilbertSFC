@@ -110,8 +110,8 @@ def build_hilbert_decode_2d_batch_impl(
 
     @nb.njit(parallel=parallel, cache=True)
     def decode_2d_batch(indices: UIntArray, xs: UIntArray, ys: UIntArray) -> None:
-        n = indices.shape[0]
+        n = indices.size
         for i in nb.prange(n):  # type: ignore[not-iterable]
-            xs[i], ys[i] = decode_scalar(indices[i])
+            xs.flat[i], ys.flat[i] = decode_scalar(indices.flat[i])
 
     return decode_2d_batch
