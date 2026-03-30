@@ -19,6 +19,9 @@ Run with defaults (recommended):
 
 Optionally choose a different output directory:
     uv run scripts/gen_hilbertsfc_luts.py --out path/to/dir
+
+For a specifc set of 2D tile sizes (in bits) between 1 and 7:
+    uv run scripts/gen_hilbertsfc_luts.py --2d-nbits 4 7
 """
 
 from pathlib import Path
