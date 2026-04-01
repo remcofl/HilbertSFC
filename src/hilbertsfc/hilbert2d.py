@@ -150,8 +150,8 @@ def hilbert_decode_2d(
     index: IntScalar | IntArray,
     *,
     nbits: int | None = None,
-    out_xs: IntArray | None = None,
-    out_ys: IntArray | None = None,
+    out_x: IntArray | None = None,
+    out_y: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[int, int] | tuple[IntArray, IntArray]:
     """Decode a Hilbert index to 2D coordinates.
@@ -161,7 +161,7 @@ def hilbert_decode_2d(
     - **Scalar mode**: if ``index`` is a scalar integer, returns ``(x, y)`` as
       Python ``int``.
     - **Array mode**: if ``index`` is a NumPy integer array, returns ``(xs, ys)``
-      as NumPy arrays and supports ``out_xs=``/``out_ys=``.
+      as NumPy arrays and supports ``out_x=``/``out_y=``.
 
     Parameters
     ----------
@@ -187,7 +187,7 @@ def hilbert_decode_2d(
             bits of the index dtype. For example, ``uint16`` → 8 bits, ``uint64`` → 32 bits,
             ``int64`` → 31 bits (sign bit excluded).
         - For Python scalars: defaults to 32.
-    out_xs, out_ys
+    out_x, out_y
         Optional output buffers for array mode. Either provide both or neither.
         Must have the same shape as ``index`` and an integer dtype wide enough to
         hold values in ``[0, 2**nbits)`` (unsigned).
@@ -226,8 +226,8 @@ def hilbert_decode_2d(
 
     index_is_scalar = is_int_scalar_or_0d_array(index)
     if index_is_scalar:
-        if out_xs is not None or out_ys is not None:
-            raise TypeError("out_xs/out_ys are only valid for array mode")
+        if out_x is not None or out_y is not None:
+            raise TypeError("out_x/out_y are only valid for array mode")
         if parallel:
             warnings.warn(
                 "parallel=True has no effect in scalar mode",
@@ -239,8 +239,8 @@ def hilbert_decode_2d(
     return _hilbert_decode_2d_batch(
         cast(IntArray, index),
         nbits,
-        out_xs=out_xs,
-        out_ys=out_ys,
+        out_x=out_x,
+        out_y=out_y,
         parallel=parallel,
     )
 
@@ -285,20 +285,20 @@ def _hilbert_decode_2d_scalar(index: IntScalar, nbits: int | None) -> tuple[int,
 
 
 def _hilbert_encode_2d_batch(
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     nbits: int | None,
     *,
     out: IntArray | None = None,
     parallel: bool = False,
 ) -> IntArray:
     """Internal batch 2D Hilbert encode."""
-    if xs.shape != ys.shape:
-        raise ValueError("xs and ys must have the same shape")
+    if x.shape != y.shape:
+        raise ValueError(
+            f"x and y must have the same shape; got x.shape={x.shape}, y.shape={y.shape}"
+        )
 
-    max_coord_nbits = max(
-        dtype_effective_bits(xs.dtype), dtype_effective_bits(ys.dtype)
-    )
+    max_coord_nbits = max(dtype_effective_bits(x.dtype), dtype_effective_bits(y.dtype))
     if nbits is None:
         nbits = max_coord_nbits
         if nbits > MAX_NBITS_2D:
@@ -316,18 +316,18 @@ def _hilbert_encode_2d_batch(
         if nbits > max_coord_nbits:
             raise ValueError(
                 f"nbits={nbits} does not fit in coordinate dtypes; "
-                f"got xs.dtype={xs.dtype} with {dtype_effective_bits(xs.dtype)} effective bits, "
-                f"ys.dtype={ys.dtype} with {dtype_effective_bits(ys.dtype)} effective bits; "
+                f"got x.dtype={x.dtype} with {dtype_effective_bits(x.dtype)} effective bits, "
+                f"y.dtype={y.dtype} with {dtype_effective_bits(y.dtype)} effective bits; "
                 f"max nbits is {max_coord_nbits}."
             )
 
     if out is None:
-        index_dtype = choose_uint_index_dtype(nbits=nbits, dims=2)
-        out_u = out = np.empty(xs.shape, dtype=index_dtype, order="C")
+        out_dtype = choose_uint_index_dtype(nbits=nbits, dims=2)
+        out_u = out = np.empty(x.shape, dtype=out_dtype, order="C")
     else:
-        if out.shape != xs.shape:
+        if out.shape != x.shape:
             raise ValueError(
-                f"out must have the same shape as xs/ys; got out.shape={out.shape}, xs.shape={xs.shape}"
+                f"out must have the same shape as x/y; got out.shape={out.shape}, x.shape={x.shape}"
             )
         max_index_nbits = max_nbits_for_index_dtype(out.dtype, dims=2)
         if nbits > max_index_nbits:
@@ -339,31 +339,31 @@ def _hilbert_encode_2d_batch(
             )
         out_u = unsigned_view(out)
 
-    xs_u = unsigned_view(xs)
-    ys_u = unsigned_view(ys)
+    x_u = unsigned_view(x)
+    y_u = unsigned_view(y)
 
-    xs_1d = _flatten_nocopy(xs_u, "xs", order="C", strict=False)
-    ys_1d = _flatten_nocopy(ys_u, "ys", order="C", strict=False)
+    x_1d = _flatten_nocopy(x_u, "x", order="C", strict=False)
+    y_1d = _flatten_nocopy(y_u, "y", order="C", strict=False)
     out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
     builder = get_encode_2d_batch_builder()
     impl = builder(nbits, parallel=parallel)
-    impl(xs_1d, ys_1d, out_1d)
+    impl(x_1d, y_1d, out_1d)
 
     return out
 
 
 def _hilbert_decode_2d_batch(
-    indices: IntArray,
+    index: IntArray,
     nbits: int | None,
     *,
-    out_xs: IntArray | None = None,
-    out_ys: IntArray | None = None,
+    out_x: IntArray | None = None,
+    out_y: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[IntArray, IntArray]:
     """Internal batch 2D Hilbert decode."""
 
-    max_index_nbits = max_nbits_for_index_dtype(indices.dtype, dims=2)
+    max_index_nbits = max_nbits_for_index_dtype(index.dtype, dims=2)
     if nbits is None:
         nbits = max_index_nbits
     else:
@@ -371,48 +371,48 @@ def _hilbert_decode_2d_batch(
         if nbits > max_index_nbits:
             raise ValueError(
                 f"nbits={nbits} exceeds the effective bits of the index dtype; "
-                f"got indices.dtype={indices.dtype} which supports up to {max_index_nbits} bits for 2D coordinates. "
+                f"got indices.dtype={index.dtype} which supports up to {max_index_nbits} bits for 2D coordinates. "
                 f"max nbits is {max_index_nbits}."
             )
 
-    if (out_xs is None) != (out_ys is None):
-        raise ValueError("out_xs and out_ys must be provided together")
+    if (out_x is None) != (out_y is None):
+        raise ValueError("out_x and out_y must be provided together")
 
-    if out_xs is None or out_ys is None:
+    if out_x is None or out_y is None:
         coord_dtype = choose_uint_coord_dtype(nbits=nbits)
-        out_xs_u = out_xs = np.empty(indices.shape, dtype=coord_dtype, order="C")
-        out_ys_u = out_ys = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_x_u = out_x = np.empty(index.shape, dtype=coord_dtype, order="C")
+        out_y_u = out_y = np.empty(index.shape, dtype=coord_dtype, order="C")
     else:
-        if out_xs.shape != indices.shape or out_ys.shape != indices.shape:
+        if out_x.shape != index.shape or out_y.shape != index.shape:
             raise ValueError(
-                "out_xs and out_ys must have the same shape as indices; "
-                f"got indices.shape={indices.shape}, out_xs.shape={out_xs.shape}, out_ys.shape={out_ys.shape}"
+                "out_x and out_y must have the same shape as index; "
+                f"got index.shape={index.shape}, out_x.shape={out_x.shape}, out_y.shape={out_y.shape}"
             )
         max_coord_nbits = min(
-            dtype_effective_bits(out_xs.dtype), dtype_effective_bits(out_ys.dtype)
+            dtype_effective_bits(out_x.dtype), dtype_effective_bits(out_y.dtype)
         )
         if nbits > max_coord_nbits:
             raise ValueError(
-                f"nbits={nbits} does not fit in out_xs/out_ys dtypes; "
-                f"got out_xs.dtype={out_xs.dtype} with {dtype_effective_bits(out_xs.dtype)} effective bits, "
-                f"out_ys.dtype={out_ys.dtype} with {dtype_effective_bits(out_ys.dtype)} effective bits; "
+                f"nbits={nbits} does not fit in out_x/out_y dtypes; "
+                f"got out_x.dtype={out_x.dtype} with {dtype_effective_bits(out_x.dtype)} effective bits, "
+                f"out_y.dtype={out_y.dtype} with {dtype_effective_bits(out_y.dtype)} effective bits; "
                 f"max nbits is {max_coord_nbits}"
             )
 
-        out_xs_u = unsigned_view(out_xs)
-        out_ys_u = unsigned_view(out_ys)
+        out_x_u = unsigned_view(out_x)
+        out_y_u = unsigned_view(out_y)
 
-    indices_u = unsigned_view(indices)
+    indices_u = unsigned_view(index)
 
     indices_1d = _flatten_nocopy(indices_u, "indices", order="C", strict=False)
-    out_xs_1d = _flatten_nocopy(out_xs_u, "out_xs", order="C", strict=False)
-    out_ys_1d = _flatten_nocopy(out_ys_u, "out_ys", order="C", strict=False)
+    out_x_1d = _flatten_nocopy(out_x_u, "out_x", order="C", strict=False)
+    out_y_1d = _flatten_nocopy(out_y_u, "out_y", order="C", strict=False)
 
     builder = get_decode_2d_batch_builder()
     impl = builder(nbits, parallel=parallel)
-    impl(indices_1d, out_xs_1d, out_ys_1d)
-    assert out_xs is not None and out_ys is not None
-    return out_xs, out_ys
+    impl(indices_1d, out_x_1d, out_y_1d)
+    assert out_x is not None and out_y is not None
+    return out_x, out_y
 
 
 def get_hilbert_encode_2d_kernel(

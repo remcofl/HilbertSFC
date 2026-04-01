@@ -39,8 +39,8 @@ def hilbert_decode_2d(
 # --- Array version with out:
 @overload
 def hilbert_encode_2d[OutDType: np.integer](
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     *,
     nbits: int | None = None,
     out: NDArray[OutDType],
@@ -64,8 +64,8 @@ type _NBits2DIndexU64 = Literal[
 # --- Array version with nbits but no out:
 @overload
 def hilbert_encode_2d(
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     *,
     nbits: _NBits2DIndexU8,
     out: None = None,
@@ -73,8 +73,8 @@ def hilbert_encode_2d(
 ) -> UInt8Array: ...
 @overload
 def hilbert_encode_2d(
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     *,
     nbits: _NBits2DIndexU16,
     out: None = None,
@@ -82,8 +82,8 @@ def hilbert_encode_2d(
 ) -> UInt16Array: ...
 @overload
 def hilbert_encode_2d(
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     *,
     nbits: _NBits2DIndexU32,
     out: None = None,
@@ -91,8 +91,8 @@ def hilbert_encode_2d(
 ) -> UInt32Array: ...
 @overload
 def hilbert_encode_2d(
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     *,
     nbits: _NBits2DIndexU64,
     out: None = None,
@@ -102,8 +102,8 @@ def hilbert_encode_2d(
 # --- Array version with no nbits and no out:
 @overload
 def hilbert_encode_2d(
-    xs: UInt8Array | Int8Array,
-    ys: UInt8Array | Int8Array,
+    x: UInt8Array | Int8Array,
+    y: UInt8Array | Int8Array,
     *,
     nbits: None = None,
     out: None = None,
@@ -111,8 +111,8 @@ def hilbert_encode_2d(
 ) -> UInt16Array: ...
 @overload
 def hilbert_encode_2d(
-    xs: UInt16Array | Int16Array,
-    ys: UInt16Array | Int16Array,
+    x: UInt16Array | Int16Array,
+    y: UInt16Array | Int16Array,
     *,
     nbits: None = None,
     out: None = None,
@@ -120,19 +120,19 @@ def hilbert_encode_2d(
 ) -> UInt32Array: ...
 @overload
 def hilbert_encode_2d(
-    xs: UInt32Array | Int32Array | UInt64Array | Int64Array,
-    ys: UInt32Array | Int32Array | UInt64Array | Int64Array,
+    x: UInt32Array | Int32Array | UInt64Array | Int64Array,
+    y: UInt32Array | Int32Array | UInt64Array | Int64Array,
     *,
     nbits: None = None,
     out: None = None,
     parallel: bool = False,
 ) -> UInt64Array: ...
 
-# (Other combinations of xs and ys dtypes, also non-literal nbits):
+# (Other combinations of x and y dtypes, also non-literal nbits):
 @overload
 def hilbert_encode_2d(
-    xs: IntArray,
-    ys: IntArray,
+    x: IntArray,
+    y: IntArray,
     *,
     nbits: int | None = None,
     out: None = None,
@@ -142,11 +142,11 @@ def hilbert_encode_2d(
 # --- Array version with out:
 @overload
 def hilbert_decode_2d[XCoordDType: np.integer, YCoordDType: np.integer](
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: int | None = None,
-    out_xs: NDArray[XCoordDType],
-    out_ys: NDArray[YCoordDType],
+    out_x: NDArray[XCoordDType],
+    out_y: NDArray[YCoordDType],
     parallel: bool = False,
 ) -> tuple[NDArray[XCoordDType], NDArray[YCoordDType]]: ...
 
@@ -161,69 +161,69 @@ type _NBitsCoordU32 = Literal[
 # --- Array version with nbits but no out:
 @overload
 def hilbert_decode_2d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: _NBitsCoordU8,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UInt8Array, UInt8Array]: ...
 @overload
 def hilbert_decode_2d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: _NBitsCoordU16,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UInt16Array, UInt16Array]: ...
 @overload
 def hilbert_decode_2d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: _NBitsCoordU32,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UInt32Array, UInt32Array]: ...
 
 # --- Array version with no nbits and no out:
 @overload
 def hilbert_decode_2d(
-    indices: UInt8Array | Int8Array | UInt16Array | Int16Array,
+    index: UInt8Array | Int8Array | UInt16Array | Int16Array,
     *,
     nbits: None = None,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UInt8Array, UInt8Array]: ...
 @overload
 def hilbert_decode_2d(
-    indices: UInt32Array | Int32Array,
+    index: UInt32Array | Int32Array,
     *,
     nbits: None = None,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UInt16Array, UInt16Array]: ...
 @overload
 def hilbert_decode_2d(
-    indices: UInt64Array | Int64Array,
+    index: UInt64Array | Int64Array,
     *,
     nbits: None = None,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UInt32Array, UInt32Array]: ...
 
 # (Other combinations of indices dtype, also non-literal nbits):
 @overload
 def hilbert_decode_2d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: int | None = None,
-    out_xs: None = None,
-    out_ys: None = None,
+    out_x: None = None,
+    out_y: None = None,
     parallel: bool = False,
 ) -> tuple[UIntArray, UIntArray]: ...
 
