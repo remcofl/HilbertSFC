@@ -37,7 +37,7 @@ from ._dtype import (
     unsigned_view,
 )
 from ._flatten import flatten_nocopy as _flatten_nocopy
-from ._input_checks import is_int_scalar_or_0d_array as _is_int_scalar_or_0d_array
+from ._input_checks import is_int_scalar_or_0d_array
 from ._nbits import MAX_NBITS_3D, validate_nbits_3d
 from ._typing import IntArray, IntScalar, LutUIntDTypeLike
 
@@ -123,9 +123,9 @@ def hilbert_encode_3d(
         If ``nbits`` is invalid, if array inputs have mismatched shapes, or if
         ``out`` has the wrong shape or an insufficient dtype.
     """
-    x_is_scalar = _is_int_scalar_or_0d_array(x)
-    y_is_scalar = _is_int_scalar_or_0d_array(y)
-    z_is_scalar = _is_int_scalar_or_0d_array(z)
+    x_is_scalar = is_int_scalar_or_0d_array(x)
+    y_is_scalar = is_int_scalar_or_0d_array(y)
+    z_is_scalar = is_int_scalar_or_0d_array(z)
     if not (x_is_scalar == y_is_scalar == z_is_scalar):
         raise TypeError("x, y, z must all be scalars or all be arrays")
 
@@ -159,9 +159,9 @@ def hilbert_decode_3d(
     index: IntScalar | IntArray,
     *,
     nbits: int | None = None,
-    out_xs: IntArray | None = None,
-    out_ys: IntArray | None = None,
-    out_zs: IntArray | None = None,
+    out_x: IntArray | None = None,
+    out_y: IntArray | None = None,
+    out_z: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[int, int, int] | tuple[IntArray, IntArray, IntArray]:
     """Decode a Hilbert index to 3D coordinates.
@@ -171,7 +171,7 @@ def hilbert_decode_3d(
     - **Scalar mode**: if ``index`` is a scalar integer, returns ``(x, y, z)`` as
       Python ``int``.
     - **Array mode**: if ``index`` is a NumPy integer array, returns ``(xs, ys, zs)``
-      as NumPy arrays and supports ``out_xs=``/``out_ys=``/``out_zs=``.
+      as NumPy arrays and supports ``out_x=``/``out_y=``/``out_z=``.
 
     Parameters
     ----------
@@ -197,7 +197,7 @@ def hilbert_decode_3d(
             bits of the index dtype. For example, ``uint32`` → 10 bits, ``uint64`` → 21 bits,
             ``int64`` → 21 bits (63 bits effective / 3).
         - For Python scalars: defaults to 21.
-    out_xs, out_ys, out_zs
+    out_x, out_y, out_z
         Optional output buffers for array mode. Either provide all three or none.
         Must have the same shape as ``index`` and an integer dtype wide enough to
         hold values in ``[0, 2**nbits)`` (unsigned).
@@ -234,10 +234,10 @@ def hilbert_decode_3d(
         incorrect shapes.
     """
 
-    index_is_scalar = _is_int_scalar_or_0d_array(index)
+    index_is_scalar = is_int_scalar_or_0d_array(index)
     if index_is_scalar:
-        if out_xs is not None or out_ys is not None or out_zs is not None:
-            raise TypeError("out_xs/out_ys/out_zs are only valid for array mode")
+        if out_x is not None or out_y is not None or out_z is not None:
+            raise TypeError("out_x/out_y/out_z are only valid for array mode")
         if parallel:
             warnings.warn(
                 "parallel=True has no effect in scalar mode",
@@ -249,9 +249,9 @@ def hilbert_decode_3d(
     return _hilbert_decode_3d_batch(
         cast(IntArray, index),
         nbits,
-        out_xs=out_xs,
-        out_ys=out_ys,
-        out_zs=out_zs,
+        out_x=out_x,
+        out_y=out_y,
+        out_z=out_z,
         parallel=parallel,
     )
 
@@ -315,7 +315,10 @@ def _hilbert_encode_3d_batch(
     """Internal batch 3D Hilbert encode."""
 
     if xs.shape != ys.shape or xs.shape != zs.shape:
-        raise ValueError("xs, ys, zs must have the same shape")
+        raise ValueError(
+            "xs, ys, zs must have the same shape; "
+            f"got xs.shape={xs.shape}, ys.shape={ys.shape}, zs.shape={zs.shape}"
+        )
 
     max_coord_nbits = max(
         dtype_effective_bits(xs.dtype),
@@ -386,9 +389,9 @@ def _hilbert_decode_3d_batch(
     indices: IntArray,
     nbits: int | None,
     *,
-    out_xs: IntArray | None = None,
-    out_ys: IntArray | None = None,
-    out_zs: IntArray | None = None,
+    out_x: IntArray | None = None,
+    out_y: IntArray | None = None,
+    out_z: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[IntArray, IntArray, IntArray]:
     """Internal batch 3D Hilbert decode."""
@@ -405,49 +408,49 @@ def _hilbert_decode_3d_batch(
                 f"max nbits is {max_index_nbits}."
             )
 
-    provided = (out_xs is not None) + (out_ys is not None) + (out_zs is not None)
+    provided = (out_x is not None) + (out_y is not None) + (out_z is not None)
     if provided not in (0, 3):
-        raise ValueError("out_xs, out_ys, out_zs must be provided together")
+        raise ValueError("out_x, out_y, out_z must be provided together")
 
-    if out_xs is None or out_ys is None or out_zs is None:
+    if out_x is None or out_y is None or out_z is None:
         coord_dtype = choose_uint_coord_dtype(nbits=nbits)
-        out_xs_u = out_xs = np.empty(indices.shape, dtype=coord_dtype, order="C")
-        out_ys_u = out_ys = np.empty(indices.shape, dtype=coord_dtype, order="C")
-        out_zs_u = out_zs = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_x_u = out_x = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_y_u = out_y = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_z_u = out_z = np.empty(indices.shape, dtype=coord_dtype, order="C")
     else:
         if (
-            out_xs.shape != indices.shape
-            or out_ys.shape != indices.shape
-            or out_zs.shape != indices.shape
+            out_x.shape != indices.shape
+            or out_y.shape != indices.shape
+            or out_z.shape != indices.shape
         ):
             raise ValueError(
-                "out_xs, out_ys, out_zs must have the same shape as indices; "
-                f"got indices.shape={indices.shape}, out_xs.shape={out_xs.shape}, out_ys.shape={out_ys.shape}, out_zs.shape={out_zs.shape}"
+                "out_x, out_y, out_z must have the same shape as indices; "
+                f"got indices.shape={indices.shape}, out_x.shape={out_x.shape}, out_y.shape={out_y.shape}, out_z.shape={out_z.shape}"
             )
         max_coord_nbits = min(
-            dtype_effective_bits(out_xs.dtype),
-            dtype_effective_bits(out_ys.dtype),
-            dtype_effective_bits(out_zs.dtype),
+            dtype_effective_bits(out_x.dtype),
+            dtype_effective_bits(out_y.dtype),
+            dtype_effective_bits(out_z.dtype),
         )
         if nbits > max_coord_nbits:
             raise ValueError(
-                f"nbits={nbits} does not fit in out_xs/out_ys dtypes; "
-                f"got out_xs.dtype={out_xs.dtype} with {dtype_effective_bits(out_xs.dtype)} effective bits, "
-                f"out_ys.dtype={out_ys.dtype} with {dtype_effective_bits(out_ys.dtype)} effective bits; "
-                f"out_zs.dtype={out_zs.dtype} with {dtype_effective_bits(out_zs.dtype)} effective bits; "
+                f"nbits={nbits} does not fit in out_x/out_y dtypes; "
+                f"got out_x.dtype={out_x.dtype} with {dtype_effective_bits(out_x.dtype)} effective bits, "
+                f"out_y.dtype={out_y.dtype} with {dtype_effective_bits(out_y.dtype)} effective bits; "
+                f"out_z.dtype={out_z.dtype} with {dtype_effective_bits(out_z.dtype)} effective bits; "
                 f"max nbits is {max_coord_nbits}"
             )
 
-        out_xs_u = unsigned_view(out_xs)
-        out_ys_u = unsigned_view(out_ys)
-        out_zs_u = unsigned_view(out_zs)
+        out_x_u = unsigned_view(out_x)
+        out_y_u = unsigned_view(out_y)
+        out_z_u = unsigned_view(out_z)
 
     indices_u = unsigned_view(indices)
 
     indices_1d = _flatten_nocopy(indices_u, "indices", order="C", strict=False)
-    out_xs_1d = _flatten_nocopy(out_xs_u, "out_xs", order="C", strict=False)
-    out_ys_1d = _flatten_nocopy(out_ys_u, "out_ys", order="C", strict=False)
-    out_zs_1d = _flatten_nocopy(out_zs_u, "out_zs", order="C", strict=False)
+    out_x_1d = _flatten_nocopy(out_x_u, "out_x", order="C", strict=False)
+    out_y_1d = _flatten_nocopy(out_y_u, "out_y", order="C", strict=False)
+    out_z_1d = _flatten_nocopy(out_z_u, "out_z", order="C", strict=False)
 
     builder = get_decode_3d_batch_builder()
     impl = builder(
@@ -455,8 +458,8 @@ def _hilbert_decode_3d_batch(
         lut_dtype=choose_lut_dtype_for_index_dtype(indices.dtype),
         parallel=parallel,
     )
-    impl(indices_1d, out_xs_1d, out_ys_1d, out_zs_1d)
-    return out_xs, out_ys, out_zs
+    impl(indices_1d, out_x_1d, out_y_1d, out_z_1d)
+    return out_x, out_y, out_z
 
 
 def get_hilbert_encode_3d_kernel(

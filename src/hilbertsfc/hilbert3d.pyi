@@ -40,9 +40,9 @@ def hilbert_decode_3d(
 # --- Array version with out:
 @overload
 def hilbert_encode_3d[OutDType: np.integer](
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     *,
     nbits: int | None = None,
     out: NDArray[OutDType],
@@ -64,9 +64,9 @@ type _NBits3DIndexU64 = Literal[11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
 # --- Array version with nbits but no out:
 @overload
 def hilbert_encode_3d(
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     *,
     nbits: _NBits3DIndexU8,
     out: None = None,
@@ -74,9 +74,9 @@ def hilbert_encode_3d(
 ) -> UInt8Array: ...
 @overload
 def hilbert_encode_3d(
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     *,
     nbits: _NBits3DIndexU16,
     out: None = None,
@@ -84,9 +84,9 @@ def hilbert_encode_3d(
 ) -> UInt16Array: ...
 @overload
 def hilbert_encode_3d(
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     *,
     nbits: _NBits3DIndexU32,
     out: None = None,
@@ -94,9 +94,9 @@ def hilbert_encode_3d(
 ) -> UInt32Array: ...
 @overload
 def hilbert_encode_3d(
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     *,
     nbits: _NBits3DIndexU64,
     out: None = None,
@@ -106,9 +106,9 @@ def hilbert_encode_3d(
 # --- Array version with no nbits and no out:
 @overload
 def hilbert_encode_3d(
-    xs: UInt8Array | Int8Array,
-    ys: UInt8Array | Int8Array,
-    zs: UInt8Array | Int8Array,
+    x: UInt8Array | Int8Array,
+    y: UInt8Array | Int8Array,
+    z: UInt8Array | Int8Array,
     *,
     nbits: None = None,
     out: None = None,
@@ -116,21 +116,21 @@ def hilbert_encode_3d(
 ) -> UInt32Array: ...
 @overload
 def hilbert_encode_3d(
-    xs: UInt16Array | Int16Array | UInt32Array | Int32Array | UInt64Array | Int64Array,
-    ys: UInt16Array | Int16Array | UInt32Array | Int32Array | UInt64Array | Int64Array,
-    zs: UInt16Array | Int16Array | UInt32Array | Int32Array | UInt64Array | Int64Array,
+    x: UInt16Array | Int16Array | UInt32Array | Int32Array | UInt64Array | Int64Array,
+    y: UInt16Array | Int16Array | UInt32Array | Int32Array | UInt64Array | Int64Array,
+    z: UInt16Array | Int16Array | UInt32Array | Int32Array | UInt64Array | Int64Array,
     *,
     nbits: int | None = None,
     out: None = None,
     parallel: bool = False,
 ) -> UInt64Array: ...
 
-# (Other combinations of xs and ys dtypes, also non-literal nbits):
+# (Other combinations of x and y dtypes, also non-literal nbits):
 @overload
 def hilbert_encode_3d(
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     *,
     nbits: int | None = None,
     out: None = None,
@@ -144,12 +144,12 @@ def hilbert_decode_3d[
     YCoordDType: np.integer,
     ZCoordDType: np.integer,
 ](
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: int | None = None,
-    out_xs: NDArray[XCoordDType],
-    out_ys: NDArray[YCoordDType],
-    out_zs: NDArray[ZCoordDType],
+    out_x: NDArray[XCoordDType],
+    out_y: NDArray[YCoordDType],
+    out_z: NDArray[ZCoordDType],
     parallel: bool = False,
 ) -> tuple[NDArray[XCoordDType], NDArray[YCoordDType], NDArray[ZCoordDType]]: ...
 
@@ -163,76 +163,76 @@ type _NBitsCoordU32 = Literal[17, 18, 19, 20, 21]
 # --- Array version with nbits but no out:
 @overload
 def hilbert_decode_3d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: _NBitsCoordU8,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UInt8Array, UInt8Array, UInt8Array]: ...
 @overload
 def hilbert_decode_3d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: _NBitsCoordU16,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UInt16Array, UInt16Array, UInt16Array]: ...
 @overload
 def hilbert_decode_3d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: _NBitsCoordU32,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UInt32Array, UInt32Array, UInt32Array]: ...
 
 # --- Array version with no nbits and no out:
 @overload
 def hilbert_decode_3d(
-    indices: UInt8Array | Int8Array | UInt16Array | Int16Array,
+    index: UInt8Array | Int8Array | UInt16Array | Int16Array,
     *,
     nbits: None = None,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UInt8Array, UInt8Array, UInt8Array]: ...
 @overload
 def hilbert_decode_3d(
-    indices: UInt32Array | Int32Array,
+    index: UInt32Array | Int32Array,
     *,
     nbits: None = None,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UInt16Array, UInt16Array, UInt16Array]: ...
 @overload
 def hilbert_decode_3d(
-    indices: UInt64Array | Int64Array,
+    index: UInt64Array | Int64Array,
     *,
     nbits: None = None,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UInt32Array, UInt32Array, UInt32Array]: ...
 
-# (Other combinations of indices dtype, also non-literal nbits):
+# (Other combinations of index dtype, also non-literal nbits):
 @overload
 def hilbert_decode_3d(
-    indices: IntArray,
+    index: IntArray,
     *,
     nbits: int | None = None,
-    out_xs: None = None,
-    out_ys: None = None,
-    out_zs: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    out_z: None = None,
     parallel: bool = False,
 ) -> tuple[UIntArray, UIntArray, UIntArray]: ...
 
