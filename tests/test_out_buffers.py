@@ -29,12 +29,12 @@ def test_decode_2d_out_buffers_identity(rng: np.random.Generator) -> None:
     ys = rng.integers(0, hi, size=n, dtype=np.uint8)
     idx = hilbert_encode_2d(xs, ys, nbits=nbits)
 
-    out_xs = np.empty_like(xs)
-    out_ys = np.empty_like(ys)
+    out_x = np.empty_like(xs)
+    out_y = np.empty_like(ys)
 
-    rx, ry = hilbert_decode_2d(idx, nbits=nbits, out_xs=out_xs, out_ys=out_ys)
-    assert rx is out_xs
-    assert ry is out_ys
+    rx, ry = hilbert_decode_2d(idx, nbits=nbits, out_x=out_x, out_y=out_y)
+    assert rx is out_x
+    assert ry is out_y
 
 
 def test_encode_3d_out_buffer_identity(rng: np.random.Generator) -> None:
@@ -61,16 +61,16 @@ def test_decode_3d_out_buffers_identity(rng: np.random.Generator) -> None:
     zs = rng.integers(0, hi, size=n, dtype=np.uint16)
     idx = hilbert_encode_3d(xs, ys, zs, nbits=nbits)
 
-    out_xs = np.empty_like(xs)
-    out_ys = np.empty_like(ys)
-    out_zs = np.empty_like(zs)
+    out_x = np.empty_like(xs)
+    out_y = np.empty_like(ys)
+    out_z = np.empty_like(zs)
 
     rx, ry, rz = hilbert_decode_3d(
-        idx, nbits=nbits, out_xs=out_xs, out_ys=out_ys, out_zs=out_zs
+        idx, nbits=nbits, out_x=out_x, out_y=out_y, out_z=out_z
     )
-    assert rx is out_xs
-    assert ry is out_ys
-    assert rz is out_zs
+    assert rx is out_x
+    assert ry is out_y
+    assert rz is out_z
 
 
 def test_encode_out_shape_mismatch_raises(rng: np.random.Generator) -> None:
@@ -98,16 +98,14 @@ def test_decode_out_shape_mismatch_raises(rng: np.random.Generator) -> None:
     zs = rng.integers(0, hi, size=32, dtype=np.uint8)
 
     idx2d = hilbert_encode_2d(xs, ys, nbits=nbits)
-    out_xs = np.empty((16,), dtype=np.uint8)
-    out_ys = np.empty((32,), dtype=np.uint8)
+    out_x = np.empty((16,), dtype=np.uint8)
+    out_y = np.empty((32,), dtype=np.uint8)
     with pytest.raises(ValueError, match="same shape"):
-        hilbert_decode_2d(idx2d, nbits=nbits, out_xs=out_xs, out_ys=out_ys)
+        hilbert_decode_2d(idx2d, nbits=nbits, out_x=out_x, out_y=out_y)
 
     idx3d = hilbert_encode_3d(xs, ys, zs, nbits=nbits)
-    out_xs3 = np.empty((32,), dtype=np.uint8)
-    out_ys3 = np.empty((16,), dtype=np.uint8)
-    out_zs3 = np.empty((32,), dtype=np.uint8)
+    out_x3 = np.empty((32,), dtype=np.uint8)
+    out_y3 = np.empty((16,), dtype=np.uint8)
+    out_z3 = np.empty((32,), dtype=np.uint8)
     with pytest.raises(ValueError, match="same shape"):
-        hilbert_decode_3d(
-            idx3d, nbits=nbits, out_xs=out_xs3, out_ys=out_ys3, out_zs=out_zs3
-        )
+        hilbert_decode_3d(idx3d, nbits=nbits, out_x=out_x3, out_y=out_y3, out_z=out_z3)
