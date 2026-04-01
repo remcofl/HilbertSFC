@@ -124,9 +124,9 @@ def test_2d_decode_batch_out_pair_rule(rng: np.random.Generator) -> None:
     ys = rng.integers(0, hi, size=n, dtype=np.uint8)
     idx = hilbert_encode_2d(xs, ys, nbits=nbits)
 
-    out_xs = np.empty(n, dtype=np.uint8)
+    out_x = np.empty(n, dtype=np.uint8)
     with pytest.raises(ValueError, match="provided together"):
-        hilbert_decode_2d(idx, nbits=nbits, out_xs=out_xs)  # type: ignore
+        hilbert_decode_2d(idx, nbits=nbits, out_x=out_x)  # type: ignore
 
 
 def test_2d_kernel_getters_return_callables() -> None:

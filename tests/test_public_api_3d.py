@@ -60,43 +60,43 @@ def test_3d_batch_roundtrip_with_lut_dtype_and_parallel(
     n = 1024
     hi = 1 << nbits
 
-    xs = rng.integers(0, hi, size=n, dtype=np.int16)
-    ys = rng.integers(0, hi, size=n, dtype=np.int16)
-    zs = rng.integers(0, hi, size=n, dtype=np.int16)
+    x = rng.integers(0, hi, size=n, dtype=np.int16)
+    y = rng.integers(0, hi, size=n, dtype=np.int16)
+    z = rng.integers(0, hi, size=n, dtype=np.int16)
 
-    idx = hilbert_encode_3d(xs, ys, zs, nbits=nbits, parallel=True)
+    idx = hilbert_encode_3d(x, y, z, nbits=nbits, parallel=True)
     assert idx.shape == (n,)
     # 3*6=18 bits -> uint32
     assert idx.dtype == np.dtype(np.uint32)
 
     x2, y2, z2 = hilbert_decode_3d(idx, nbits=nbits, parallel=True)
-    np.testing.assert_array_equal(x2, xs.astype(x2.dtype, copy=False))
-    np.testing.assert_array_equal(y2, ys.astype(y2.dtype, copy=False))
-    np.testing.assert_array_equal(z2, zs.astype(z2.dtype, copy=False))
+    np.testing.assert_array_equal(x2, x.astype(x2.dtype, copy=False))
+    np.testing.assert_array_equal(y2, y.astype(y2.dtype, copy=False))
+    np.testing.assert_array_equal(z2, z.astype(z2.dtype, copy=False))
 
 
 def test_3d_decode_batch_out_triple_rule(rng: np.random.Generator) -> None:
     nbits = 3
     n = 10
     hi = 1 << nbits
-    xs = rng.integers(0, hi, size=n, dtype=np.uint8)
-    ys = rng.integers(0, hi, size=n, dtype=np.uint8)
-    zs = rng.integers(0, hi, size=n, dtype=np.uint8)
-    idx = hilbert_encode_3d(xs, ys, zs, nbits=nbits)
+    x = rng.integers(0, hi, size=n, dtype=np.uint8)
+    y = rng.integers(0, hi, size=n, dtype=np.uint8)
+    z = rng.integers(0, hi, size=n, dtype=np.uint8)
+    idx = hilbert_encode_3d(x, y, z, nbits=nbits)
 
-    out_xs = np.empty(n, dtype=np.uint8)
-    out_ys = np.empty(n, dtype=np.uint8)
+    out_x = np.empty(n, dtype=np.uint8)
+    out_y = np.empty(n, dtype=np.uint8)
 
     with pytest.raises(ValueError, match="provided together"):
-        hilbert_decode_3d(idx, nbits=nbits, out_xs=out_xs, out_ys=out_ys)  # type: ignore
+        hilbert_decode_3d(idx, nbits=nbits, out_x=out_x, out_y=out_y)  # type: ignore
 
 
 def test_3d_batch_coord_dtype_validation() -> None:
-    xs = np.zeros(4, dtype=np.uint8)
-    ys = np.zeros(4, dtype=np.uint8)
-    zs = np.zeros(4, dtype=np.uint8)
+    x = np.zeros(4, dtype=np.uint8)
+    y = np.zeros(4, dtype=np.uint8)
+    z = np.zeros(4, dtype=np.uint8)
     with pytest.raises(ValueError, match="coordinate dtypes"):
-        hilbert_encode_3d(xs, ys, zs, nbits=9)
+        hilbert_encode_3d(x, y, z, nbits=9)
 
 
 def test_3d_decode_batch_index_dtype_validation() -> None:
@@ -108,19 +108,19 @@ def test_3d_decode_batch_index_dtype_validation() -> None:
 
 def test_3d_decode_batch_out_coord_dtype_validation() -> None:
     idx = np.zeros(4, dtype=np.uint64)
-    out_xs = np.zeros(4, dtype=np.uint8)
-    out_ys = np.zeros(4, dtype=np.uint8)
-    out_zs = np.zeros(4, dtype=np.uint8)
-    with pytest.raises(ValueError, match="out_xs/out_ys dtypes"):
-        hilbert_decode_3d(idx, nbits=9, out_xs=out_xs, out_ys=out_ys, out_zs=out_zs)
+    out_x = np.zeros(4, dtype=np.uint8)
+    out_y = np.zeros(4, dtype=np.uint8)
+    out_z = np.zeros(4, dtype=np.uint8)
+    with pytest.raises(ValueError, match="out_x/out_y dtypes"):
+        hilbert_decode_3d(idx, nbits=9, out_x=out_x, out_y=out_y, out_z=out_z)
 
 
 def test_3d_batch_infers_nbits_warns_when_capped() -> None:
-    xs = np.zeros(4, dtype=np.uint64)
-    ys = np.zeros(4, dtype=np.uint64)
-    zs = np.zeros(4, dtype=np.uint64)
+    x = np.zeros(4, dtype=np.uint64)
+    y = np.zeros(4, dtype=np.uint64)
+    z = np.zeros(4, dtype=np.uint64)
     with pytest.warns(UserWarning, match="exceeds the algorithm maximum"):
-        idx = hilbert_encode_3d(xs, ys, zs)
+        idx = hilbert_encode_3d(x, y, z)
     assert idx.dtype == np.dtype(np.uint64)
 
 
