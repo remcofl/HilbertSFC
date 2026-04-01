@@ -41,15 +41,18 @@ Source = "https://github.com/remcofl/HilbertSFC"
 Documentation = "https://remcofl.github.io/HilbertSFC/"
 Issues = "https://github.com/remcofl/HilbertSFC/issues"
 
+[project.optional-dependencies]
+torch = ["torch>=2.11.0"]
+
 [build-system]
-requires = ["uv_build>=0.9.18,<0.10.0"]
+requires = ["uv_build>=0.10.9,<0.11.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
 bench = [
-    "hilbert-bytes>=0.6.0",
-    "hilbertcurve>=2.0.5",
-    "numpy-hilbert-curve>=1.0.1",
+    "hilbert-bytes==0.6.0",
+    "hilbertcurve==2.0.5",
+    "numpy-hilbert-curve==1.0.1",
 ]
 dev = [
     { include-group = "test" },
@@ -80,6 +83,9 @@ scripts = [
     "rich>=14.3.2",
 ]
 test = ["pytest>=9.0.2"]
+torch-cpu = ["torch>=2.11.0"]
+torch-cu130 = ["torch>=2.11.0"]
+torch-rocm = ["torch>=2.11.0", "triton-rocm==3.6.0"]
 typecheck = ["pyright>=1.1.408", "pyrefly>=0.51.0", "ty>=0.0.15"]
 
 [tool.ruff]
@@ -122,6 +128,40 @@ testpaths = ["tests"]
 markers = [
     "slow: exhaustive tests that may take longer (deselect with '-m \"not slow\"')",
 ]
+
+[tool.uv]
+exclude-newer = "20 days"
+exclude-newer-package = { "torch" = false, "triton-rocm" = false }
+conflicts = [
+    [
+        { group = "torch-cpu" },
+        { group = "torch-cu130" },
+        { group = "torch-rocm" },
+    ],
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", group = "torch-cpu" },
+    { index = "pytorch-cu130", group = "torch-cu130" },
+    { index = "pytorch-rocm", group = "torch-rocm" },
+]
+triton-rocm = [{ index = "pytorch-rocm", group = "torch-rocm" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm7.2"
+explicit = true
 
 [[tool.uv.index]]
 name = "testpypi"
