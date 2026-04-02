@@ -18,6 +18,42 @@ LUT_SB_TO_NEXT = np.array(    # (state, b) -> next_state
 N_STATES = 4
 
 
+def _simulate_hilbert_traversal(
+    start_state: int, b_packed: int, nbits: int
+) -> tuple[int, int]:
+    """Simulate nbits 1-bit Hilbert FSM iterations (MSB first).
+
+    Parameters
+    ----------
+    start_state:
+        Starting FSM state (0..3).
+    b_packed:
+        Packed input bits `b` with layout `(x_n..x_0, y_n..y_0)` (2*nbits bits).
+    nbits:
+        Number of 1-bit iterations.
+
+    Returns
+    -------
+    (q_packed, next_state)
+        - q_packed: packed quadrants (2*nbits bits)
+        - next_state: FSM state after `nbits` iterations
+    """
+
+    s_next = start_state
+    q_packed = 0
+
+    for bit in reversed(range(nbits)):
+        x = (b_packed >> (nbits + bit)) & 1
+        y = (b_packed >> bit) & 1
+        b = (x << 1) | y
+        sb = (s_next << 2) | b
+        q = int(LUT_SB_TO_Q[sb])
+        s_next = int(LUT_SB_TO_NEXT[sb])
+        q_packed = (q_packed << 2) | q
+
+    return q_packed, s_next
+
+
 def generate_luts_2dnb_compacted(tile_nbits: int) -> tuple[np.ndarray, np.ndarray]:
     """
     Generate compacted 2D tile-nbit Hilbert lookup tables (LUTs).
@@ -75,19 +111,9 @@ def generate_luts_2dnb_compacted(tile_nbits: int) -> tuple[np.ndarray, np.ndarra
 
     for i in range(entries):
         for state in range(N_STATES):
-            s_next = state
-            q_packed = 0
             b_packed = i
 
-            # Simulate n iterations of 1-bit FSM, MSB first
-            for bit in reversed(range(tile_nbits)):
-                x = (b_packed >> (tile_nbits + bit)) & 1
-                y = (b_packed >> bit) & 1
-                b = (x << 1) | y
-                sb = (s_next << 2) | b
-                q = int(LUT_SB_TO_Q[sb])
-                s_next = int(LUT_SB_TO_NEXT[sb])
-                q_packed = (q_packed << 2) | q
+            q_packed, s_next = _simulate_hilbert_traversal(state, b_packed, tile_nbits)
 
             lane_bits = _pack_lane_qs_16(q_packed, s_next, tile_nbits)
             s_lsh4 = state << 4
@@ -100,3 +126,60 @@ def generate_luts_2dnb_compacted(tile_nbits: int) -> tuple[np.ndarray, np.ndarra
             lut_q_bs[q_packed] |= np.uint64(lane_bits_dec) << s_lsh4
 
     return lut_b_qs, lut_q_bs
+
+
+def generate_luts_2dnb_flat(tile_nbits: int) -> tuple[np.ndarray, np.ndarray]:
+    """Generate 2D tile-nbit flat (state-dependent) Hilbert lookup tables.
+
+    This produces two 1D LUTs for a Hilbert tile with `tile_nbits` bits per coordinate.
+    Tables are indexed by `(state, symbol)` (non-compacted form).
+
+    Each table is a `uint16` array of length `4 * 2^(2*tile_nbits)`.
+
+    Layouts
+    -------
+    Each entry packs the next FSM state and output symbol:
+
+    Encoding (b -> q):
+        lut_sb_sq[(state << (2*n)) | b] = (next_state << (2*n)) | q
+
+    Decoding (q -> b):
+        lut_sq_sb[(state << (2*n)) | q] = (next_state << (2*n)) | b
+
+    Symbol format
+    -------------
+    b : 2*tile_nbits-bit input symbol (b = xy; tile_nbits bits per coordinate)
+    q : 2*tile_nbits-bit output symbol (tile_nbits quadrants)
+
+    Parameters
+    ----------
+    tile_nbits : int
+        Bits per coordinate per lookup step (1-7).
+
+    Returns
+    -------
+    tuple of np.ndarray
+        (lut_sb_sq_u16, lut_sq_sb_u16)
+    """
+    if tile_nbits < 1 or tile_nbits > 7:
+        raise ValueError("tile_nbits must be in [1, 7]")
+
+    sym_bits = 2 * tile_nbits
+    sym_entries = 1 << sym_bits
+    table_size = N_STATES * sym_entries
+
+    lut_sb_sq = np.zeros(table_size, dtype=np.uint16)
+    lut_sq_sb = np.zeros(table_size, dtype=np.uint16)
+
+    for state in range(N_STATES):
+        state_base = state << sym_bits
+        for b_packed in range(sym_entries):
+            q_packed, s_next = _simulate_hilbert_traversal(state, b_packed, tile_nbits)
+
+            packed_sq = np.uint16((s_next << sym_bits) | q_packed)
+            lut_sb_sq[state_base | b_packed] = packed_sq
+
+            packed_sb = np.uint16((s_next << sym_bits) | b_packed)
+            lut_sq_sb[state_base | q_packed] = packed_sb
+
+    return lut_sb_sq, lut_sq_sb
