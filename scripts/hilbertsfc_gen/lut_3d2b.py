@@ -64,24 +64,32 @@ TABLE_SIZE = N_STATES * BB_ENTRIES
 
 
 def generate_luts_3d2b() -> tuple[np.ndarray, np.ndarray]:
-    """Generate 3D 2-bit flat LUTs.
+    """Generate 3D 2-bit flat (state-dependent) Hilbert lookup tables.
+
+    This produces two 1D LUTs for 3D Hilbert traversal with 2 bits per coordinate.
+    Tables are indexed by `(state, symbol)`.
+
+    Each table is a `uint16` array of length `24 * 64`.
+
+    Layouts
+    -------
+    Each entry packs the next FSM state and output symbol:
+
+    Encoding (b -> o):
+        lut_3d2b_sb_so[(state << 6) | b] = (next_state << 6) | o
+
+    Decoding (o -> b):
+        lut_3d2b_so_sb[(state << 6) | o] = (next_state << 6) | b
+
+    Symbol format
+    -------------
+    b : 6-bit input symbol (b = xyz; 2 bits per coordinate)
+    o : 6-bit output symbol (two 3D octants)
 
     Returns
     -------
-    (lut_3d2b_sb_so, lut_3d2b_so_sb)
-
-    Both are uint16 arrays of length 24*64.
-
-    Each entry packs a 6-bit symbol plus the next FSM state:
-      packed = (next_state << 6) | symbol
-
-    Encoding layout:
-    - lut_3d2b_sb_so[(state << 6) | bb] = (next_state << 6) | oo
-    - lut_3d2b_so_sb[(state << 6) | oo] = (next_state << 6) | bb
-
-    Where:
-    - bb is a 6-bit input symbol representing xxyyzz (two bits per axis)
-    - oo is a 6-bit output symbol representing two 3D octants
+    tuple of np.ndarray
+        (lut_3d2b_sb_so, lut_3d2b_so_sb)
     """
 
     lut_sb_so = np.zeros(TABLE_SIZE, dtype=np.uint16)
