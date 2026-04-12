@@ -1,0 +1,132 @@
+# ruff: noqa: N803, N806
+"""Triton 3D Hilbert encoder (2-bit LUT)."""
+
+import torch
+import triton  # type: ignore[reportMissingImports]
+import triton.language as tl  # type: ignore[reportMissingImports]
+
+from hilbertsfc._nbits import validate_nbits_3d
+from hilbertsfc.torch._luts import TorchCacheMode, lut_3d2b_sb_so_i16
+
+
+@triton.jit
+def hilbert_encode_3d_2bit_compacted_so(
+    x_ptr: tl.tensor,
+    y_ptr: tl.tensor,
+    z_ptr: tl.tensor,
+    out_ptr: tl.tensor,
+    n_elements: int,
+    lut_ptr: tl.const,
+    BLOCK_SIZE: tl.constexpr,
+    NBITS: tl.constexpr,
+    SHMEM_LUT: tl.constexpr,
+):
+    """Encode 3D coordinates (x, y, z) to a Hilbert index using a 2-bit LUT."""
+
+    START_BIT: tl.constexpr = (NBITS - 1) & ~0x1
+    DROP_BITS: tl.constexpr = START_BIT - NBITS + 2
+    COORD_MASK: tl.constexpr = (1 << NBITS) - 1 if DROP_BITS > 0 else 0  # type: ignore[reportAssignmentType, reportOperatorIssue]
+    OUT_DTYPE: tl.constexpr = out_ptr.dtype.element_ty  # type: ignore[reportAttributeAccessIssue]
+
+    if SHMEM_LUT:
+        lut_idx = tl.arange(0, 2048)
+        lut_mask = lut_idx < 1536
+        lut_local = tl.load(lut_ptr + lut_idx, mask=lut_mask, cache_modifier=".ca")
+
+    pid = tl.program_id(axis=0)
+    offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+    mask = offsets < n_elements
+
+    x = tl.load(x_ptr + offsets, mask=mask, other=0)
+    y = tl.load(y_ptr + offsets, mask=mask, other=0)
+    z = tl.load(z_ptr + offsets, mask=mask, other=0)
+
+    if DROP_BITS > 0:
+        x = x & COORD_MASK
+        y = y & COORD_MASK
+        z = z & COORD_MASK
+
+    idx = tl.zeros([BLOCK_SIZE], dtype=OUT_DTYPE)
+    state = tl.zeros([BLOCK_SIZE], dtype=tl.int32)
+
+    for bit in tl.static_range(START_BIT, -1, -2):
+        b_x = (x >> bit) & 0x3
+        b_y = (y >> bit) & 0x3
+        b_z = (z >> bit) & 0x3
+        b = (b_x << 4) | (b_y << 2) | b_z
+
+        lut_idx = state | b
+
+        if SHMEM_LUT:
+            so = tl.gather(lut_local, lut_idx, axis=0)  # type: ignore[reportAttributeAccessIssue]
+        else:
+            so = tl.load(lut_ptr + lut_idx, cache_modifier=".ca")
+
+        # LUT is stored as int16 in torch; widen for bitwise ops.
+        so = so.to(tl.int32)
+
+        o = so & 0x3F
+        idx |= o.to(OUT_DTYPE) << (3 * bit)
+        state = so & 0x7C0
+
+    tl.store(out_ptr + offsets, idx, mask=mask)
+
+
+def _choose_launch_config(n_elements: int) -> tuple[int, int]:
+    """Choose a reasonable default without autotune.
+
+    Returns
+    -------
+    block_size: int
+    num_warps: int
+    """
+    if n_elements < 1 << 15:
+        return 256, 4
+    if n_elements < 1 << 18:
+        return 512, 4
+    return 1024, 4
+
+
+def hilbert_encode_3d_triton(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    z: torch.Tensor,
+    *,
+    nbits: int,
+    out: torch.Tensor | None = None,
+    lut_cache: TorchCacheMode = "device",
+    load_lut_into_shared_memory: bool = True,
+) -> torch.Tensor:
+    """Encode (x, y, z) to Hilbert indices using Triton."""
+
+    validate_nbits_3d(nbits)
+
+    if out is None:
+        out = torch.empty_like(x, dtype=torch.int64)
+
+    n_elements = out.numel()
+    block_size, num_warps = _choose_launch_config(n_elements)
+
+    def grid(meta):
+        return (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
+
+    lut = lut_3d2b_sb_so_i16(device=x.device, cache=lut_cache)
+
+    # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
+    # This is still performant due to caching.
+    load_lut_into_shared_memory = True if hasattr(triton, "gather") else False
+
+    hilbert_encode_3d_2bit_compacted_so[grid](  # type: ignore[reportIndexIssue]
+        x,
+        y,
+        z,
+        out,
+        n_elements,
+        lut,
+        BLOCK_SIZE=block_size,
+        NBITS=nbits,
+        SHMEM_LUT=load_lut_into_shared_memory,
+        num_warps=num_warps,  # type: ignore[reportCallIssue]
+    )
+
+    return out
