@@ -75,23 +75,24 @@ def choose_uint_index_dtype(
         raise ValueError("dims must be positive")
 
     bits = dims * nbits
-    if bits > 64:
-        raise ValueError(
-            f"nbits={nbits} with dims={dims} requires {bits} index bits; "
-            "no suitable uint dtype available"
-        )
     if bits <= 8:
         return np.uint8
     if bits <= 16:
         return np.uint16
     if bits <= 32:
         return np.uint32
-    return np.uint64
+    if bits <= 64:
+        return np.uint64
+
+    raise ValueError(
+        f"nbits={nbits} with dims={dims} requires {bits} index bits; "
+        "no suitable uint dtype available"
+    )
 
 
 def choose_uint_coord_dtype(
     *, nbits: int
-) -> type[np.uint8] | type[np.uint16] | type[np.uint32]:
+) -> type[np.uint8] | type[np.uint16] | type[np.uint32] | type[np.uint64]:
     """Choose a minimal unsigned dtype that can hold a coordinate."""
 
     if nbits <= 0:
@@ -100,8 +101,70 @@ def choose_uint_coord_dtype(
         return np.uint8
     if nbits <= 16:
         return np.uint16
-    if nbits > 32:
-        raise ValueError(
-            f"nbits={nbits} requires >32 coordinate bits; no suitable uint dtype available"
-        )
-    return np.uint32
+    if nbits <= 32:
+        return np.uint32
+    if nbits <= 64:
+        return np.uint64
+
+    raise ValueError(
+        f"nbits={nbits} requires >64 coordinate bits; no suitable uint dtype available"
+    )
+
+
+def choose_sint_index_dtype(
+    *, nbits: int, dims: int
+) -> type[np.int8] | type[np.int16] | type[np.int32] | type[np.int64]:
+    """Choose a minimal signed dtype that can hold a Hilbert index.
+
+    Signed integer dtypes exclude the sign bit, so the effective capacities are:
+    - int8:  7 bits
+    - int16: 15 bits
+    - int32: 31 bits
+    - int64: 63 bits
+
+    The index uses `dims * nbits` bits.
+    """
+
+    if nbits <= 0:
+        raise ValueError("nbits must be positive")
+    if dims <= 0:
+        raise ValueError("dims must be positive")
+
+    bits = dims * nbits
+    if bits <= 7:
+        return np.int8
+    if bits <= 15:
+        return np.int16
+    if bits <= 31:
+        return np.int32
+    if bits <= 63:
+        return np.int64
+
+    raise ValueError(
+        f"nbits={nbits} with dims={dims} requires {bits} index bits; "
+        "no suitable int dtype available"
+    )
+
+
+def choose_sint_coord_dtype(
+    *, nbits: int
+) -> type[np.int8] | type[np.int16] | type[np.int32] | type[np.int64]:
+    """Choose a minimal signed dtype that can hold a coordinate.
+
+    Signed integer dtypes exclude the sign bit.
+    """
+
+    if nbits <= 0:
+        raise ValueError("nbits must be positive")
+    if nbits <= 7:
+        return np.int8
+    if nbits <= 15:
+        return np.int16
+    if nbits <= 31:
+        return np.int32
+    if nbits <= 63:
+        return np.int64
+
+    raise ValueError(
+        f"nbits={nbits} requires >63 coordinate bits; no suitable int dtype available"
+    )
