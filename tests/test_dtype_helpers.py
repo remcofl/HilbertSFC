@@ -3,6 +3,8 @@ import pytest
 
 from hilbertsfc._dtype import (
     choose_lut_dtype_for_index_dtype,
+    choose_sint_coord_dtype,
+    choose_sint_index_dtype,
     choose_uint_coord_dtype,
     choose_uint_index_dtype,
     dtype_effective_bits,
@@ -101,7 +103,7 @@ def test_choose_uint_coord_dtype_rejects_invalid() -> None:
     with pytest.raises(ValueError):
         choose_uint_coord_dtype(nbits=0)
     with pytest.raises(ValueError):
-        choose_uint_coord_dtype(nbits=33)
+        choose_uint_coord_dtype(nbits=65)
 
 
 def test_choose_lut_dtype_for_index_dtype() -> None:
@@ -111,3 +113,54 @@ def test_choose_lut_dtype_for_index_dtype() -> None:
 
     # Signed dtype has one fewer effective bit
     assert choose_lut_dtype_for_index_dtype(np.dtype(np.int16)) is np.uint16
+
+
+@pytest.mark.parametrize(
+    ("nbits", "dims", "expected"),
+    [
+        (1, 2, np.int8),
+        (3, 2, np.int8),
+        (4, 2, np.int16),
+        (5, 3, np.int16),
+        (8, 2, np.int32),
+        (10, 3, np.int32),
+        (21, 3, np.int64),
+    ],
+)
+def test_choose_sint_index_dtype(
+    nbits: int, dims: int, expected: type[np.signedinteger]
+) -> None:
+    assert choose_sint_index_dtype(nbits=nbits, dims=dims) == expected
+
+
+def test_choose_sint_index_dtype_rejects_invalid() -> None:
+    with pytest.raises(ValueError):
+        choose_sint_index_dtype(nbits=0, dims=2)
+    with pytest.raises(ValueError):
+        choose_sint_index_dtype(nbits=1, dims=0)
+    with pytest.raises(ValueError):
+        choose_sint_index_dtype(nbits=22, dims=3)
+
+
+@pytest.mark.parametrize(
+    ("nbits", "expected"),
+    [
+        (1, np.int8),
+        (7, np.int8),
+        (8, np.int16),
+        (15, np.int16),
+        (16, np.int32),
+        (31, np.int32),
+        (32, np.int64),
+        (63, np.int64),
+    ],
+)
+def test_choose_sint_coord_dtype(nbits: int, expected: type[np.signedinteger]) -> None:
+    assert choose_sint_coord_dtype(nbits=nbits) == expected
+
+
+def test_choose_sint_coord_dtype_rejects_invalid() -> None:
+    with pytest.raises(ValueError):
+        choose_sint_coord_dtype(nbits=0)
+    with pytest.raises(ValueError):
+        choose_sint_coord_dtype(nbits=64)
