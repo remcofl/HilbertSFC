@@ -1,9 +1,9 @@
-"""2D encode kernel builders."""
+"""2D encode Numba kernels+builders."""
 
 import numba as nb
 import numpy as np
 
-from hilbertsfc._typing import IntScalar, TileNBits2D, UIntArray
+from hilbertsfc.types import IntScalar, TileNBits2D, UIntArray
 
 from .._cache import kernel_cache
 from .._luts import lut_2d4b_b_qs_u64, lut_2d7b_b_qs_u64
@@ -89,7 +89,7 @@ def build_hilbert_encode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
     else:
         raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def encode_2d(x: IntScalar, y: IntScalar) -> int:
         return kernel(x, y, nbits, lut)  # type: ignore[reportReturnType]
 
@@ -106,7 +106,7 @@ def build_hilbert_encode_2d_batch_impl(
 
     encode_scalar = build_hilbert_encode_2d_impl(nbits, tile_nbits=tile_nbits)
 
-    @nb.njit(parallel=parallel, cache=True)
+    @nb.njit(parallel=parallel, cache=False)
     def encode_2d_batch(xs: UIntArray, ys: UIntArray, out: UIntArray) -> None:
         n = xs.size
         for i in nb.prange(n):  # type: ignore[not-iterable]

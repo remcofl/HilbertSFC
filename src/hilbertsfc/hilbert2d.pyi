@@ -4,7 +4,7 @@ from typing import Literal, overload
 import numpy as np
 from numpy.typing import NDArray
 
-from ._typing import (
+from .types import (
     Int8Array,
     Int16Array,
     Int32Array,

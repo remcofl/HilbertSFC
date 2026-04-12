@@ -1,4 +1,4 @@
-"""2D decode kernel builders."""
+"""2D decode Numba kernels+builders."""
 
 import numba as nb
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 from .._cache import kernel_cache
 from .._luts import lut_2d4b_q_bs_u64, lut_2d7b_q_bs_u64
 from .._nbits import validate_nbits_2d
-from .._typing import IntScalar, TileNBits2D, UIntArray
+from ..types import IntScalar, TileNBits2D, UIntArray
 
 
 @nb.njit(inline="always")
@@ -91,7 +91,7 @@ def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
     else:
         raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def decode_2d(index: IntScalar) -> tuple[int, int]:
         return kernel(index, nbits, lut)
 
@@ -108,7 +108,7 @@ def build_hilbert_decode_2d_batch_impl(
 
     decode_scalar = build_hilbert_decode_2d_impl(nbits, tile_nbits=tile_nbits)
 
-    @nb.njit(parallel=parallel, cache=True)
+    @nb.njit(parallel=parallel, cache=False)
     def decode_2d_batch(indices: UIntArray, xs: UIntArray, ys: UIntArray) -> None:
         n = indices.size
         for i in nb.prange(n):  # type: ignore[not-iterable]

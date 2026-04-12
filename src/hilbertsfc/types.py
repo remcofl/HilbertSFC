@@ -64,5 +64,5 @@ Allows either the dtype *type* (e.g. ``np.uint32``) or a ``numpy.dtype`` instanc
 type TileNBits2D = Literal[4, 7]
 """2D tile size in bits.
 
-This selects the 2D kernel/LUT variant.
+Allowed values are 4 and 7, corresponding to the supported LUT/kernel variants.
 """

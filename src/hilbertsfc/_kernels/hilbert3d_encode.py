@@ -1,4 +1,4 @@
-"""3D encode kernel builders."""
+"""3D encode Numba kernel+builders."""
 
 import numba as nb
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 from .._cache import kernel_cache
 from .._luts import lut_3d2b_sb_so
 from .._nbits import validate_nbits_3d
-from .._typing import IntScalar, LutUIntDTypeLike, UIntArray
+from ..types import IntScalar, LutUIntDTypeLike, UIntArray
 
 
 @nb.njit(inline="always")
@@ -48,7 +48,7 @@ def build_hilbert_encode_3d_impl(
 
     lut = lut_3d2b_sb_so(lut_dtype)
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def encode_3d(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
         return _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut)  # type: ignore[reportReturnType]
 
@@ -65,7 +65,7 @@ def build_hilbert_encode_3d_batch_impl(
 
     encode_scalar = build_hilbert_encode_3d_impl(nbits, lut_dtype=lut_dtype)
 
-    @nb.njit(parallel=parallel, cache=True)
+    @nb.njit(parallel=parallel, cache=False)
     def encode_3d_batch(
         xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
     ) -> None:

@@ -1,6 +1,6 @@
 """Public 3D Hilbert API.
 
-This module provides the main user-facing API for 2D Hilbert encoding and decoding:
+This module provides the main user-facing API for 3D Hilbert encoding and decoding:
 
 - ``hilbert_encode_3d``
 - ``hilbert_decode_3d``
@@ -39,7 +39,7 @@ from ._dtype import (
 from ._flatten import flatten_nocopy as _flatten_nocopy
 from ._input_checks import is_int_scalar_or_0d_array
 from ._nbits import MAX_NBITS_3D, validate_nbits_3d
-from ._typing import IntArray, IntScalar, LutUIntDTypeLike
+from .types import IntArray, IntScalar, LutUIntDTypeLike
 
 
 def hilbert_encode_3d(
@@ -51,14 +51,14 @@ def hilbert_encode_3d(
     out: IntArray | None = None,
     parallel: bool = False,
 ) -> int | IntArray:
-    """Encode 3D coordinates to a Hilbert index.
+    """Encode 3D integer coordinates to Hilbert indices.
 
-    This is a unified entrypoint:
+    This function supports both scalar and array inputs:
 
-    - **Scalar mode**: if ``x``, ``y``, ``z`` are scalar integers, returns a Python
-      ``int``.
-    - **Array mode**: if ``x``, ``y``, ``z`` are NumPy integer arrays, returns a
-      NumPy array of indices (and supports ``out=``).
+    - **Scalar mode**: if ``x``, ``y``, and ``z`` are scalar integers, returns a
+    Python ``int``.
+    - **Array mode**: if ``x``, ``y``, and ``z`` are NumPy integer arrays, returns
+    an array of unsigned indices with the same shape and supports ``out=``.
 
     Parameters
     ----------
@@ -67,58 +67,55 @@ def hilbert_encode_3d(
 
         - Scalar mode: Python ``int`` or NumPy integer scalar.
         - Array mode: NumPy integer arrays of identical shape.
-
-        Boolean inputs are rejected.
     nbits
-        Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
-        For best performance and tighter output dtypes, set this to the tightest
-        bound that fits your coordinate range.
+        Number of bits per coordinate axis. This defines a coordinate domain of
+        ``[0, 2**nbits)`` on each axis. For inputs outside that domain, only the low
+        ``nbits`` bits of each coordinate are used.
 
-        Must satisfy ``1 <= nbits <= 21``. When specified, it must also
-        fit in the effective bits of the largest coordinate dtype. Bits outside the
-        domain are ignored.
+        Must satisfy ``1 <= nbits <= 21``. If provided, it must also fit within
+        the usable bits of the coordinate dtype.
 
-        If ``None`` (default), inferred from the input dtype:
+        If ``None``:
 
-        - For arrays: uses the effective bits of the coordinate dtype, capped at 21.
-            For example, ``uint16`` → 16 bits, ``int16`` → 15 bits (sign bit excluded),
-            ``uint64`` or ``int64`` → 21 bits (algorithm maximum).
-        - For Python scalars: defaults to 21.
+        - Array mode: inferred from the coordinate dtype using its usable bit
+        width, capped at 21. For example, ``uint16`` -> 16, ``int16`` -> 15
+        (sign bit excluded), and ``uint64``/``int64`` -> 21.
+        - Scalar mode: defaults to 21.
 
-        For array mode, if the inferred value exceeds the algorithm maximum
-        (21 bits), a ``UserWarning`` is emitted and ``nbits`` is capped at 21.
+        For best performance and tighter output dtypes, pass the smallest value
+        that covers the input coordinate range.
     out
-        Optional output array for array mode. Must have the same shape as
-        ``x``/``y``/``z`` and an integer dtype wide enough to hold
-        ``3*nbits`` bits (unsigned). Not allowed in scalar mode.
+        Optional output array for array mode.
+
+        Must have the same shape as ``x``, ``y``, and ``z`` and an unsigned integer
+        dtype wide enough to hold ``3 * nbits`` bits.
+
+        Not allowed in scalar mode.
     parallel
-        Array mode: if ``True``, the underlying Numba kernel may use parallel
-        execution.
+        Controls whether the array-mode Numba kernel may execute in parallel.
 
-        Scalar mode: accepted for API consistency, but ignored. If ``True``, a
-        ``UserWarning`` is emitted.
+        In scalar mode, this argument is accepted for API consistency but has no
+        effect. If ``True``, a ``UserWarning`` is emitted.
 
-        The number of threads can be controlled with the environment variable
-        `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.
+        The number of threads can be controlled with ``NUMBA_NUM_THREADS`` or
+        ``numba.set_num_threads()``.
 
     Returns
     -------
-    int or numpy.ndarray
-        - Scalar mode: the Hilbert index as Python ``int``.
+    int | IntArray
+        Hilbert index or indices.
+
+        - Scalar mode: the Hilbert index as a Python ``int``.
         - Array mode: an array of unsigned indices.
 
-        When ``out`` is not provided, the output dtype is chosen automatically:
-
-        - ``uint8``  if ``nbits <= 2``
-        - ``uint16`` if ``nbits <= 5``
-        - ``uint32`` if ``nbits <= 10``
-        - ``uint64`` otherwise up to ``nbits <= 21``
+        If ``out`` is not provided in array mode, the output dtype is the smallest
+        unsigned integer type that can hold ``3 * nbits`` bits.
 
     Raises
     ------
     TypeError
-        If inputs are mixed between scalar and array modes, if boolean inputs are
-        provided, or if ``out`` is used in scalar mode.
+        If ``x``, ``y``, and ``z`` are not all scalars or not all arrays, if a
+        non-integer input is provided, or if ``out`` is used in scalar mode.
     ValueError
         If ``nbits`` is invalid, if array inputs have mismatched shapes, or if
         ``out`` has the wrong shape or an insufficient dtype.
@@ -164,14 +161,15 @@ def hilbert_decode_3d(
     out_z: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[int, int, int] | tuple[IntArray, IntArray, IntArray]:
-    """Decode a Hilbert index to 3D coordinates.
+    """Decode Hilbert indices to 3D integer coordinates.
 
-    This is a unified entrypoint:
+    This function supports both scalar and array inputs:
 
     - **Scalar mode**: if ``index`` is a scalar integer, returns ``(x, y, z)`` as
-      Python ``int``.
-    - **Array mode**: if ``index`` is a NumPy integer array, returns ``(xs, ys, zs)``
-      as NumPy arrays and supports ``out_x=``/``out_y=``/``out_z=``.
+    Python ``int`` values.
+    - **Array mode**: if ``index`` is a NumPy integer array, returns coordinate
+    arrays with the same shape and supports ``out_x=``, ``out_y=``, and
+    ``out_z=``.
 
     Parameters
     ----------
@@ -180,58 +178,60 @@ def hilbert_decode_3d(
 
         - Scalar mode: Python ``int`` or NumPy integer scalar.
         - Array mode: NumPy integer array.
-
-        Boolean inputs are rejected.
     nbits
-        Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
-        For best performance and tighter output dtypes, set this to the tightest
-        bound that fits your coordinate range.
+        Number of bits per coordinate axis. This defines a coordinate domain of
+        ``[0, 2**nbits)`` on each axis and a Hilbert index range of
+        ``[0, 2**(3 * nbits))``. For indices outside that range, only the low
+        ``3 * nbits`` bits are used.
 
-        Must satisfy ``1 <= nbits <= 21``. When specified, it must not
-        exceed the effective bits supported by the index dtype. Bits outside the
-        domain are ignored.
+        Must satisfy ``1 <= nbits <= 21``. If provided, it must also fit within
+        the usable bits of the index dtype.
 
-        If ``None`` (default), inferred from the index dtype:
+        If ``None``:
 
-        - For arrays: uses ``index_bits / 3``, where index_bits is the effective
-            bits of the index dtype. For example, ``uint32`` → 10 bits, ``uint64`` → 21 bits,
-            ``int64`` → 21 bits (63 bits effective / 3).
-        - For Python scalars: defaults to 21.
+        - Array mode: inferred from the index dtype as one third of its usable bit
+        width, capped at 21. For example, ``uint16`` -> 5, and ``int64`` -> 21.
+        - Scalar mode: defaults to 21.
+
+        For best performance and tighter output dtypes, pass the smallest value
+        that covers the input index range.
     out_x, out_y, out_z
-        Optional output buffers for array mode. Either provide all three or none.
-        Must have the same shape as ``index`` and an integer dtype wide enough to
-        hold values in ``[0, 2**nbits)`` (unsigned).
+        Optional coordinate output arrays for array mode. Either provide all
+        three or none.
+
+        Each must have the same shape as ``index`` and an unsigned integer dtype
+        wide enough to hold ``nbits`` bits.
+
         Not allowed in scalar mode.
     parallel
-        Array mode: if ``True``, the underlying Numba kernel may use parallel
-        execution.
+        Controls whether the array-mode Numba kernel may execute in parallel.
 
-        Scalar mode: accepted for API consistency, but ignored. If ``True``, a
-        ``UserWarning`` is emitted.
+        In scalar mode, this argument is accepted for API consistency but has no
+        effect. If ``True``, a ``UserWarning`` is emitted.
 
-        The number of threads can be controlled with the environment variable
-        `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.
+        The number of threads can be controlled with ``NUMBA_NUM_THREADS`` or
+        ``numba.set_num_threads()``.
 
     Returns
     -------
-    (int, int, int) or (numpy.ndarray, numpy.ndarray, numpy.ndarray)
-        The decoded coordinates.
+    tuple[int, int, int] | tuple[IntArray, IntArray, IntArray]
+        Decoded coordinates.
 
-        When output buffers are not provided in array mode, the coordinate dtype is
-        chosen automatically:
+        - Scalar mode: ``(x, y, z)`` as Python ``int`` values.
+        - Array mode: ``(x, y, z)`` as unsigned integer arrays.
 
-        - ``uint8``  if ``nbits <= 8``
-        - ``uint16`` if ``nbits <= 16``
-        - ``uint32`` if ``nbits <= 21``
+        If ``out_x``, ``out_y``, and ``out_z`` are not provided in array mode,
+        each result dtype is the smallest unsigned integer type that can hold
+        ``nbits`` bits.
 
     Raises
     ------
     TypeError
-        If boolean inputs are provided or if output buffers are used in scalar mode.
+        If a non-integer input is provided or if output buffers are used in scalar
+        mode.
     ValueError
-        If ``nbits`` is invalid or does not fit in the provided index/coord dtypes,
-        or if output buffers are inconsistent (not all three provided) or have
-        incorrect shapes.
+        If ``nbits`` is invalid, if it does not fit in the index or output dtypes,
+        or if output buffers are inconsistent or have incorrect shapes.
     """
 
     index_is_scalar = is_int_scalar_or_0d_array(index)
@@ -304,9 +304,9 @@ def _hilbert_decode_3d_scalar(
 
 
 def _hilbert_encode_3d_batch(
-    xs: IntArray,
-    ys: IntArray,
-    zs: IntArray,
+    x: IntArray,
+    y: IntArray,
+    z: IntArray,
     nbits: int | None,
     *,
     out: IntArray | None = None,
@@ -314,16 +314,15 @@ def _hilbert_encode_3d_batch(
 ) -> IntArray:
     """Internal batch 3D Hilbert encode."""
 
-    if xs.shape != ys.shape or xs.shape != zs.shape:
+    if x.shape != y.shape or x.shape != z.shape:
         raise ValueError(
-            "xs, ys, zs must have the same shape; "
-            f"got xs.shape={xs.shape}, ys.shape={ys.shape}, zs.shape={zs.shape}"
+            f"x, y, z must have the same shape; got {x.shape=}, {y.shape=}, {z.shape=}"
         )
 
     max_coord_nbits = max(
-        dtype_effective_bits(xs.dtype),
-        dtype_effective_bits(ys.dtype),
-        dtype_effective_bits(zs.dtype),
+        dtype_effective_bits(x.dtype),
+        dtype_effective_bits(y.dtype),
+        dtype_effective_bits(z.dtype),
     )
     if nbits is None:
         nbits = max_coord_nbits
@@ -342,37 +341,37 @@ def _hilbert_encode_3d_batch(
         if nbits > max_coord_nbits:
             raise ValueError(
                 f"nbits={nbits} does not fit in coordinate dtypes; "
-                f"got xs.dtype={xs.dtype} with {dtype_effective_bits(xs.dtype)} effective bits, "
-                f"ys.dtype={ys.dtype} with {dtype_effective_bits(ys.dtype)} effective bits; "
-                f"zs.dtype={zs.dtype} with {dtype_effective_bits(zs.dtype)} effective bits; "
+                f"got {x.dtype=} with {dtype_effective_bits(x.dtype)} effective bits, "
+                f"{y.dtype=} with {dtype_effective_bits(y.dtype)} effective bits; "
+                f"{z.dtype=} with {dtype_effective_bits(z.dtype)} effective bits; "
                 f"max nbits is {max_coord_nbits}."
             )
 
     if out is None:
         index_dtype = choose_uint_index_dtype(nbits=nbits, dims=3)
-        out_u = out = np.empty(xs.shape, dtype=index_dtype, order="C")
+        out_u = out = np.empty(x.shape, dtype=index_dtype, order="C")
     else:
-        if out.shape != xs.shape:
+        if out.shape != x.shape:
             raise ValueError(
-                f"out must have the same shape as xs/ys/zs; got out.shape={out.shape}, xs.shape={xs.shape}"
+                f"out must have the same shape as x/y/z; got {out.shape=}, {x.shape=}"
             )
         max_index_nbits = max_nbits_for_index_dtype(out.dtype, dims=3)
         if nbits > max_index_nbits:
             viable_dtype = np.dtype(choose_uint_index_dtype(nbits=nbits, dims=3))
             raise ValueError(
-                f"nbits={nbits} does not fit in out dtype; got out.dtype={out.dtype} "
+                f"nbits={nbits} does not fit in out dtype; got {out.dtype=} "
                 f"which supports up to nbits={max_index_nbits}; "
                 f"consider using {viable_dtype} out dtype, or reduce nbits to fit the out dtype."
             )
         out_u = unsigned_view(out)
 
-    xs_u = unsigned_view(xs)
-    ys_u = unsigned_view(ys)
-    zs_u = unsigned_view(zs)
+    x_u = unsigned_view(x)
+    y_u = unsigned_view(y)
+    z_u = unsigned_view(z)
 
-    xs_1d = _flatten_nocopy(xs_u, "xs", order="C", strict=False)
-    ys_1d = _flatten_nocopy(ys_u, "ys", order="C", strict=False)
-    zs_1d = _flatten_nocopy(zs_u, "zs", order="C", strict=False)
+    x_1d = _flatten_nocopy(x_u, "x", order="C", strict=False)
+    y_1d = _flatten_nocopy(y_u, "y", order="C", strict=False)
+    z_1d = _flatten_nocopy(z_u, "z", order="C", strict=False)
     out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
     builder = get_encode_3d_batch_builder()
@@ -381,12 +380,12 @@ def _hilbert_encode_3d_batch(
         lut_dtype=choose_lut_dtype_for_index_dtype(out.dtype),
         parallel=parallel,
     )
-    impl(xs_1d, ys_1d, zs_1d, out_1d)
+    impl(x_1d, y_1d, z_1d, out_1d)
     return out
 
 
 def _hilbert_decode_3d_batch(
-    indices: IntArray,
+    index: IntArray,
     nbits: int | None,
     *,
     out_x: IntArray | None = None,
@@ -396,15 +395,15 @@ def _hilbert_decode_3d_batch(
 ) -> tuple[IntArray, IntArray, IntArray]:
     """Internal batch 3D Hilbert decode."""
 
-    max_index_nbits = max_nbits_for_index_dtype(indices.dtype, dims=3)
+    max_index_nbits = max_nbits_for_index_dtype(index.dtype, dims=3)
     if nbits is None:
         nbits = max_index_nbits
     else:
         validate_nbits_3d(nbits)
         if nbits > max_index_nbits:
             raise ValueError(
-                f"nbits={nbits} exceeds the effective bits of the index dtype; "
-                f"got indices.dtype={indices.dtype} which supports up to {max_index_nbits} bits for 3D coordinates. "
+                f"{nbits=} exceeds the effective bits of the index dtype; "
+                f"got {index.dtype=} which supports up to {max_index_nbits} bits for 3D coordinates. "
                 f"max nbits is {max_index_nbits}."
             )
 
@@ -414,18 +413,18 @@ def _hilbert_decode_3d_batch(
 
     if out_x is None or out_y is None or out_z is None:
         coord_dtype = choose_uint_coord_dtype(nbits=nbits)
-        out_x_u = out_x = np.empty(indices.shape, dtype=coord_dtype, order="C")
-        out_y_u = out_y = np.empty(indices.shape, dtype=coord_dtype, order="C")
-        out_z_u = out_z = np.empty(indices.shape, dtype=coord_dtype, order="C")
+        out_x_u = out_x = np.empty(index.shape, dtype=coord_dtype, order="C")
+        out_y_u = out_y = np.empty(index.shape, dtype=coord_dtype, order="C")
+        out_z_u = out_z = np.empty(index.shape, dtype=coord_dtype, order="C")
     else:
         if (
-            out_x.shape != indices.shape
-            or out_y.shape != indices.shape
-            or out_z.shape != indices.shape
+            out_x.shape != index.shape
+            or out_y.shape != index.shape
+            or out_z.shape != index.shape
         ):
             raise ValueError(
-                "out_x, out_y, out_z must have the same shape as indices; "
-                f"got indices.shape={indices.shape}, out_x.shape={out_x.shape}, out_y.shape={out_y.shape}, out_z.shape={out_z.shape}"
+                "out_x, out_y, out_z must have the same shape as index; "
+                f"got {index.shape=}, {out_x.shape=}, {out_y.shape=}, {out_z.shape=}"
             )
         max_coord_nbits = min(
             dtype_effective_bits(out_x.dtype),
@@ -434,10 +433,10 @@ def _hilbert_decode_3d_batch(
         )
         if nbits > max_coord_nbits:
             raise ValueError(
-                f"nbits={nbits} does not fit in out_x/out_y dtypes; "
-                f"got out_x.dtype={out_x.dtype} with {dtype_effective_bits(out_x.dtype)} effective bits, "
-                f"out_y.dtype={out_y.dtype} with {dtype_effective_bits(out_y.dtype)} effective bits; "
-                f"out_z.dtype={out_z.dtype} with {dtype_effective_bits(out_z.dtype)} effective bits; "
+                f"{nbits=} does not fit in out_x/out_y dtypes; "
+                f"got {out_x.dtype=} with {dtype_effective_bits(out_x.dtype)} effective bits, "
+                f"{out_y.dtype=} with {dtype_effective_bits(out_y.dtype)} effective bits; "
+                f"{out_z.dtype=} with {dtype_effective_bits(out_z.dtype)} effective bits; "
                 f"max nbits is {max_coord_nbits}"
             )
 
@@ -445,9 +444,9 @@ def _hilbert_decode_3d_batch(
         out_y_u = unsigned_view(out_y)
         out_z_u = unsigned_view(out_z)
 
-    indices_u = unsigned_view(indices)
+    index_u = unsigned_view(index)
 
-    indices_1d = _flatten_nocopy(indices_u, "indices", order="C", strict=False)
+    index_1d = _flatten_nocopy(index_u, "index", order="C", strict=False)
     out_x_1d = _flatten_nocopy(out_x_u, "out_x", order="C", strict=False)
     out_y_1d = _flatten_nocopy(out_y_u, "out_y", order="C", strict=False)
     out_z_1d = _flatten_nocopy(out_z_u, "out_z", order="C", strict=False)
@@ -455,10 +454,10 @@ def _hilbert_decode_3d_batch(
     builder = get_decode_3d_batch_builder()
     impl = builder(
         nbits,
-        lut_dtype=choose_lut_dtype_for_index_dtype(indices.dtype),
+        lut_dtype=choose_lut_dtype_for_index_dtype(index.dtype),
         parallel=parallel,
     )
-    impl(indices_1d, out_x_1d, out_y_1d, out_z_1d)
+    impl(index_1d, out_x_1d, out_y_1d, out_z_1d)
     return out_x, out_y, out_z
 
 
@@ -467,7 +466,7 @@ def get_hilbert_encode_3d_kernel(
 ) -> Callable[[IntScalar, IntScalar, IntScalar], IntScalar]:
     """Return a Numba-compiled *scalar* 3D Hilbert encoder.
 
-    This is the low-level kernel used by :func:`hilbert_encode_3d` in scalar mode
+    This is the low-level kernel used by [`hilbert_encode_3d`][hilbertsfc.hilbert3d.hilbert_encode_3d] in scalar mode
     and is intended for fusing into your own ``@numba.njit`` loops.
 
     Parameters
@@ -477,12 +476,12 @@ def get_hilbert_encode_3d_kernel(
     lut_dtype
         Element dtype used for the internal lookup tables.
 
-        Default is ``uint16`` (smallest; ~3 KiB LUT footprint). When fusing into
+        Default is ``uint16`` (smallest; 3 KiB LUT footprint). When fusing into
         a cache-intensive kernel, keeping the LUT small can help.
 
         For best throughput, it is usually better to match ``lut_dtype``
         to your index dtype (``uint16``/``uint32``/``uint64``), which increases LUT
-        size (~6 KiB for ``uint32``, ~12 KiB for ``uint64``) but reduces widening.
+        size (6 KiB for ``uint32``, 12 KiB for ``uint64``) but reduces widening.
         In isolation, even the larger LUTs typically fit comfortably within the
         per-core L1 data cache of modern CPUs.
 
@@ -501,7 +500,7 @@ def get_hilbert_decode_3d_kernel(
 ) -> Callable[[IntScalar], tuple[int, int, int]]:
     """Return a Numba-compiled *scalar* 3D Hilbert decoder.
 
-    This is the low-level kernel used by :func:`hilbert_decode_3d` in scalar mode
+    This is the low-level kernel used by [`hilbert_decode_3d`][hilbertsfc.hilbert3d.hilbert_decode_3d] in scalar mode
     and is intended for fusing into your own ``@numba.njit`` loops.
 
     Parameters
@@ -511,7 +510,7 @@ def get_hilbert_decode_3d_kernel(
     lut_dtype
         Element dtype used for the internal lookup tables.
 
-        See :func:`get_hilbert_encode_3d_kernel` for the performance tradeoff.
+        See [`get_hilbert_encode_3d_kernel`][hilbertsfc.hilbert3d.get_hilbert_encode_3d_kernel] for the performance tradeoff.
 
     Returns
     -------
