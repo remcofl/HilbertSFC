@@ -1,4 +1,4 @@
-"""3D decode kernel builders."""
+"""3D decode Numba kernel+builders."""
 
 import numba as nb
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 from .._cache import kernel_cache
 from .._luts import lut_3d2b_so_sb
 from .._nbits import validate_nbits_3d
-from .._typing import IntScalar, LutUIntDTypeLike, UIntArray
+from ..types import IntScalar, LutUIntDTypeLike, UIntArray
 
 
 @nb.njit(inline="always")
@@ -46,7 +46,7 @@ def build_hilbert_decode_3d_impl(
 
     lut = lut_3d2b_so_sb(lut_dtype)
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def decode_3d(index: IntScalar) -> tuple[int, int, int]:
         return _hilbert_decode_3d_2bit_sb(index, nbits, lut)
 
@@ -63,7 +63,7 @@ def build_hilbert_decode_3d_batch_impl(
 
     decode_scalar = build_hilbert_decode_3d_impl(nbits, lut_dtype=lut_dtype)
 
-    @nb.njit(parallel=parallel, cache=True)
+    @nb.njit(parallel=parallel, cache=False)
     def decode_3d_batch(
         indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
     ) -> None:

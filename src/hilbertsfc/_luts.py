@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 
 from . import _data
 from ._cache import lut_cache
-from ._typing import LutUIntDTypeLike, UIntArray
+from .types import LutUIntDTypeLike, UIntArray
 
 
 def _validate_lut_3d2b_uint_dtype(
