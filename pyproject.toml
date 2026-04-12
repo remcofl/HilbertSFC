@@ -42,7 +42,7 @@ Documentation = "https://remcofl.github.io/HilbertSFC/"
 Issues = "https://github.com/remcofl/HilbertSFC/issues"
 
 [project.optional-dependencies]
-torch = ["torch>=2.11.0"]
+torch = ["torch>=2.5.0"]
 
 [build-system]
 requires = ["uv_build>=0.10.9,<0.11.0"]
@@ -82,8 +82,15 @@ scripts = [
     "pillow>=12.1.0",
     "rich>=14.3.2",
 ]
-test = ["pytest>=9.0.2"]
+runtime-min = ["numpy==1.26.0", "numba==0.59.0"]
+test = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.1.0",
+    "pytest-xdist>=3.8.0",
+]
 torch-cpu = ["torch>=2.11.0"]
+torch-cpu-min = ["torch==2.5.0"]
+torch-cu118-min = ["torch==2.5.0"]
 torch-cu130 = ["torch>=2.11.0"]
 torch-rocm = ["torch>=2.11.0", "triton-rocm==3.6.0"]
 typecheck = ["pyright>=1.1.408", "pyrefly>=0.51.0", "ty>=0.0.15"]
@@ -127,6 +134,15 @@ addopts = "-ra"
 testpaths = ["tests"]
 markers = [
     "slow: exhaustive tests that may take longer (deselect with '-m \"not slow\"')",
+    "torch: tests for hilbertsfc.torch frontend",
+    "compile: tests covering torch.compile compatibility",
+    "no_graph_break: stricter torch.compile(fullgraph=True) tests",
+    "gpu: tests requiring a CUDA-capable GPU",
+    "triton: tests requiring Triton backend",
+]
+filterwarnings = [
+    # PyTorch emits a DeprecationWarning from torch.jit._script on import.
+    "ignore:.*torch\\.jit\\.script_method.*:DeprecationWarning:torch\\.jit\\._script",
 ]
 
 [tool.uv]
@@ -135,14 +151,24 @@ exclude-newer-package = { "torch" = false, "triton-rocm" = false }
 conflicts = [
     [
         { group = "torch-cpu" },
+        { group = "torch-cpu-min" },
+        { group = "torch-cu118-min" },
         { group = "torch-cu130" },
         { group = "torch-rocm" },
     ],
+    [
+        { group = "runtime-min" },
+        { group = "notebooks" },
+        { group = "scripts" },
+        { group = "bench" },
+    ]
 ]
 
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", group = "torch-cpu" },
+    { index = "pytorch-cpu", group = "torch-cpu-min" },
+    { index = "pytorch-cu118", group = "torch-cu118-min" },
     { index = "pytorch-cu130", group = "torch-cu130" },
     { index = "pytorch-rocm", group = "torch-rocm" },
 ]
@@ -151,6 +177,11 @@ triton-rocm = [{ index = "pytorch-rocm", group = "torch-rocm" }]
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
 explicit = true
 
 [[tool.uv.index]]
