@@ -20,6 +20,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tracking
+    - navigation.indexes
     - content.code.copy
   palette:
     # Palette toggle for automatic mode
@@ -52,10 +53,12 @@ nav:
   - Home: index.md
   - Quick start: quickstart.md
   - API Reference:
-      - Package: api/package.md
-      - 2D: api/2d.md
-      - 3D: api/3d.md
-      - Types: api/types.md
+      - api/index.md
+      - hilbertsfc: api/hilbertsfc.md
+      - hilbertsfc.torch: api/torch.md
+      - Types:
+          - hilbertsfc.types: api/types/types.md
+          - hilbertsfc.torch.types: api/types/torch_types.md
 
 plugins:
   - search
@@ -65,15 +68,26 @@ plugins:
         python:
           paths: [src]
           options:
+            docstring_section_style: table
             docstring_style: numpy
             show_source: false
             show_signature_annotations: true
             separate_signature: true
             show_overloads: false
+            show_root_heading: true
+            show_category_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+          inventories:
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+            - https://pytorch.org/docs/stable/objects.inv
 
 markdown_extensions:
-  - admonition
+  - pymdownx.blocks.admonition
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.blocks.tab:
+      alternate_style: true
   - toc:
       permalink: true

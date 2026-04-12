@@ -37,15 +37,18 @@ HilbertSFC
 
 ---
 
-This project is **performance-first** and **implemented entirely in Python**. The hot kernels are JIT-compiled with Numba and tuned for:
+> ✨ **New (v0.3.0)**: PyTorch support for GPU-accelerated Hilbert encode/decode.
+
+This library is **performance-first** and **implemented entirely in Python**. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding operations.
+
+The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:
 
 - **Branchless, fully unrolled inner loops**
-- **SIMD via LLVM vector intrinsics**
 - **Small, L1-cache-friendly lookup tables (LUTs)**
-- **Reduced dependency chains for better ILP and MLP**
-- **Optional multi-threading for batch operations**
-
-It provides both convenient Python APIs and *kernel accessors* designed to be embedded into other Numba kernels.
+- **Reduced dependency chains for better ILP and MLP (e.g. state-independent lookups)**
+- **Multi-threading for batch processing**
+- **SIMD via LLVM vector intrinsics (CPU)**
+- **Reduced register pressure (GPU)**
 
 ## Performance
 

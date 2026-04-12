@@ -1,3 +1,0 @@
-# Types
-
-::: hilbertsfc._typing

@@ -14,20 +14,29 @@ HilbertSFC
 </p>
 
 <p align="center">
-    <sub>2D Hilbert curves (nbits 1..5) and 3D Hilbert curves (nbits 1..4, animated).</sub>
+    <sub>2D Hilbert curves (nbits 1..5) and 3D Hilbert curves (nbits 1..4).</sub>
 </p>
 
 ---
 
-This project is **performance-first** and **implemented entirely in Python**. The hot kernels are JIT-compiled with Numba and tuned for:
+> ✨ **New (v0.3.0)**: PyTorch support for GPU-accelerated Hilbert encode/decode.
 
-- **Branchless, fully unrolled inner loops**
-- **SIMD via LLVM vector intrinsics**
-- **Small, L1-cache-friendly lookup tables (LUTs)**
-- **Reduced dependency chains for better ILP, e.g., state-independent gather**
-- **Optional multi-threading for batch operations**
+This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding operations.
 
-It provides both convenient Python APIs and *kernel accessors* designed to be embedded into other Numba kernels.
+The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:
+
+- Branchless, fully unrolled inner loops
+- Small, L1-cache-friendly lookup tables (LUTs)
+- Reduced dependency chains for better ILP and MLP (e.g. state-independent lookups)
+- Multi-threading for batch processing
+- SIMD via LLVM vector intrinsics (CPU)
+- Reduced register pressure (GPU)
+
+## When and why to use HilbertSFC?
+
+If you have 2D or 3D coordinates and need a 1D ordering that preserves spatial locality, the Hilbert space-filling curve is a strong choice: points that are close in Euclidean space tend to remain close after mapping to a Hilbert index. HilbertSFC
+is designed for high-throughput workloads, such as spatial indexing (GIS/databases), machine/deep learning, and scientific computing, where Hilbert curve mapping performance matters.
+
 
 ## Quick start
 
@@ -35,9 +44,7 @@ Start here: [Quick start](quickstart.md)
 
 ## API reference
 
-- [`hilbert_encode_2d`][hilbertsfc.hilbert2d.hilbert_encode_2d]
-- [`hilbert_decode_2d`][hilbertsfc.hilbert2d.hilbert_decode_2d]
-- [`hilbert_encode_3d`][hilbertsfc.hilbert3d.hilbert_encode_3d]
-- [`hilbert_decode_3d`][hilbertsfc.hilbert3d.hilbert_decode_3d]
+Browse the full [API reference](api/index.md), or jump directly to:
 
-For kernel accessors, cache helpers, and typing aliases, use the navigation bar.
+- [`hilbertsfc`][hilbertsfc]
+- [`hilbertsfc.torch`][hilbertsfc.torch]
