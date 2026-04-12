@@ -18,7 +18,7 @@ def _decode_hilbertsfc(idx, xs, ys, zs, *, nbits):
     from hilbertsfc import hilbert_decode_3d
 
     return hilbert_decode_3d(
-        idx, nbits=nbits, parallel=True, out_xs=xs, out_ys=ys, out_zs=zs
+        idx, nbits=nbits, parallel=True, out_x=xs, out_y=ys, out_z=zs
     )
 
 

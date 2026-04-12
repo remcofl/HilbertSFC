@@ -17,7 +17,7 @@ def _encode_hilbertsfc(xs, ys, out, *, nbits):
 def _decode_hilbertsfc(idx, xs, ys, *, nbits):
     from hilbertsfc import hilbert_decode_2d
 
-    return hilbert_decode_2d(idx, nbits=nbits, parallel=True, out_xs=xs, out_ys=ys)
+    return hilbert_decode_2d(idx, nbits=nbits, parallel=True, out_x=xs, out_y=ys)
 
 
 def _encode_numpy_hilbert_curve(xs, ys, out, *, nbits):
