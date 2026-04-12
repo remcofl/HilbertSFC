@@ -22,3 +22,6 @@ site/
 
 # Git worktrees
 .worktrees/
+
+# Logs
+logs/
