@@ -1,11 +1,11 @@
-"""hilbertsfc package.
+"""Hilbert space-filling curve kernels.
 
-This package is intended to host Hilbert space-filling curve kernels and their
-lookup tables as lazily-loaded package resources.
+The top-level `hilbertsfc` package exposes NumPy/Numba-backed 2D/3D Hilbert
+encode/decode functions, kernel accessors, and cache management helpers.
 
-Public API lives in:
-- ``hilbertsfc.hilbert2d``
-- ``hilbertsfc.hilbert3d``
+For GPU acceleration and `torch.Tensor` inputs, use the optional PyTorch frontend:
+[`hilbertsfc.torch`][hilbertsfc.torch].
+
 """
 
 from ._cache import clear_all_caches, clear_kernel_caches, clear_lut_caches

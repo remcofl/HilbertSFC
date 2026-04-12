@@ -64,7 +64,13 @@ def clear_kernel_caches() -> None:
 
 
 def clear_lut_caches() -> None:
-    """Clear all registered LUT caches."""
+    """Clear all registered LUT caches.
+
+    Notes
+    -----
+    This does *not* clear torch-side device LUT caches; for those, see
+    [`hilbertsfc.torch.clear_torch_lut_caches`][hilbertsfc.torch.clear_torch_lut_caches].
+    """
 
     with _CACHE_REGISTRY_LOCK:
         clears = list(_LUT_CACHES)
@@ -73,7 +79,13 @@ def clear_lut_caches() -> None:
 
 
 def clear_all_caches() -> None:
-    """Clear LUT caches and kernel builder caches."""
+    """Clear LUT caches and kernel builder caches.
+
+    Notes
+    -----
+    This does *not* clear torch-side device LUT caches; for those, see
+    [`hilbertsfc.torch.clear_torch_lut_caches`][hilbertsfc.torch.clear_torch_lut_caches].
+    """
 
     clear_lut_caches()
     clear_kernel_caches()
