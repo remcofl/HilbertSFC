@@ -83,11 +83,7 @@ scripts = [
     "rich>=14.3.2",
 ]
 runtime-min = ["numpy==1.26.0", "numba==0.59.0"]
-test = [
-    "pytest>=9.0.2",
-    "pytest-cov>=7.1.0",
-    "pytest-xdist>=3.8.0",
-]
+test = ["pytest>=9.0.2", "pytest-cov>=7.1.0", "pytest-xdist>=3.8.0"]
 torch-cpu = ["torch>=2.11.0"]
 torch-cpu-min = ["torch==2.5.0"]
 torch-cu118-min = ["torch==2.5.0"]
@@ -159,11 +155,16 @@ conflicts = [
     [
         { group = "runtime-min" },
         { group = "notebooks" },
+    ],
+    [
+        { group = "runtime-min" },
         { group = "scripts" },
+    ],
+    [
+        { group = "runtime-min" },
         { group = "bench" },
-    ]
+    ],
 ]
-
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", group = "torch-cpu" },

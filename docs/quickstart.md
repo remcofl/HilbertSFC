@@ -119,14 +119,14 @@ Arbitrary shapes are supported with *zero-copy* access. Strided views also work 
 /// admonition | Parallel execution
     type: tip
 
-Use `parallel=True` to dispatch the parallel kernel. The number of threads can be controlled with `NUMBA_NUM_THREADS` or at runtime via `numba.set_num_threads()`.
+Use `parallel=True` to dispatch the parallel kernel. The number of threads can be controlled with the environment variable `NUMBA_NUM_THREADS` or at runtime via `numba.set_num_threads()`.
 ///
 
 
 
 ### PyTorch tensors
 
-Use the torch frontend API [`hilbertsfc.torch`][hilbertsfc.torch] for CPU or CUDA tensors. By default on CUDA, contiguous tensors take the Triton path when available; otherwise the implementation falls back to the Torch backend.
+Use the torch frontend API [`hilbertsfc.torch`][hilbertsfc.torch] for PyTorch tensors on CPU and accelerator devices. By default on CUDA, contiguous tensors take the Triton path when available; otherwise the implementation falls back to the Torch backend.
 
 ```python
 import torch
@@ -143,6 +143,7 @@ indices = hilbert_encode_2d(xs, ys, nbits=nbits)
 xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)
 ```
 
+#### Use with `torch.compile`
 If you plan to use [`torch.compile`](https://pytorch.org/docs/stable/generated/torch.compile.html), call [`precache_compile_luts`][hilbertsfc.torch.precache_compile_luts] first so LUT materialization happens outside the compiled region. This avoids graph breaks and extra overhead, and is required for `fullgraph=True`.
 
 ```python
@@ -161,5 +162,9 @@ compiled_encode_then_scale = torch.compile(encode_then_scale, fullgraph=True)
 /// admonition | Free LUT cache
     type: info
 
-Torch-side LUT tensors are cached per device for reuse. The LUT cache is only a couple KiB, so clearing it is rarely necessary, but you can free the associated device memory after one-off use with [`clear_torch_lut_caches`][hilbertsfc.torch.clear_torch_lut_caches].
+Torch-side LUT tensors are cached per device for reuse. The LUT cache is only a couple KiB, so clearing it is rarely necessary, but you can free the associated device memory with [`clear_torch_lut_caches`][hilbertsfc.torch.clear_torch_lut_caches].
 ///
+
+## Next steps
+
+For advanced usage, including embedding scalar kernels into your own Numba code, see [Advanced usage](advanced-usage.md).

@@ -52,13 +52,14 @@ theme:
 nav:
   - Home: index.md
   - Quick start: quickstart.md
+  - Advanced usage: advanced-usage.md
   - API Reference:
       - api/index.md
       - hilbertsfc: api/hilbertsfc.md
       - hilbertsfc.torch: api/torch.md
       - Types:
           - hilbertsfc.types: api/types/types.md
-          - hilbertsfc.torch.types: api/types/torch_types.md
+          - hilbertsfc.torch.types: api/types/torch-types.md
 
 plugins:
   - search

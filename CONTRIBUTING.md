@@ -62,12 +62,16 @@ If you're working on notebooks, docs, benches, or scripts, you can include optio
   - `uvx nox -s lint`
 - Type check:
   - `uvx nox -s typecheck`
-- Unit tests (runs the test session for the configured Python versions):
-  - `uvx nox -s tests`
+- Core unit tests (runs the test session for the configured Python versions):
+  - `uvx nox -s test`
 - Minimum-dependency test run (Python 3.12 only):
-  - `uvx nox -s tests_min`
+  - `uvx nox -s test_min`
+- Unit tests for torch submodule (CPU PyTorch only):
+  - `uvx nox -s test_torch`
 - Docs build (MkDocs strict build):
   - `uvx nox -s docs`
+
+For a list of all sessions, run `uvx nox --list`.
 
 ## Type hints and public API stubs
 
@@ -77,3 +81,19 @@ Public function signatures are typed via stub files (`.pyi`) in the package dire
   - `src/hilbertsfc/hilbert2d.pyi`
   - `src/hilbertsfc/hilbert3d.pyi`
 - `src/hilbertsfc/py.typed` marks the package as typed (PEP 561); keep it included when packaging.
+
+## Documentation
+
+[Documentation](https://remcofl.github.io/HilbertSFC/) is hosted online. It includes a quick start guide, advanced usage, and API reference.
+
+To serve the docs locally:
+
+```bash
+uv run --no-dev --group docs mkdocs serve
+```
+
+Build a static site into `site/`:
+
+```bash
+uv run --no-dev --group docs mkdocs build
+```
