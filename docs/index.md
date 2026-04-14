@@ -17,9 +17,11 @@ HilbertSFC
     <sub>2D Hilbert curves (nbits 1..5) and 3D Hilbert curves (nbits 1..4).</sub>
 </p>
 
----
+<p align="center">
+<strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
+</p>
 
-> ✨ **New (v0.3.0)**: PyTorch support for GPU-accelerated Hilbert encode/decode.
+---
 
 This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding operations.
 
@@ -35,7 +37,7 @@ The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for
 ## When and why to use HilbertSFC?
 
 If you have 2D or 3D coordinates and need a 1D ordering that preserves spatial locality, the Hilbert space-filling curve is a strong choice: points that are close in Euclidean space tend to remain close after mapping to a Hilbert index. HilbertSFC
-is designed for high-throughput workloads, such as spatial indexing (GIS/databases), machine/deep learning, and scientific computing, where Hilbert curve mapping performance matters.
+is designed for high-throughput workloads, such as spatial indexing (GIS/databases), scientific computing, and machine/deep learning, where Hilbert curve mapping performance matters.
 
 
 ## Quick start

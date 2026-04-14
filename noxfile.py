@@ -60,7 +60,7 @@ def typecheck(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON_VERSIONS)
 def test(session: nox.Session) -> None:
-    """Run the unit tests against the default dependency resolver result."""
+    """Run the core unit tests against the default dependency resolver result."""
     try:
         _install(session, groups=["test"])
         _install_project(session)
@@ -72,7 +72,7 @@ def test(session: nox.Session) -> None:
 
 @nox.session(python="3.12")
 def test_min(session: nox.Session) -> None:
-    """Run tests with minimum supported numpy/numba (Python 3.12 only)."""
+    """Run core unit tests with minimum supported numpy/numba (Python 3.12 only)."""
     # Project declares: numpy>=1.26, numba>=0.59
     try:
         _install(session, groups=["test", "runtime-min"])
@@ -137,7 +137,7 @@ def test_torch_cu118_min(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON_VERSIONS)
 def test_torch_compile(session: nox.Session) -> None:
-    """Run torch.compile coverage (opt-in; slower and potentially brittle)."""
+    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
 
     try:
         _install(session, groups=["test", "torch-cpu"])
@@ -150,7 +150,7 @@ def test_torch_compile(session: nox.Session) -> None:
 
 @nox.session(python="3.12")
 def test_torch_compile_min(session: nox.Session) -> None:
-    """Run torch.compile coverage (opt-in; slower and potentially brittle)."""
+    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
 
     try:
         _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
@@ -163,7 +163,7 @@ def test_torch_compile_min(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON_VERSIONS)
 def test_torch_compile_cu130(session: nox.Session) -> None:
-    """Run torch.compile coverage (opt-in; slower and potentially brittle)."""
+    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
 
     try:
         _install(session, groups=["test", "torch-cu130"])
@@ -176,7 +176,7 @@ def test_torch_compile_cu130(session: nox.Session) -> None:
 
 @nox.session(python="3.12")
 def test_torch_compile_cu118_min(session: nox.Session) -> None:
-    """Run torch.compile coverage (opt-in; slower and potentially brittle)."""
+    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
 
     try:
         _install(session, groups=["test", "runtime-min", "torch-cu118-min"])

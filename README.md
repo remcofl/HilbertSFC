@@ -35,11 +35,13 @@ HilbertSFC
     <sub>2D Hilbert curves (nbits 1..5) and 3D Hilbert curves (nbits 1..4, animated).</sub>
 </p>
 
+<p align="center">
+<strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
+</p>
+
 ---
 
-> ✨ **New (v0.3.0)**: PyTorch support for GPU-accelerated Hilbert encode/decode.
-
-This library is **performance-first** and **implemented entirely in Python**. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding operations.
+This library is **performance-first** and **implemented entirely in Python**. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding code.
 
 The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:
 
@@ -76,140 +78,95 @@ For a deep dive into how the HilbertSFC kernels are derived and why the implemen
 
 ### Installation
 
-With pip:
+Install the base package with either `pip` or `uv`:
+
+####  With pip:
 
 ```bash
 pip install hilbertsfc
 ```
 
-Or with uv:
+#### Or with uv:
 
 ```bash
 uv add hilbertsfc
 ```
 
+### PyTorch support
+
+To enable the optional PyTorch extension, install with the `torch` extra:
+
+```bash
+pip install hilbertsfc[torch]
+```
+> [!NOTE]
+>
+> By default, installing `hilbertsfc[torch]` pulls in a platform-default PyTorch build:
+>
+> - **Windows:** CPU-only
+> - **Linux:** CUDA-enabled
+>
+> If you need a specific PyTorch, CUDA, or ROCm version, follow the official
+> [PyTorch installation instructions](https://pytorch.org/get-started/locally/). Then install `hilbertsfc[torch]` as shown above.
+
+
 ### Usage
 
-Hilbert curves map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides an encode and decode API for 2D and 3D coordinates that support both scalar values and vectorized array inputs.
+Hilbert curves map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides simple Hilbert encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.
 
-The `nbits` parameter specifies the number of bits per coordinate, defining the grid domain as `[0, 2**nbits)`. If omitted, it's inferred from the input array dtype (for arrays) or defaults to the maximum (32 for 2D, 21 for 3D).
+#### Python scalars
 
-#### Scalar 2D
-
-Encode a single `(x, y)` coordinate into a Hilbert index, and decode it back:
+Use `hilbert_encode_2d` and `hilbert_decode_2d` directly on Python integers:
 
 ```python
 from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
 
-index = hilbert_encode_2d(17, 23, nbits=10)  # index = 534
-x, y = hilbert_decode_2d(index, nbits=10)    # x, y = (17, 23)
+index = hilbert_encode_2d(17, 23, nbits=10)
+x, y = hilbert_decode_2d(index, nbits=10)
 ```
 
-#### Batch 2D
+`nbits` controls the coordinate domain `[0, 2**nbits)` on each axis. It is optional, but when you know the coordinate range ahead of time, passing a tighter value can improve performance and reduce output dtypes.
 
-The same functions operate elementwise on NumPy arrays, preserving shape and avoiding Python loops:
+The 3D API follows the same pattern via `hilbert_encode_3d` and `hilbert_decode_3d`.
+
+#### NumPy arrays
+
+The same functions also accept NumPy integer arrays, preserving shape and supporting batch encode/decode efficiently.
 
 ```python
 import numpy as np
-from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
+from hilbertsfc import hilbert_encode_2d
 
-xs = np.arange(1024, dtype=np.uint16)
-ys = xs[::-1]
+xs = np.array([0, 1, 2, 3], dtype=np.uint32)
+ys = np.array([3, 2, 1, 0], dtype=np.uint32)
 
-indices = hilbert_encode_2d(xs, ys, nbits=10)    # shape (1024,), dtype uint32
-xs2, ys2 = hilbert_decode_2d(indices, nbits=10)  # xs2 = xs, ys2 = ys
+indices = hilbert_encode_2d(xs, ys, nbits=2)
 ```
+This is the preferred use for high-throughput workloads on CPU. It can be further accelerated with `parallel=True`.
 
-This is the preferred use for high-throughput workloads. It can be further accelerated with `parallel=True`.
+#### PyTorch tensors
 
-#### Batch 3D
-
-3D works identically, mapping `(x, y, z)` coordinates to a single Hilbert index:
+The `hilbertsfc.torch` frontend works with PyTorch tensors on CPU and accelerator devices. On CUDA/ROCm, contiguous tensors take the Triton path when available; otherwise execution falls back to the Torch backend.
 
 ```python
-import numpy as np
-from hilbertsfc import hilbert_decode_3d, hilbert_encode_3d
+import torch
+from hilbertsfc.torch import hilbert_decode_2d, hilbert_encode_2d
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
 nbits = 10
-n = 10_000
-rng = np.random.default_rng(0)
 
-xs = rng.integers(0, 2**nbits, size=n, dtype=np.uint32)
-ys = rng.integers(0, 2**nbits, size=n, dtype=np.uint32)
-zs = rng.integers(0, 2**nbits, size=n, dtype=np.uint32)
+xs = torch.randint(0, 2**nbits, (4096,), dtype=torch.int32, device=device)
+ys = torch.randint(0, 2**nbits, (4096,), dtype=torch.int32, device=device)
 
-indices = hilbert_encode_3d(xs, ys, zs, nbits=nbits)      # shape (10000,), dtype uint32
-xs2, ys2, zs2 = hilbert_decode_3d(indices, nbits=nbits)   # xs2 = xs, ys2 = ys, zs2 = zs
+indices = hilbert_encode_2d(xs, ys, nbits=nbits)
+xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)
 ```
 
-This is can be useful for applications like 3D spatial indexing, volumetric data processing, compression, and more.
+HilbertSFC also supports `torch.compile`. Before entering a compiled region, call `precache_compile_luts(...)` so LUT materialization happens outside the compiled graph.
 
-#### Embedding kernels in your own Numba code
-
-While the main API is designed for ease of use, the package also provides *kernel accessors* that expose the scalar encode/decode kernels. This allows you to embed the Hilbert curve logic directly into your own Numba kernels, enabling further optimizations like loop fusion and reduced Python call overhead.
-
-Example embedding the 2D encode kernel:
-
-```python
-import numpy as np
-import numba as nb
-
-from hilbertsfc import get_hilbert_encode_2d_kernel
-
-encode_2d_10 = get_hilbert_encode_2d_kernel(nbits=10)
-
-@nb.njit
-def encode_many(xs: np.ndarray, ys: np.ndarray) -> np.ndarray:
-    out = np.empty(xs.shape, dtype=np.uint32)
-    for i in range(xs.size):
-        out[i] = encode_2d_10(xs[i], ys[i])
-    return out
-```
-
-The same pattern works for decode and for 3D kernels.
-
-### Demo Notebook
-
-For more examples, see the [demo notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_demo.ipynb) which includes visualizations of the curves and embedding the kernels into custom Numba code.
-
-## API notes
-
-- `nbits` specifies the number of bits per coordinate. Coordinates must be in `[0, 2**nbits)`. A tighter `nbits` improves performance and reduces output dtypes. Excess bits are ignored.
-- Hilbert indices obtained with a certain `nbits` are compatible with those from another `nbits`, given that the coordinates are within the valid range. This is because the kernels resolve the starting state parity to ensure compatibility.
-- The batched API accepts arbitrary shapes and preserves the input shape with *zero-copy* access. All strided views are supported but they can reduce performance since the kernels are close to memory-bandwidth bound. Arrays are traversed in C-order (last axis fastest), so C-contiguous arrays are the fastest path.
-- You can pass `out=...` buffers for batch encode, and `out_xs/out_ys/out_zs` for batch decode. This can for example be useful to write into memory-mapped arrays or to reuse buffers across multiple calls.
-- `parallel=True` dispatches the parallel version of the kernel (when available). The number of threads can be controlled with the environment variable `NUMBA_NUM_THREADS` or during runtime with `numba.set_num_threads()`.
-
-## Documentation
-
-[Documentation](https://remcofl.github.io/HilbertSFC/) is hosted online. It includes a quick start guide, and API reference.
-
-To serve the docs locally:
-
-```bash
-uv run --no-dev --group docs mkdocs serve
-```
-
-Build a static site into `site/`:
-
-```bash
-uv run --no-dev --group docs mkdocs build
-```
-
-## Development
-
-The repo uses `uv` for environment management. CI and local development workflows (lint, tests, type checking, docs) are automated with `nox`.
-
-Sync a local environment with dev dependencies:
-
-```bash
-uv sync
-```
-
-Run the full `nox` suite:
-
-```bash
-uvx nox
-```
-
-More details are in [CONTRIBUTING.md](https://github.com/remcofl/HilbertSFC/blob/main/CONTRIBUTING.md).
+## Learn more
+For more details and advanced usage, see:
+- [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart)
+- [Advanced usage guide](https://remcofl.github.io/HilbertSFC/latest/advanced-usage)
+- [API reference](https://remcofl.github.io/HilbertSFC/latest/api/index)
+- [Demo notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_demo.ipynb)

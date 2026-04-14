@@ -11,17 +11,17 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.21.0
+    rev: v0.22.0
     hooks:
     - id: markdownlint-cli2
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.10.9 # uv version.
+    rev: 0.11.2 # uv version.
     hooks:
       # Update the uv lockfile
       - id: uv-lock
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.15.5
+    rev: v0.15.8
     hooks:
       # Run the linter.
       - id: ruff-check
