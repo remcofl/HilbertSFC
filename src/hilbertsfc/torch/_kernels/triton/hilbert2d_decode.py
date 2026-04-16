@@ -30,7 +30,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
     Y_OUT_DTYPE: tl.constexpr = out_y_ptr.dtype.element_ty  # type: ignore[reportAttributeAccessIssue]
 
     if SHMEM_LUT:
-        lut_local = tl.load(lut_ptr + tl.arange(0, 256), cache_modifier=".ca")
+        lut_local = tl.load(lut_ptr + tl.arange(0, 256), eviction_policy="evict_last")
 
     pid = tl.program_id(axis=0)
     offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
@@ -57,7 +57,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
         if SHMEM_LUT:
             lut_val = tl.gather(lut_local, q, axis=0)
         else:
-            lut_val = tl.load(lut_ptr + q, cache_modifier=".ca")
+            lut_val = tl.load(lut_ptr + q, eviction_policy="evict_last")
 
         bs = lut_val >> state
 
@@ -72,7 +72,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
     tl.store(out_y_ptr + offsets, y, mask=mask)
 
 
-def _choose_launch_config(n_elements: int) -> tuple[int, int]:
+def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int]:
     """Choose a reasonable default without autotune.
 
     Returns
@@ -80,11 +80,12 @@ def _choose_launch_config(n_elements: int) -> tuple[int, int]:
     block_size: int
     num_warps: int
     """
-    if n_elements < 1 << 15:
+    if not shmem_lut:
         return 256, 4
-    if n_elements < 1 << 18:
-        return 512, 4
-    return 1024, 4
+
+    if n_elements <= 131072:
+        return 256, 4
+    return 512, 4
 
 
 def hilbert_decode_2d_triton(
@@ -109,7 +110,6 @@ def hilbert_decode_2d_triton(
         out_y = torch.empty_like(index, dtype=torch.int64)
 
     n_elements = index.numel()
-    block_size, num_warps = _choose_launch_config(n_elements)
 
     def grid(meta):
         return (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
@@ -118,7 +118,11 @@ def hilbert_decode_2d_triton(
 
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
-    load_lut_into_shared_memory = True if hasattr(triton, "gather") else False
+    load_lut_into_shared_memory = True if hasattr(tl, "gather") else False
+    block_size, num_warps = _choose_launch_config(
+        n_elements,
+        shmem_lut=load_lut_into_shared_memory,
+    )
 
     hilbert_decode_2d_4bit_compacted_bs[grid](  # type: ignore[reportIndexIssue]
         index,
