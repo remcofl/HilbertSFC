@@ -54,9 +54,10 @@ The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for
 
 ## Performance
 
-HilbertSFC is orders of magnitude faster than existing Python implementations. It also outperforms the *Fast Hilbert* implementation in Rust by a factor of ~8x. In fact, HilbertSFC takes only ~6 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
+### CPU - Numba
+HilbertSFC is orders of magnitude faster than existing Python implementations. It also outperforms the [*Fast Hilbert*](https://crates.io/crates/fast_hilbert) Rust crate by a factor of ~8x. In fact, HilbertSFC takes only ~6 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
 
-#### 2D Points - Random, `nbits=32`, `n=5,000,000`
+#### 2D Points - Random, `nbits=32`, `size=5,000,000`
 
 | Implementation | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | ---: | ---: | ---: | ---: |
@@ -73,6 +74,23 @@ HilbertSFC is orders of magnitude faster than existing Python implementations. I
 Additional benchmarks and details are available in the [benchmark.md](https://github.com/remcofl/HilbertSFC/blob/main/benchmark.md).
 
 For a deep dive into how the HilbertSFC kernels are derived and why the implementation maps well to modern CPUs (FSM/LUT formulation, dependency chains, ILP/MLP, unrolling, constant folding, vectorization, gathers), see the [performance deep dive notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_performance_deep_dive.ipynb).
+
+### GPU (CUDA/ROCm) - Torch/Triton
+HilbertSFC achieves very high throughput on modern GPUs, reaching up to ~76 billion points per second for 3D encode/decode of 32-bit coordinates (`nbits=21`) on an NVIDIA RTX 5090. Compared to an eager PyTorch implementation of the Skilling algorithm, it is roughly 4000× faster for 3D encode and 2600× faster for 3D decode.
+
+#### 2D and 3D Points - Random, `nbits=32` (2D), `nbits=21` (3D), `size=4Mi (2^22)`, throughput in `Mpts/s`
+
+| Implementation | Mode | 2D enc | 2D dec | 3D enc | 3D dec |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 🔥**HilbertSFC** | triton | 93090 | 93090 | 76382 | 73142 |
+| HilbertSFC | eager | 2890 | 2487 | 1572 | 1807 |
+| [Skilling (Pointcept)](https://github.com/Pointcept/Pointcept/blob/main/pointcept/models/utils/serialization/hilbert.py) | eager | 19.9 | 28.0 | 18.7 | 29.0 |
+
+> **System info:** RTX 5090 Blackwell, Ubuntu 24.04.4, Python 3.12.3, PyTorch 2.11.0, CUDA 13.0, Triton 3.6.0
+
+<p align="left">
+  <img src="https://raw.githubusercontent.com/remcofl/HilbertSFC/refs/heads/main/docs/img/torch_cuda_3d_encode_decode.png" width="760" alt="PyTorch CUDA 3D encode and decode throughput comparison" />
+</p>
 
 ## Quickstart
 

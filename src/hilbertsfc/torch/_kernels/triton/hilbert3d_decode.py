@@ -34,7 +34,9 @@ def hilbert_decode_3d_2bit_compacted_sb(
     if SHMEM_LUT:
         lut_idx = tl.arange(0, 2048)
         lut_mask = lut_idx < 1536
-        lut_local = tl.load(lut_ptr + lut_idx, mask=lut_mask, cache_modifier=".ca")
+        lut_local = tl.load(
+            lut_ptr + lut_idx, mask=lut_mask, eviction_policy="evict_last"
+        )
 
     pid = tl.program_id(axis=0)
     offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
@@ -58,7 +60,7 @@ def hilbert_decode_3d_2bit_compacted_sb(
         if SHMEM_LUT:
             sb = tl.gather(lut_local, lut_idx, axis=0)  # type: ignore[reportAttributeAccessIssue]
         else:
-            sb = tl.load(lut_ptr + lut_idx, cache_modifier=".ca")
+            sb = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
 
         # LUT is stored as int16 in torch; widen for bitwise ops.
         sb = sb.to(tl.int32)
@@ -78,7 +80,7 @@ def hilbert_decode_3d_2bit_compacted_sb(
     tl.store(out_z_ptr + offsets, z, mask=mask)
 
 
-def _choose_launch_config(n_elements: int) -> tuple[int, int]:
+def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int]:
     """Choose a reasonable default without autotune.
 
     Returns
@@ -86,11 +88,12 @@ def _choose_launch_config(n_elements: int) -> tuple[int, int]:
     block_size: int
     num_warps: int
     """
-    if n_elements < 1 << 15:
+    if not shmem_lut:
         return 256, 4
-    if n_elements < 1 << 18:
-        return 512, 4
-    return 1024, 4
+
+    if n_elements <= 131072:
+        return 256, 4
+    return 512, 4
 
 
 def hilbert_decode_3d_triton(
@@ -114,7 +117,6 @@ def hilbert_decode_3d_triton(
         out_z = torch.empty_like(index, dtype=torch.int64)
 
     n_elements = index.numel()
-    block_size, num_warps = _choose_launch_config(n_elements)
 
     def grid(meta):
         return (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
@@ -123,7 +125,10 @@ def hilbert_decode_3d_triton(
 
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
-    load_lut_into_shared_memory = True if hasattr(triton, "gather") else False
+    load_lut_into_shared_memory = True if hasattr(tl, "gather") else False
+    block_size, num_warps = _choose_launch_config(
+        n_elements, shmem_lut=load_lut_into_shared_memory
+    )
 
     hilbert_decode_3d_2bit_compacted_sb[grid](  # type: ignore[reportIndexIssue]
         index,

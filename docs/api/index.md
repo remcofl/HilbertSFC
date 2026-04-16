@@ -6,4 +6,4 @@
 
 ### Types
 - [`hilbertsfc.types`](types/types.md)
-- [`hilbertsfc.torch.types`](types/torch_types.md)
+- [`hilbertsfc.torch.types`](types/torch-types.md)
