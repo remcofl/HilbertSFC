@@ -143,7 +143,9 @@ def hilbert_encode_2d_triton(
             bool(load_lut_into_shared_memory),
         )
         if key not in _printed_all_timing_keys:
-            timings = getattr(hilbert_encode_2d_4bit_compacted_qs, "configs_timings", None)
+            timings = getattr(
+                hilbert_encode_2d_4bit_compacted_qs, "configs_timings", None
+            )
             if timings:
                 _printed_all_timing_keys.add(key)
                 print(
@@ -157,7 +159,9 @@ def hilbert_encode_2d_triton(
                         return float(v[0])
                     return float(v)
 
-                bytes_per_point = x.element_size() + y.element_size() + out.element_size()
+                bytes_per_point = (
+                    x.element_size() + y.element_size() + out.element_size()
+                )
                 ordered = sorted(timings.items(), key=lambda item: _median_ms(item[1]))
                 best_ms = _median_ms(ordered[0][1])
 
@@ -165,7 +169,9 @@ def hilbert_encode_2d_triton(
 
                 for cfg, t in ordered:
                     t_ms = _median_ms(t)
-                    delta_pct = 0.0 if best_ms <= 0 else ((t_ms / best_ms) - 1.0) * 100.0
+                    delta_pct = (
+                        0.0 if best_ms <= 0 else ((t_ms / best_ms) - 1.0) * 100.0
+                    )
                     t_s = t_ms * 1e-3
                     mpts_s = float("inf") if t_s <= 0 else (n_elements / t_s) / 1e6
                     gb_s = (

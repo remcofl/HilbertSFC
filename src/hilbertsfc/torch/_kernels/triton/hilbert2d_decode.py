@@ -223,7 +223,9 @@ def hilbert_decode_2d_triton(
         n_elements=n_elements,
         nbits=nbits,
         shmem_lut=load_lut_into_shared_memory,
-        bytes_per_point=index.element_size() + out_x.element_size() + out_y.element_size(),
+        bytes_per_point=index.element_size()
+        + out_x.element_size()
+        + out_y.element_size(),
     )
 
     return out_x, out_y
