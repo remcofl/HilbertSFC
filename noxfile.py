@@ -93,7 +93,7 @@ def test_torch_cpu(session: nox.Session) -> None:
     except nox.command.CommandFailed:
         session.skip("Could not install project with torch-cpu-* dependencies")
 
-    session.run("pytest", "-q", "-n", "auto", "-m", "torch and not gpu")
+    session.run("pytest", "-q", "-m", "torch and not gpu")
 
 
 @nox.session(python="3.12")
@@ -106,7 +106,7 @@ def test_torch_cpu_min(session: nox.Session) -> None:
     except nox.command.CommandFailed:
         session.skip("Could not install project with torch-cpu-* dependencies")
 
-    session.run("pytest", "-q", "-n", "auto", "-m", "torch and not gpu")
+    session.run("pytest", "-q", "-m", "torch and not gpu")
 
 
 @nox.session(python=PYTHON_VERSIONS)
@@ -119,7 +119,7 @@ def test_torch_cu130(session: nox.Session) -> None:
     except nox.command.CommandFailed:
         session.skip("Could not install project with torch-cu130 dependencies")
 
-    session.run("pytest", "-q", "-n", "auto", "-m", "torch and gpu")
+    session.run("pytest", "-q", "-m", "torch and gpu")
 
 
 @nox.session(python="3.12")
@@ -132,7 +132,7 @@ def test_torch_cu118_min(session: nox.Session) -> None:
     except nox.command.CommandFailed:
         session.skip("Could not install project with torch-cu118-min dependencies")
 
-    session.run("pytest", "-q", "-n", "auto", "-m", "torch and gpu")
+    session.run("pytest", "-q", "-m", "torch and gpu")
 
 
 @nox.session(python=PYTHON_VERSIONS)
