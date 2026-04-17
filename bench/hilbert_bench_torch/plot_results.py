@@ -24,13 +24,12 @@ DISPLAY_NAMES = {
 
 STYLE_MAP = {
     # Skilling family (cool)
-    "skilling_eager": {"color": "#4C78A8", "linestyle": "-",  "marker": "o"},
+    "skilling_eager": {"color": "#4C78A8", "linestyle": "-", "marker": "o"},
     "skilling_triton_2d": {"color": "#2F5D8A", "linestyle": "-", "marker": "o"},
     "skilling_triton_3d": {"color": "#1F4E79", "linestyle": "-", "marker": "o"},
-
     # HilbertSFC family (warm)
-    "hilbertsfc_torch_eager": {"color": "#F28E2B", "linestyle": "-",  "marker": "o"},
-    "hilbertsfc_torch_compile": {"color": "#A16340", "linestyle": "--",  "marker": "o"},
+    "hilbertsfc_torch_eager": {"color": "#F28E2B", "linestyle": "-", "marker": "o"},
+    "hilbertsfc_torch_compile": {"color": "#A16340", "linestyle": "--", "marker": "o"},
     "hilbertsfc_triton": {"color": "#E15759", "linestyle": "-", "marker": "o"},
 }
 
@@ -73,7 +72,9 @@ def _set_plot_theme() -> None:
         "Arial",
     ]
     installed = {f.name for f in font_manager.fontManager.ttflist}
-    selected_font = next((name for name in preferred_fonts if name in installed), "DejaVu Sans")
+    selected_font = next(
+        (name for name in preferred_fonts if name in installed), "DejaVu Sans"
+    )
 
     plt.rcParams.update(
         {

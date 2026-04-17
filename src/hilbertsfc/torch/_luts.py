@@ -70,19 +70,27 @@ def _device_key(device: torch.device) -> str:
 _OP_TO_LUT_NAMES_ALL: dict[TorchHilbertOp, tuple[str, ...]] = {
     "hilbert_encode_2d": (
         "lut_2d4b_b_qs_i64",
+        "lut_2d4b_sb_sq_i16",
         "lut_2d7b_b_qs_i64",
+        "lut_2d7b_sb_sq_i16",
     ),
     "hilbert_decode_2d": (
         "lut_2d4b_q_bs_i64",
+        "lut_2d4b_sq_sb_i16",
         "lut_2d7b_q_bs_i64",
+        "lut_2d7b_sq_sb_i16",
     ),
     "hilbert_encode_3d": ("lut_3d2b_sb_so_i16",),
     "hilbert_decode_3d": ("lut_3d2b_so_sb_i16",),
     "all": (
         "lut_2d4b_b_qs_i64",
         "lut_2d4b_q_bs_i64",
+        "lut_2d4b_sb_sq_i16",
+        "lut_2d4b_sq_sb_i16",
         "lut_2d7b_b_qs_i64",
         "lut_2d7b_q_bs_i64",
+        "lut_2d7b_sb_sq_i16",
+        "lut_2d7b_sq_sb_i16",
         "lut_3d2b_sb_so_i16",
         "lut_3d2b_so_sb_i16",
     ),
@@ -91,14 +99,22 @@ _OP_TO_LUT_NAMES_ALL: dict[TorchHilbertOp, tuple[str, ...]] = {
 
 _OP_TO_LUT_NAMES_COMPILE: dict[TorchHilbertOp, tuple[str, ...]] = {
     # Under torch.compile, the 2D plain-torch kernels force the 4-bit tile.
-    "hilbert_encode_2d": ("lut_2d4b_b_qs_i64",),
-    "hilbert_decode_2d": ("lut_2d4b_q_bs_i64",),
+    "hilbert_encode_2d": (
+        "lut_2d4b_b_qs_i64",
+        "lut_2d4b_sb_sq_i16",
+    ),
+    "hilbert_decode_2d": (
+        "lut_2d4b_q_bs_i64",
+        "lut_2d4b_sq_sb_i16",
+    ),
     # 3D kernels always use the 2-bit LUTs.
     "hilbert_encode_3d": ("lut_3d2b_sb_so_i16",),
     "hilbert_decode_3d": ("lut_3d2b_so_sb_i16",),
     "all": (
         "lut_2d4b_b_qs_i64",
         "lut_2d4b_q_bs_i64",
+        "lut_2d4b_sb_sq_i16",
+        "lut_2d4b_sq_sb_i16",
         "lut_3d2b_sb_so_i16",
         "lut_3d2b_so_sb_i16",
     ),
@@ -311,6 +327,78 @@ def lut_2d7b_q_bs_i64(
 
     return _cached_tensor(
         name="lut_2d7b_q_bs_i64",
+        device=dev,
+        cache=cache,
+        build=_build,
+    )
+
+
+def lut_2d4b_sb_sq_i16(
+    *, device: TorchDeviceLike = None, cache: TorchCacheMode = "device"
+) -> torch.Tensor:
+    """Torch tensor view of [`lut_2d4b_sb_sq_u16`][hilbertsfc._luts.lut_2d4b_sb_sq_u16] (as int16)."""
+
+    dev = _resolve_device(device)
+
+    def _build() -> torch.Tensor:
+        return _lut_u16_as_i16(_luts.lut_2d4b_sb_sq_u16(), device=dev)
+
+    return _cached_tensor(
+        name="lut_2d4b_sb_sq_i16",
+        device=dev,
+        cache=cache,
+        build=_build,
+    )
+
+
+def lut_2d4b_sq_sb_i16(
+    *, device: TorchDeviceLike = None, cache: TorchCacheMode = "device"
+) -> torch.Tensor:
+    """Torch tensor view of [`lut_2d4b_sq_sb_u16`][hilbertsfc._luts.lut_2d4b_sq_sb_u16] (as int16)."""
+
+    dev = _resolve_device(device)
+
+    def _build() -> torch.Tensor:
+        return _lut_u16_as_i16(_luts.lut_2d4b_sq_sb_u16(), device=dev)
+
+    return _cached_tensor(
+        name="lut_2d4b_sq_sb_i16",
+        device=dev,
+        cache=cache,
+        build=_build,
+    )
+
+
+def lut_2d7b_sb_sq_i16(
+    *, device: TorchDeviceLike = None, cache: TorchCacheMode = "device"
+) -> torch.Tensor:
+    """Torch tensor view of [`lut_2d7b_sb_sq_u16`][hilbertsfc._luts.lut_2d7b_sb_sq_u16] (as int16)."""
+
+    dev = _resolve_device(device)
+
+    def _build() -> torch.Tensor:
+        return _lut_u16_as_i16(_luts.lut_2d7b_sb_sq_u16(), device=dev)
+
+    return _cached_tensor(
+        name="lut_2d7b_sb_sq_i16",
+        device=dev,
+        cache=cache,
+        build=_build,
+    )
+
+
+def lut_2d7b_sq_sb_i16(
+    *, device: TorchDeviceLike = None, cache: TorchCacheMode = "device"
+) -> torch.Tensor:
+    """Torch tensor view of [`lut_2d7b_sq_sb_u16`][hilbertsfc._luts.lut_2d7b_sq_sb_u16] (as int16)."""
+
+    dev = _resolve_device(device)
+
+    def _build() -> torch.Tensor:
+        return _lut_u16_as_i16(_luts.lut_2d7b_sq_sb_u16(), device=dev)
+
+    return _cached_tensor(
+        name="lut_2d7b_sq_sb_i16",
         device=dev,
         cache=cache,
         build=_build,

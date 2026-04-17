@@ -87,7 +87,7 @@ def hilbert_encode_3d_2bit_compacted_so(
         if SHMEM_LUT:
             so = tl.gather(lut_local, lut_idx, axis=0)  # type: ignore[reportAttributeAccessIssue]
         else:
-            so = tl.load(lut_ptr + lut_idx, cache_modifier=".ca")
+            so = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
 
         # LUT is stored as int16 in torch; widen for bitwise ops.
         so = so.to(tl.int32)

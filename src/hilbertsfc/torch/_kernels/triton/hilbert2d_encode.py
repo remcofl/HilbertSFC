@@ -8,7 +8,17 @@ import triton  # type: ignore[reportMissingImports]
 import triton.language as tl  # type: ignore[reportMissingImports]
 
 from hilbertsfc._nbits import validate_nbits_2d
-from hilbertsfc.torch._luts import TorchCacheMode, lut_2d4b_b_qs_i64
+from hilbertsfc.torch._luts import (
+    TorchCacheMode,
+    lut_2d4b_b_qs_i64,
+    lut_2d4b_sb_sq_i16,
+    lut_2d7b_sb_sq_i16,
+)
+
+# Toggle between 16-bit state-aware LUT path and 64-bit compacted LUT path.
+USE_16BIT_2D_ENCODE_KERNEL = True
+# When using the 16-bit path, select 7-bit tile variant instead of 4-bit.
+USE_7BIT_2D_ENCODE_16BIT_KERNEL = False
 
 _AUTOTUNE_CONFIGS = [
     triton.Config({"BLOCK_SIZE": 128}, num_warps=1),
@@ -96,6 +106,136 @@ def hilbert_encode_2d_4bit_compacted_qs(
     tl.store(out_ptr + offsets, idx, mask=mask)
 
 
+@triton.autotune(
+    configs=_AUTOTUNE_CONFIGS,
+    key=["n_elements", "NBITS", "SHMEM_LUT"],
+)
+@triton.jit
+def hilbert_encode_2d_4bit_sq(
+    x_ptr: tl.tensor,
+    y_ptr: tl.tensor,
+    out_ptr: tl.tensor,
+    n_elements: int,
+    lut_ptr: tl.const,
+    BLOCK_SIZE: tl.constexpr,
+    NBITS: tl.constexpr,
+    SHMEM_LUT: tl.constexpr,
+):
+    """Encode 2D coordinates (x, y) to a Hilbert index."""
+
+    START_BIT: tl.constexpr = (NBITS - 1) & ~0x3
+    DROP_BITS: tl.constexpr = START_BIT - NBITS + 4
+    COORD_MASK: tl.constexpr = (1 << NBITS) - 1 if DROP_BITS > 0 else 0  # type: ignore[reportAssignmentType, reportOperatorIssue]
+    OUT_DTYPE: tl.constexpr = out_ptr.dtype.element_ty  # type: ignore[reportAttributeAccessIssue]
+
+    # Optional LUT preload.
+    if SHMEM_LUT:
+        lut_local = tl.load(lut_ptr + tl.arange(0, 1024), eviction_policy="evict_last")
+    pid = tl.program_id(axis=0)
+    offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+    mask = offsets < n_elements
+
+    x = tl.load(x_ptr + offsets, mask=mask, other=0)
+    y = tl.load(y_ptr + offsets, mask=mask, other=0)
+
+    if not SHMEM_LUT:
+        # 8 bit tile packing (x and y) can result in negative values when using int8 inputs,
+        # so we convert to uint8.
+        if x.dtype == tl.int8:
+            x = x.to(tl.uint8)
+        if y.dtype == tl.int8:
+            y = y.to(tl.uint8)
+
+    if DROP_BITS > 0:
+        x = x & COORD_MASK
+        y = y & COORD_MASK
+
+    idx = tl.zeros([BLOCK_SIZE], dtype=OUT_DTYPE)
+    state = tl.zeros([BLOCK_SIZE], dtype=tl.int32)
+
+    for bit in tl.static_range(START_BIT, -1, -4):
+        b_x = (x >> bit) & 0xF
+        b_y = (y >> bit) & 0xF
+        b = (b_x << 4) | b_y
+
+        lut_idx = state | b
+
+        if SHMEM_LUT:
+            # Handles negative b values when indexing with int8 inputs.
+            sq = tl.gather(lut_local, lut_idx, axis=0)
+        else:
+            sq = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
+
+        q = sq & 0xFF
+        idx |= q.to(OUT_DTYPE) << (bit << 1)
+        state = sq & 0x300
+
+    tl.store(out_ptr + offsets, idx, mask=mask)
+
+
+@triton.autotune(
+    configs=_AUTOTUNE_CONFIGS,
+    key=["n_elements", "NBITS", "SHMEM_LUT"],
+)
+@triton.jit
+def hilbert_encode_2d_7bit_sq(
+    x_ptr: tl.tensor,
+    y_ptr: tl.tensor,
+    out_ptr: tl.tensor,
+    n_elements: int,
+    lut_ptr: tl.const,
+    BLOCK_SIZE: tl.constexpr,
+    NBITS: tl.constexpr,
+    SHMEM_LUT: tl.constexpr,
+):
+    """Encode 2D coordinates using packed (state, b14) -> (state, q14) LUT."""
+
+    START_BIT: tl.constexpr = (NBITS - 1) & ~0x6
+    DROP_BITS: tl.constexpr = START_BIT - NBITS + 7
+    COORD_MASK: tl.constexpr = (1 << NBITS) - 1 if DROP_BITS > 0 else 0  # type: ignore[reportAssignmentType, reportOperatorIssue]
+    OUT_DTYPE: tl.constexpr = out_ptr.dtype.element_ty  # type: ignore[reportAttributeAccessIssue]
+
+    if SHMEM_LUT:
+        lut_local = tl.load(lut_ptr + tl.arange(0, 65536), eviction_policy="evict_last")
+
+    pid = tl.program_id(axis=0)
+    offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+    mask = offsets < n_elements
+
+    x = tl.load(x_ptr + offsets, mask=mask, other=0)
+    y = tl.load(y_ptr + offsets, mask=mask, other=0)
+
+    if x.dtype == tl.int8 or x.dtype == tl.uint8:
+        x = x.to(tl.uint16)
+    if y.dtype == tl.int8 or y.dtype == tl.uint8:
+        y = y.to(tl.uint16)
+
+    if DROP_BITS > 0:
+        x = x & COORD_MASK
+        y = y & COORD_MASK
+
+    idx = tl.zeros([BLOCK_SIZE], dtype=OUT_DTYPE)
+    state = tl.zeros([BLOCK_SIZE], dtype=tl.int32)
+
+    for bit in tl.static_range(START_BIT, -1, -7):
+        b_x = (x >> bit) & 0x7F
+        b_y = (y >> bit) & 0x7F
+        b = (b_x << 7) | b_y
+
+        lut_idx = state | b
+
+        if SHMEM_LUT:
+            sq = tl.gather(lut_local, lut_idx, axis=0)
+        else:
+            sq = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
+
+        q = sq & 0x3FFF
+        idx |= q.to(OUT_DTYPE) << (bit << 1)
+        state = sq & 0xC000
+
+    tl.store(out_ptr + offsets, idx, mask=mask)
+
+
 def hilbert_encode_2d_triton(
     x: torch.Tensor,
     y: torch.Tensor,
@@ -119,13 +259,28 @@ def hilbert_encode_2d_triton(
     def grid(meta):
         return (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
 
-    lut = lut_2d4b_b_qs_i64(device=x.device, cache=lut_cache)
+    if USE_16BIT_2D_ENCODE_KERNEL:
+        if USE_7BIT_2D_ENCODE_16BIT_KERNEL:
+            kernel = hilbert_encode_2d_7bit_sq
+            kernel_name = "hilbert_encode_2d_7bit_sq"
+            lut = lut_2d7b_sb_sq_i16(device=x.device, cache=lut_cache)
+        else:
+            kernel = hilbert_encode_2d_4bit_sq
+            kernel_name = "hilbert_encode_2d_4bit_sq"
+            lut = lut_2d4b_sb_sq_i16(device=x.device, cache=lut_cache)
+    else:
+        kernel = hilbert_encode_2d_4bit_compacted_qs
+        kernel_name = "hilbert_encode_2d_4bit_compacted_qs"
+        lut = lut_2d4b_b_qs_i64(device=x.device, cache=lut_cache)
 
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
     load_lut_into_shared_memory = True if hasattr(tl, "gather") else False
+    if USE_16BIT_2D_ENCODE_KERNEL and USE_7BIT_2D_ENCODE_16BIT_KERNEL:
+        # 65,536-entry int16 LUT is too large for practical shared-memory preload.
+        load_lut_into_shared_memory = False
 
-    hilbert_encode_2d_4bit_compacted_qs[grid](  # type: ignore[reportIndexIssue]
+    kernel[grid](  # type: ignore[reportIndexIssue]
         x,
         y,
         out,
@@ -143,13 +298,11 @@ def hilbert_encode_2d_triton(
             bool(load_lut_into_shared_memory),
         )
         if key not in _printed_all_timing_keys:
-            timings = getattr(
-                hilbert_encode_2d_4bit_compacted_qs, "configs_timings", None
-            )
+            timings = getattr(kernel, "configs_timings", None)
             if timings:
                 _printed_all_timing_keys.add(key)
                 print(
-                    "[triton.autotune] all configs hilbert_encode_2d_4bit_compacted_qs "
+                    f"[triton.autotune] all configs {kernel_name} "
                     f"device={x.device} n_elements={n_elements} nbits={nbits} "
                     f"shmem_lut={load_lut_into_shared_memory}"
                 )
@@ -157,7 +310,9 @@ def hilbert_encode_2d_triton(
                 def _median_ms(v: object) -> float:
                     if isinstance(v, (tuple, list)) and len(v) > 0:
                         return float(v[0])
-                    return float(v)
+                    if isinstance(v, (int, float)):
+                        return float(v)
+                    return 0.0
 
                 bytes_per_point = (
                     x.element_size() + y.element_size() + out.element_size()

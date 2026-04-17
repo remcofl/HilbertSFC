@@ -26,19 +26,19 @@ def main() -> None:
     # The kernels key on n_elements, so you get one print per tested size.
     print_autotune_config_timings = True
     if print_autotune_config_timings:
-        os.environ["HILBERTSFC_TRITON_PRINT_ALL_AUTOTUNE_CONFIGS"] = "1"
+        os.environ["HILBERTSFC_TRITON_PRINT_ALL_AUTOTUNE_CONFIGS"] = "0"
 
     # Tweak these manually while experimenting.
     device = torch.device(
         "cuda"
     )  # torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dims = 2
-    nbits = 2
-    direction = "decode"  # "encode" or "decode"
+    nbits = 32
+    direction = "encode"  # "encode" or "decode"
     cpu_backend = "torch"
     gpu_backend = "triton"
-    dtype = torch.int32
-    out_dtype = torch.int64
+    dtype = torch.uint32
+    out_dtype = torch.uint64
     use_out = True
     use_compile = False
     fullgraph = False

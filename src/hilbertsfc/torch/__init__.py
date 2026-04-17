@@ -13,7 +13,14 @@ if find_spec("torch") is None:
         "separately and ensure it is available in your environment."
     ) from None
 
-from ._luts import clear_torch_lut_caches, precache_compile_luts
+from ._luts import (
+    clear_torch_lut_caches,
+    lut_2d4b_sb_sq_i16,
+    lut_2d4b_sq_sb_i16,
+    lut_2d7b_sb_sq_i16,
+    lut_2d7b_sq_sb_i16,
+    precache_compile_luts,
+)
 from .hilbert2d import hilbert_decode_2d, hilbert_encode_2d
 from .hilbert3d import hilbert_decode_3d, hilbert_encode_3d
 
@@ -23,5 +30,9 @@ __all__ = [
     "hilbert_decode_3d",
     "hilbert_encode_2d",
     "hilbert_encode_3d",
+    "lut_2d4b_sb_sq_i16",
+    "lut_2d4b_sq_sb_i16",
+    "lut_2d7b_sb_sq_i16",
+    "lut_2d7b_sq_sb_i16",
     "precache_compile_luts",
 ]

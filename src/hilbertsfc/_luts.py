@@ -49,6 +49,18 @@ def lut_2d4b_q_bs_u64() -> NDArray[np.uint64]:
 
 
 @lut_cache
+def lut_2d4b_sb_sq_u16() -> NDArray[np.uint16]:
+    """Encode LUT: packed (state, bbbb) -> packed (state, qqqq) lanes."""
+    return _load_npy("lut_2d4b_sb_sq_u16.npy").astype(np.uint16, copy=False)
+
+
+@lut_cache
+def lut_2d4b_sq_sb_u16() -> NDArray[np.uint16]:
+    """Decode LUT: packed (state, qqqq) -> packed (state, bbbb) lanes."""
+    return _load_npy("lut_2d4b_sq_sb_u16.npy").astype(np.uint16, copy=False)
+
+
+@lut_cache
 def lut_2d7b_b_qs_u64() -> NDArray[np.uint64]:
     """Encode LUT: bbbbbbb -> packed (qqqqqqq, next_state) lanes."""
     return _load_npy("lut_2d7b_b_qs_u64.npy").astype(np.uint64, copy=False)
@@ -58,6 +70,18 @@ def lut_2d7b_b_qs_u64() -> NDArray[np.uint64]:
 def lut_2d7b_q_bs_u64() -> NDArray[np.uint64]:
     """Decode LUT: qqqqqqq -> packed (bbbbbbb, next_state) lanes."""
     return _load_npy("lut_2d7b_q_bs_u64.npy").astype(np.uint64, copy=False)
+
+
+@lut_cache
+def lut_2d7b_sb_sq_u16() -> NDArray[np.uint16]:
+    """Encode LUT: packed (state, bbbbbbb) -> packed (state, qqqqqqq) lanes."""
+    return _load_npy("lut_2d7b_sb_sq_u16.npy").astype(np.uint16, copy=False)
+
+
+@lut_cache
+def lut_2d7b_sq_sb_u16() -> NDArray[np.uint16]:
+    """Decode LUT: packed (state, qqqqqqq) -> packed (state, bbbbbbb) lanes."""
+    return _load_npy("lut_2d7b_sq_sb_u16.npy").astype(np.uint16, copy=False)
 
 
 @lut_cache
