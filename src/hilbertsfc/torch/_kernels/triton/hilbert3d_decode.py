@@ -1,6 +1,8 @@
 # ruff: noqa: N803, N806
 """Triton 3D Hilbert decoder (2-bit LUT)."""
 
+import os
+
 import torch
 import triton  # type: ignore[reportMissingImports]
 import triton.language as tl  # type: ignore[reportMissingImports]
@@ -8,7 +10,30 @@ import triton.language as tl  # type: ignore[reportMissingImports]
 from hilbertsfc._nbits import validate_nbits_3d
 from hilbertsfc.torch._luts import TorchCacheMode, lut_3d2b_so_sb_i16
 
+_AUTOTUNE_CONFIGS = [
+    triton.Config({"BLOCK_SIZE": 128}, num_warps=1),
+    triton.Config({"BLOCK_SIZE": 128}, num_warps=2),
+    triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
+    triton.Config({"BLOCK_SIZE": 256}, num_warps=1),
+    triton.Config({"BLOCK_SIZE": 256}, num_warps=2),
+    triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
+    triton.Config({"BLOCK_SIZE": 512}, num_warps=2),
+    triton.Config({"BLOCK_SIZE": 512}, num_warps=4),
+    triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
+    triton.Config({"BLOCK_SIZE": 1024}, num_warps=4),
+    triton.Config({"BLOCK_SIZE": 1024}, num_warps=8),
+    triton.Config({"BLOCK_SIZE": 2048}, num_warps=4),
+    triton.Config({"BLOCK_SIZE": 2048}, num_warps=8),
+    triton.Config({"BLOCK_SIZE": 4096}, num_warps=4),
+    triton.Config({"BLOCK_SIZE": 4096}, num_warps=8),
+]
+_printed_all_timing_keys: set[tuple[str, int, int, bool]] = set()
 
+
+@triton.autotune(
+    configs=_AUTOTUNE_CONFIGS,
+    key=["n_elements", "NBITS", "SHMEM_LUT"],
+)
 @triton.jit
 def hilbert_decode_3d_2bit_compacted_sb(
     idx_ptr: tl.tensor,
@@ -80,22 +105,6 @@ def hilbert_decode_3d_2bit_compacted_sb(
     tl.store(out_z_ptr + offsets, z, mask=mask)
 
 
-def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int]:
-    """Choose a reasonable default without autotune.
-
-    Returns
-    -------
-    block_size: int
-    num_warps: int
-    """
-    if not shmem_lut:
-        return 256, 4
-
-    if n_elements <= 131072:
-        return 256, 4
-    return 512, 4
-
-
 def hilbert_decode_3d_triton(
     index: torch.Tensor,
     *,
@@ -126,9 +135,6 @@ def hilbert_decode_3d_triton(
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
     load_lut_into_shared_memory = True if hasattr(tl, "gather") else False
-    block_size, num_warps = _choose_launch_config(
-        n_elements, shmem_lut=load_lut_into_shared_memory
-    )
 
     hilbert_decode_3d_2bit_compacted_sb[grid](  # type: ignore[reportIndexIssue]
         index,
@@ -137,10 +143,56 @@ def hilbert_decode_3d_triton(
         out_z,
         n_elements,
         lut,
-        BLOCK_SIZE=block_size,
         NBITS=nbits,
         SHMEM_LUT=load_lut_into_shared_memory,
-        num_warps=num_warps,  # type: ignore[reportCallIssue]
     )
+
+    if os.getenv("HILBERTSFC_TRITON_PRINT_ALL_AUTOTUNE_CONFIGS", "0") == "1":
+        key = (
+            str(index.device),
+            int(n_elements),
+            int(nbits),
+            bool(load_lut_into_shared_memory),
+        )
+        if key not in _printed_all_timing_keys:
+            timings = getattr(hilbert_decode_3d_2bit_compacted_sb, "configs_timings", None)
+            if timings:
+                _printed_all_timing_keys.add(key)
+                print(
+                    "[triton.autotune] all configs hilbert_decode_3d_2bit_compacted_sb "
+                    f"device={index.device} n_elements={n_elements} nbits={nbits} "
+                    f"shmem_lut={load_lut_into_shared_memory}"
+                )
+
+                def _median_ms(v: object) -> float:
+                    if isinstance(v, (tuple, list)) and len(v) > 0:
+                        return float(v[0])
+                    return float(v)
+
+                bytes_per_point = (
+                    index.element_size()
+                    + out_x.element_size()
+                    + out_y.element_size()
+                    + out_z.element_size()
+                )
+                ordered = sorted(timings.items(), key=lambda item: _median_ms(item[1]))
+                best_ms = _median_ms(ordered[0][1])
+
+                print("  median_us    delta      mpts/s      gb/s  config")
+
+                for cfg, t in ordered:
+                    t_ms = _median_ms(t)
+                    delta_pct = 0.0 if best_ms <= 0 else ((t_ms / best_ms) - 1.0) * 100.0
+                    t_s = t_ms * 1e-3
+                    mpts_s = float("inf") if t_s <= 0 else (n_elements / t_s) / 1e6
+                    gb_s = (
+                        float("inf")
+                        if t_s <= 0
+                        else (n_elements * bytes_per_point) / t_s / 1e9
+                    )
+                    print(
+                        f"  {t_ms * 1e3:9.2f}  {delta_pct:+7.2f}%  "
+                        f"{mpts_s:10.2f}  {gb_s:8.2f}  {cfg}"
+                    )
 
     return out_x, out_y, out_z
