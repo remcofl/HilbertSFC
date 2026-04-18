@@ -55,6 +55,38 @@ _CPU_NUMBA_CASES = [
 ]
 
 
+_CPU_TORCH_2D_DTYPE_SWEEP_CASES = [
+    pytest.param(np.uint8, 1, id="cpu-torch-2d-u8-n1"),
+    pytest.param(np.uint8, 4, id="cpu-torch-2d-u8-n4"),
+    pytest.param(np.int16, 5, id="cpu-torch-2d-i16-n5"),
+    pytest.param(np.int16, 12, id="cpu-torch-2d-i16-n12"),
+]
+
+
+_CPU_TORCH_2D_DECODE_INDEX_DTYPE_SWEEP_CASES = [
+    pytest.param(np.uint8, 1, id="cpu-torch-2d-decode-u8-n1"),
+    pytest.param(np.uint8, 4, id="cpu-torch-2d-decode-u8-n4"),
+    pytest.param(np.uint16, 5, id="cpu-torch-2d-decode-u16-n5"),
+    pytest.param(np.uint16, 8, id="cpu-torch-2d-decode-u16-n8"),
+]
+
+
+_CUDA_TORCH_2D_DTYPE_SWEEP_CASES = [
+    pytest.param(np.uint8, 1, id="cuda-torch-2d-u8-n1"),
+    pytest.param(np.uint8, 4, id="cuda-torch-2d-u8-n4"),
+    pytest.param(np.int16, 8, id="cuda-torch-2d-i16-n8"),
+    pytest.param(np.int16, 12, id="cuda-torch-2d-i16-n12"),
+]
+
+
+_CUDA_TORCH_2D_DECODE_INDEX_DTYPE_SWEEP_CASES = [
+    pytest.param(np.uint8, 1, id="cuda-torch-2d-decode-u8-n1"),
+    pytest.param(np.uint8, 4, id="cuda-torch-2d-decode-u8-n4"),
+    pytest.param(np.uint16, 5, id="cuda-torch-2d-decode-u16-n5"),
+    pytest.param(np.uint16, 8, id="cuda-torch-2d-decode-u16-n8"),
+]
+
+
 @pytest.mark.torch
 @pytest.mark.compile
 @pytest.mark.parametrize("op,dim,nbits,n", _CPU_NUMBA_CASES)
@@ -252,6 +284,70 @@ def test_torch_compile_fullgraph_cpu_torch_backend_no_graph_breaks(
 
 
 @pytest.mark.torch
+@pytest.mark.compile
+@pytest.mark.no_graph_break
+@pytest.mark.parametrize("dtype,nbits", _CPU_TORCH_2D_DTYPE_SWEEP_CASES)
+def test_torch_compile_fullgraph_cpu_torch_backend_2d_encode_small_dtypes_and_nbits(
+    rng: np.random.Generator,
+    dtype: np.dtype,
+    nbits: int,
+) -> None:
+    torch, htorch = _torch_pair()
+
+    n = 1024
+    hi = 1 << nbits
+    x_np = rng.integers(0, hi, size=n, dtype=dtype)
+    y_np = rng.integers(0, hi, size=n, dtype=dtype)
+    x = torch.from_numpy(x_np)
+    y = torch.from_numpy(y_np)
+
+    htorch.precache_compile_luts(device=x.device, op="hilbert_encode_2d")
+
+    def fn(a, b):
+        return htorch.hilbert_encode_2d(a, b, nbits=nbits, cpu_backend="torch")
+
+    compiled_fn = torch.compile(fn, fullgraph=True, dynamic=True)
+    out = compiled_fn(x, y)
+
+    ref = np_hilbert_encode_2d(
+        x_np.astype(np.int64), y_np.astype(np.int64), nbits=nbits
+    )
+    np.testing.assert_array_equal(out.detach().cpu().numpy(), ref)
+
+
+@pytest.mark.torch
+@pytest.mark.compile
+@pytest.mark.no_graph_break
+@pytest.mark.parametrize(
+    "index_dtype,nbits", _CPU_TORCH_2D_DECODE_INDEX_DTYPE_SWEEP_CASES
+)
+def test_torch_compile_fullgraph_cpu_torch_backend_2d_decode_small_dtypes_and_nbits(
+    rng: np.random.Generator,
+    index_dtype: np.dtype,
+    nbits: int,
+) -> None:
+    torch, htorch = _torch_pair()
+
+    n = 1024
+    hi = 1 << nbits
+    x_np = rng.integers(0, hi, size=n, dtype=np.int32)
+    y_np = rng.integers(0, hi, size=n, dtype=np.int32)
+    idx_np = np_hilbert_encode_2d(x_np, y_np, nbits=nbits).astype(index_dtype)
+    idx = torch.from_numpy(idx_np)
+
+    htorch.precache_compile_luts(device=idx.device, op="hilbert_decode_2d")
+
+    def fn(index):
+        return htorch.hilbert_decode_2d(index, nbits=nbits, cpu_backend="torch")
+
+    compiled_fn = torch.compile(fn, fullgraph=True)
+    out_x, out_y = compiled_fn(idx)
+
+    np.testing.assert_array_equal(out_x.detach().cpu().numpy(), x_np)
+    np.testing.assert_array_equal(out_y.detach().cpu().numpy(), y_np)
+
+
+@pytest.mark.torch
 @pytest.mark.gpu
 @pytest.mark.compile
 @pytest.mark.no_graph_break
@@ -342,3 +438,69 @@ def test_torch_compile_fullgraph_cuda_torch_backend_no_graph_breaks(
         return
 
     raise AssertionError(f"Unsupported combination: {op=}, {dim=}")
+
+
+@pytest.mark.torch
+@pytest.mark.gpu
+@pytest.mark.compile
+@pytest.mark.no_graph_break
+@pytest.mark.parametrize("dtype,nbits", _CUDA_TORCH_2D_DTYPE_SWEEP_CASES)
+def test_torch_compile_fullgraph_cuda_torch_backend_2d_encode_small_dtypes_and_nbits(
+    rng: np.random.Generator,
+    dtype: np.dtype,
+    nbits: int,
+) -> None:
+    torch, htorch = _torch_pair()
+
+    n = 2048
+    hi = 1 << nbits
+    x_np = rng.integers(0, hi, size=n, dtype=dtype)
+    y_np = rng.integers(0, hi, size=n, dtype=dtype)
+    x = torch.from_numpy(x_np).to(device="cuda")
+    y = torch.from_numpy(y_np).to(device="cuda")
+
+    htorch.precache_compile_luts(device=x.device, op="hilbert_encode_2d")
+
+    def fn(a, b):
+        return htorch.hilbert_encode_2d(a, b, nbits=nbits, gpu_backend="torch")
+
+    compiled_fn = torch.compile(fn, fullgraph=True)
+    out = compiled_fn(x, y)
+
+    ref = np_hilbert_encode_2d(
+        x_np.astype(np.int64), y_np.astype(np.int64), nbits=nbits
+    )
+    np.testing.assert_array_equal(out.detach().cpu().numpy(), ref)
+
+
+@pytest.mark.torch
+@pytest.mark.gpu
+@pytest.mark.compile
+@pytest.mark.no_graph_break
+@pytest.mark.parametrize(
+    "index_dtype,nbits", _CUDA_TORCH_2D_DECODE_INDEX_DTYPE_SWEEP_CASES
+)
+def test_torch_compile_fullgraph_cuda_torch_backend_2d_decode_small_dtypes_and_nbits(
+    rng: np.random.Generator,
+    index_dtype: np.dtype,
+    nbits: int,
+) -> None:
+    torch, htorch = _torch_pair()
+
+    n = 2048
+    hi = 1 << nbits
+    x_np = rng.integers(0, hi, size=n, dtype=np.int32)
+    y_np = rng.integers(0, hi, size=n, dtype=np.int32)
+    idx_np = np_hilbert_encode_2d(x_np, y_np, nbits=nbits).astype(index_dtype)
+    idx = torch.from_numpy(idx_np).to(device="cuda")
+
+    htorch.precache_compile_luts(device=idx.device, op="hilbert_decode_2d")
+
+    def fn(index):
+        return htorch.hilbert_decode_2d(index, nbits=nbits, gpu_backend="torch")
+
+    compiled_fn = torch.compile(fn, fullgraph=True)
+    out_x, out_y = compiled_fn(idx)
+
+    np.testing.assert_array_equal(out_x.detach().cpu().numpy(), x_np)
+    np.testing.assert_array_equal(out_y.detach().cpu().numpy(), y_np)

@@ -6,8 +6,10 @@ from hilbertsfc._nbits import validate_nbits_3d
 
 from ..._luts import TorchCacheMode, lut_3d2b_so_sb_i16
 
+_LOW_MASK_3D_INDEX_BITS: tuple[int, ...] = tuple((1 << (3 * n)) - 1 for n in range(22))
 
-def _hilbert_decode_3d_2bit_compacted_sb(
+
+def _hilbert_decode_3d_2bit_sb(
     idx: torch.Tensor,
     out_x: torch.Tensor,
     out_y: torch.Tensor,
@@ -21,10 +23,10 @@ def _hilbert_decode_3d_2bit_compacted_sb(
 
     state = torch.zeros_like(out_x, dtype=torch.int32)
 
-    start_bit = (nbits - 1) & ~0x1
+    start_bit = ((nbits - 1) // 2) * 2
     drop_bits = start_bit - nbits + 2
     if drop_bits > 0:
-        mask = (1 << (3 * nbits)) - 1
+        mask = _LOW_MASK_3D_INDEX_BITS[nbits]
         idx = idx & mask
 
     if idx.dtype.itemsize < 4:
@@ -66,8 +68,6 @@ def hilbert_decode_3d_torch(
         out_z = torch.empty_like(index, dtype=torch.int64)
 
     lut = lut_3d2b_so_sb_i16(device=index.device, cache=lut_cache)
-    _hilbert_decode_3d_2bit_compacted_sb(
-        index, out_x, out_y, out_z, nbits=nbits, lut=lut
-    )
+    _hilbert_decode_3d_2bit_sb(index, out_x, out_y, out_z, nbits=nbits, lut=lut)
 
     return out_x, out_y, out_z

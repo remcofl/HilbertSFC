@@ -1,16 +1,16 @@
 # ruff: noqa: N803, N806
-"""Triton 2D Hilbert decoder (4-bit compacted LUT)."""
+"""Triton 2D Hilbert decoder (4-bit state-aware LUT)."""
 
 import torch
 import triton  # type: ignore[reportMissingImports]
 import triton.language as tl  # type: ignore[reportMissingImports]
 
 from hilbertsfc._nbits import validate_nbits_2d
-from hilbertsfc.torch._luts import TorchCacheMode, lut_2d4b_q_bs_i64
+from hilbertsfc.torch._luts import TorchCacheMode, lut_2d4b_sq_sb_i16
 
 
 @triton.jit
-def hilbert_decode_2d_4bit_compacted_bs(
+def hilbert_decode_2d_4bit_sb(
     idx_ptr: tl.tensor,
     out_x_ptr: tl.tensor,
     out_y_ptr: tl.tensor,
@@ -20,7 +20,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
     NBITS: tl.constexpr,
     SHMEM_LUT: tl.constexpr,
 ):
-    """Decode Hilbert indices to (x, y) using a 4-bit LUT."""
+    """Decode Hilbert indices to (x, y) using packed (state, q) LUT."""
 
     START_BIT: tl.constexpr = (NBITS - 1) & ~0x3
     DROP_BITS: tl.constexpr = START_BIT - NBITS + 4
@@ -30,7 +30,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
     Y_OUT_DTYPE: tl.constexpr = out_y_ptr.dtype.element_ty  # type: ignore[reportAttributeAccessIssue]
 
     if SHMEM_LUT:
-        lut_local = tl.load(lut_ptr + tl.arange(0, 256), eviction_policy="evict_last")
+        lut_local = tl.load(lut_ptr + tl.arange(0, 1024), eviction_policy="evict_last")
 
     pid = tl.program_id(axis=0)
     offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
@@ -39,8 +39,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
     idx = tl.load(idx_ptr + offsets, mask=mask, other=0)
 
     if not SHMEM_LUT:
-        # 8 bit tile packing (x and y) can result in negative values when using int8 inputs,
-        # so we convert to uint8.
+        # 8 bit q extraction can be negative for int8 index inputs; reinterpret as uint8.
         if idx.dtype == tl.int8:
             idx = idx.to(tl.uint8)
 
@@ -53,20 +52,22 @@ def hilbert_decode_2d_4bit_compacted_bs(
 
     for bit in tl.static_range(START_BIT, -1, -4):
         q = (idx >> (bit << 1)) & 0xFF
+        lut_idx = state | q
 
         if SHMEM_LUT:
-            lut_val = tl.gather(lut_local, q, axis=0)
+            sb = tl.gather(lut_local, lut_idx, axis=0)
         else:
-            lut_val = tl.load(lut_ptr + q, eviction_policy="evict_last")
+            sb = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
 
-        bs = lut_val >> state
+        # Keep in int32 for masks/shifts; this is faster than narrow integer ops.
+        sb = sb.to(tl.int32)
 
-        b_x = (bs & 0xF000) >> 12
-        b_y = (bs & 0x0F00) >> 8
-        x |= b_x << bit
-        y |= b_y << bit
-
-        state = bs & 0xFF
+        b = sb & 0xFF
+        b_x = (b >> 4) & 0xF
+        b_y = b & 0xF
+        x |= b_x.to(X_OUT_DTYPE) << bit
+        y |= b_y.to(Y_OUT_DTYPE) << bit
+        state = sb & 0x300
 
     tl.store(out_x_ptr + offsets, x, mask=mask)
     tl.store(out_y_ptr + offsets, y, mask=mask)
@@ -81,11 +82,18 @@ def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int
     num_warps: int
     """
     if not shmem_lut:
-        return 256, 4
+        # 128/2 performs better than 256/1 until very large sizes.
+        if n_elements <= 2 << 22:
+            return 128, 2
+        return 256, 1
 
-    if n_elements <= 131072:
+    if n_elements <= 2 << 16:
         return 256, 4
-    return 512, 4
+    if n_elements <= 2 << 20:
+        return 512, 8
+    if n_elements <= 2 << 22:
+        return 1024, 8
+    return 2048, 8
 
 
 def hilbert_decode_2d_triton(
@@ -114,7 +122,7 @@ def hilbert_decode_2d_triton(
     def grid(meta):
         return (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
 
-    lut = lut_2d4b_q_bs_i64(device=index.device, cache=lut_cache)
+    lut = lut_2d4b_sq_sb_i16(device=index.device, cache=lut_cache)
 
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
@@ -124,7 +132,7 @@ def hilbert_decode_2d_triton(
         shmem_lut=load_lut_into_shared_memory,
     )
 
-    hilbert_decode_2d_4bit_compacted_bs[grid](  # type: ignore[reportIndexIssue]
+    hilbert_decode_2d_4bit_sb[grid](  # type: ignore[reportIndexIssue]
         index,
         out_x,
         out_y,

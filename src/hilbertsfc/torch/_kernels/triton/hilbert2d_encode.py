@@ -1,16 +1,16 @@
 # ruff: noqa: N803, N806
-"""Triton 2D Hilbert encoder (4-bit compacted LUT)."""
+"""Triton 2D Hilbert encoder (4-bit state-aware LUT)."""
 
 import torch
 import triton  # type: ignore[reportMissingImports]
 import triton.language as tl  # type: ignore[reportMissingImports]
 
 from hilbertsfc._nbits import validate_nbits_2d
-from hilbertsfc.torch._luts import TorchCacheMode, lut_2d4b_b_qs_i64
+from hilbertsfc.torch._luts import TorchCacheMode, lut_2d4b_sb_sq_i16
 
 
 @triton.jit
-def hilbert_encode_2d_4bit_compacted_qs(
+def hilbert_encode_2d_4bit_sq(
     x_ptr: tl.tensor,
     y_ptr: tl.tensor,
     out_ptr: tl.tensor,
@@ -29,7 +29,8 @@ def hilbert_encode_2d_4bit_compacted_qs(
 
     # Optional LUT preload.
     if SHMEM_LUT:
-        lut_local = tl.load(lut_ptr + tl.arange(0, 256), eviction_policy="evict_last")
+        lut_local = tl.load(lut_ptr + tl.arange(0, 1024), eviction_policy="evict_last")
+
     pid = tl.program_id(axis=0)
     offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
     mask = offsets < n_elements
@@ -57,16 +58,19 @@ def hilbert_encode_2d_4bit_compacted_qs(
         b_y = (y >> bit) & 0xF
         b = (b_x << 4) | b_y
 
-        if SHMEM_LUT:
-            # Handles negative b values when indexing with int8 inputs.
-            lut_val = tl.gather(lut_local, b, axis=0)
-        else:
-            lut_val = tl.load(lut_ptr + b, eviction_policy="evict_last")
+        lut_idx = state | b
 
-        qs = lut_val >> state
-        q = (qs & 0xFF00) >> 8
-        idx |= q << (bit * 2)
-        state = qs & 0xFF
+        if SHMEM_LUT:
+            sq = tl.gather(lut_local, lut_idx, axis=0)
+        else:
+            sq = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
+
+        # Keep in int32 for masks/shifts; this is faster than narrow integer ops.
+        sq = sq.to(tl.int32)
+
+        q = sq & 0xFF
+        idx |= q.to(OUT_DTYPE) << (bit << 1)
+        state = sq & 0x300
 
     tl.store(out_ptr + offsets, idx, mask=mask)
 
@@ -80,11 +84,17 @@ def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int
     num_warps: int
     """
     if not shmem_lut:
-        return 256, 4
+        if n_elements <= 2 << 22:
+            return 128, 2
+        return 256, 1
 
-    if n_elements <= 131072:
+    if n_elements <= 2 << 16:
         return 256, 4
-    return 512, 4
+    if n_elements <= 2 << 20:
+        return 512, 8
+    if n_elements <= 2 << 22:
+        return 1024, 8
+    return 2048, 8
 
 
 def hilbert_encode_2d_triton(
@@ -110,7 +120,7 @@ def hilbert_encode_2d_triton(
     def grid(meta):
         return (triton.cdiv(n_elements, meta["BLOCK_SIZE"]),)
 
-    lut = lut_2d4b_b_qs_i64(device=x.device, cache=lut_cache)
+    lut = lut_2d4b_sb_sq_i16(device=x.device, cache=lut_cache)
 
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
@@ -120,7 +130,7 @@ def hilbert_encode_2d_triton(
         shmem_lut=load_lut_into_shared_memory,
     )
 
-    hilbert_encode_2d_4bit_compacted_qs[grid](  # type: ignore[reportIndexIssue]
+    hilbert_encode_2d_4bit_sq[grid](  # type: ignore[reportIndexIssue]
         x,
         y,
         out,

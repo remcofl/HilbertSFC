@@ -8,8 +8,11 @@ from hilbertsfc.types import TileNBits2D
 from ..._luts import (
     TorchCacheMode,
     lut_2d4b_b_qs_i64,
+    lut_2d4b_sb_sq_i16,
     lut_2d7b_b_qs_i64,
 )
+
+_LOW_MASK_2D_COORD_BITS: tuple[int, ...] = tuple((1 << n) - 1 for n in range(33))
 
 
 def _hilbert_encode_2d_4bit_compacted_qs(
@@ -70,6 +73,39 @@ def _hilbert_encode_2d_7bit_compacted_qs(
         state = qs & 0x3
 
 
+def _hilbert_encode_2d_4bit_sq(
+    x: torch.Tensor, y: torch.Tensor, out: torch.Tensor, nbits: int, lut: torch.Tensor
+) -> None:
+    out.fill_(0)
+    state = torch.zeros_like(x, dtype=torch.int32)
+
+    start_bit = ((nbits - 1) // 4) * 4
+    drop_bits = start_bit - nbits + 4
+    if drop_bits > 0:
+        # lshift and pow alternative do not work well for symbolic nbits in older torch versions
+        mask = _LOW_MASK_2D_COORD_BITS[nbits]
+        x = x & mask
+        y = y & mask
+
+    # Minimal dtype for indexing
+    if x.dtype.itemsize < 4:
+        x = x.to(torch.int32)
+    if y.dtype.itemsize < 4:
+        y = y.to(torch.int32)
+
+    for bit in range(start_bit, -1, -4):
+        b_x = (x >> bit) & 0xF
+        b_y = (y >> bit) & 0xF
+        b = (b_x << 4) | b_y
+
+        lut_idx = state | b
+        sq = lut[lut_idx].to(torch.int32)
+
+        q = sq & 0xFF
+        out |= q.to(out.dtype) << (bit << 1)
+        state = sq & 0x300
+
+
 def _auto_tile_nbits_2d(nbits: int) -> TileNBits2D:
     """Determine the best tile size for 2D *encode* kernels given ``nbits``.
 
@@ -98,13 +134,16 @@ def hilbert_encode_2d_torch(
     if out is None:
         out = torch.empty_like(x, dtype=torch.int64)
 
-    tile = 4 if torch.compiler.is_compiling() else _auto_tile_nbits_2d(nbits)
-
-    if tile == 4:
-        lut = lut_2d4b_b_qs_i64(device=x.device, cache=lut_cache)
-        _hilbert_encode_2d_4bit_compacted_qs(x, y, out, nbits=nbits, lut=lut)
+    if torch.compiler.is_compiling():
+        lut = lut_2d4b_sb_sq_i16(device=x.device, cache=lut_cache)
+        _hilbert_encode_2d_4bit_sq(x, y, out, nbits=nbits, lut=lut)
     else:
-        lut = lut_2d7b_b_qs_i64(device=x.device, cache=lut_cache)
-        _hilbert_encode_2d_7bit_compacted_qs(x, y, out, nbits=nbits, lut=lut)
+        tile = _auto_tile_nbits_2d(nbits)
+        if tile == 4:
+            lut = lut_2d4b_b_qs_i64(device=x.device, cache=lut_cache)
+            _hilbert_encode_2d_4bit_compacted_qs(x, y, out, nbits=nbits, lut=lut)
+        else:
+            lut = lut_2d7b_b_qs_i64(device=x.device, cache=lut_cache)
+            _hilbert_encode_2d_7bit_compacted_qs(x, y, out, nbits=nbits, lut=lut)
 
     return out

@@ -8,7 +8,12 @@ from hilbertsfc.types import TileNBits2D
 from ..._luts import (
     TorchCacheMode,
     lut_2d4b_q_bs_i64,
+    lut_2d4b_sq_sb_i16,
     lut_2d7b_q_bs_i64,
+)
+
+_LOW_MASK_2D_INDEX_BITS: tuple[int, ...] = tuple(
+    ((1 << (n << 1)) - 1) if n < 32 else -1 for n in range(33)
 )
 
 
@@ -58,7 +63,7 @@ def _hilbert_decode_2d_7bit_compacted_bs(
 
     drop_bits = start_bit - nbits + 7
     if drop_bits > 0:
-        mask = (1 << (nbits << 1)) - 1
+        mask = _LOW_MASK_2D_INDEX_BITS[nbits]
         idx = idx & mask
 
     if idx.dtype.itemsize < 4:
@@ -74,6 +79,40 @@ def _hilbert_decode_2d_7bit_compacted_bs(
         out_y |= b_y << bit
 
         state = bs & 0x3
+
+
+def _hilbert_decode_2d_4bit_sb(
+    idx: torch.Tensor,
+    out_x: torch.Tensor,
+    out_y: torch.Tensor,
+    nbits: int,
+    lut: torch.Tensor,
+) -> None:
+    out_x.fill_(0)
+    out_y.fill_(0)
+    state = torch.zeros_like(out_x, dtype=torch.int32)
+
+    start_bit = ((nbits - 1) // 4) * 4
+    drop_bits = start_bit - nbits + 4
+    if drop_bits > 0:
+        mask = _LOW_MASK_2D_INDEX_BITS[nbits]
+        idx = idx & mask
+
+    if idx.dtype.itemsize < 4:
+        idx = idx.to(torch.int32)
+
+    for bit in range(start_bit, -1, -4):
+        q = (idx >> (bit << 1)) & 0xFF
+        lut_idx = state | q
+        sb = lut[lut_idx].to(torch.int32)
+
+        b = sb & 0xFF
+        b_x = (b >> 4) & 0xF
+        b_y = b & 0xF
+        out_x |= b_x.to(out_x.dtype) << bit
+        out_y |= b_y.to(out_y.dtype) << bit
+
+        state = sb & 0x300
 
 
 def _auto_tile_nbits_2d(nbits: int) -> TileNBits2D:
@@ -106,13 +145,20 @@ def hilbert_decode_2d_torch(
     if out_y is None:
         out_y = torch.empty_like(index, dtype=torch.int64)
 
-    tile = 4 if torch.compiler.is_compiling() else _auto_tile_nbits_2d(nbits)
-
-    if tile == 4:
-        lut = lut_2d4b_q_bs_i64(device=index.device, cache=lut_cache)
-        _hilbert_decode_2d_4bit_compacted_bs(index, out_x, out_y, nbits=nbits, lut=lut)
+    if torch.compiler.is_compiling():
+        lut = lut_2d4b_sq_sb_i16(device=index.device, cache=lut_cache)
+        _hilbert_decode_2d_4bit_sb(index, out_x, out_y, nbits=nbits, lut=lut)
     else:
-        lut = lut_2d7b_q_bs_i64(device=index.device, cache=lut_cache)
-        _hilbert_decode_2d_7bit_compacted_bs(index, out_x, out_y, nbits=nbits, lut=lut)
+        tile = _auto_tile_nbits_2d(nbits)
+        if tile == 4:
+            lut = lut_2d4b_q_bs_i64(device=index.device, cache=lut_cache)
+            _hilbert_decode_2d_4bit_compacted_bs(
+                index, out_x, out_y, nbits=nbits, lut=lut
+            )
+        else:
+            lut = lut_2d7b_q_bs_i64(device=index.device, cache=lut_cache)
+            _hilbert_decode_2d_7bit_compacted_bs(
+                index, out_x, out_y, nbits=nbits, lut=lut
+            )
 
     return out_x, out_y
