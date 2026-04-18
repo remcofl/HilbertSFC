@@ -89,7 +89,7 @@ def test_precache_compile_luts_populates_expected_entries() -> None:
     mod.precache_compile_luts(op="hilbert_encode_2d")
 
     keys = [k[1] for k in mod._DEVICE_LUT_CACHE.keys()]
-    assert "lut_2d4b_b_qs_i64" in keys
+    assert "lut_2d4b_sb_sq_i16" in keys
 
 
 @pytest.mark.torch

@@ -10,7 +10,7 @@ from hilbertsfc.torch._luts import TorchCacheMode, lut_3d2b_sb_so_i16
 
 
 @triton.jit
-def hilbert_encode_3d_2bit_compacted_so(
+def hilbert_encode_3d_2bit_so(
     x_ptr: tl.tensor,
     y_ptr: tl.tensor,
     z_ptr: tl.tensor,
@@ -83,11 +83,15 @@ def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int
     num_warps: int
     """
     if not shmem_lut:
-        return 256, 4
+        if n_elements <= 2 << 22:
+            return 128, 2
+        return 256, 1
 
-    if n_elements <= 131072:
+    if n_elements <= 2 << 16:
         return 256, 4
-    return 512, 4
+    if n_elements <= 2 << 20:
+        return 512, 8
+    return 1024, 8
 
 
 def hilbert_encode_3d_triton(
@@ -121,7 +125,7 @@ def hilbert_encode_3d_triton(
         n_elements, shmem_lut=load_lut_into_shared_memory
     )
 
-    hilbert_encode_3d_2bit_compacted_so[grid](  # type: ignore[reportIndexIssue]
+    hilbert_encode_3d_2bit_so[grid](  # type: ignore[reportIndexIssue]
         x,
         y,
         z,
