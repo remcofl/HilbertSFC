@@ -166,11 +166,35 @@ def hilbert_encode_2d_4bit_sq(
         else:
             sq = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
 
+        sq = sq.to(tl.int32)  # Considerable speed up
+
         q = sq & 0xFF
         idx |= q.to(OUT_DTYPE) << (bit << 1)
         state = sq & 0x300
 
     tl.store(out_ptr + offsets, idx, mask=mask)
+
+
+def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int]:
+    """Choose a reasonable default without autotune.
+
+    Returns
+    -------
+    block_size: int
+    num_warps: int
+    """
+    if not shmem_lut:  # 128, 2 to 256, 1 at 4 million plus
+        if n_elements <= 2 << 22:
+            return 128, 2
+        return 256, 1
+
+    if n_elements <= 2 << 16:
+        return 256, 4
+    if n_elements <= 2 << 20:
+        return 512, 8
+    if n_elements <= 2 << 22:
+        return 1024, 8
+    return 2048, 8  # For 3d is seems better to exclude this last option
 
 
 @triton.autotune(

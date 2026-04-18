@@ -113,7 +113,7 @@ def hilbert_decode_2d_4bit_compacted_bs(
     key=["n_elements", "NBITS", "SHMEM_LUT"],
 )
 @triton.jit
-def hilbert_decode_2d_4bit_sq(
+def hilbert_decode_2d_4bit_sb(
     idx_ptr: tl.tensor,
     out_x_ptr: tl.tensor,
     out_y_ptr: tl.tensor,
@@ -161,6 +161,9 @@ def hilbert_decode_2d_4bit_sq(
             sb = tl.gather(lut_local, lut_idx, axis=0)
         else:
             sb = tl.load(lut_ptr + lut_idx, eviction_policy="evict_last")
+
+        # Keep in int32 for masks/shifts; this is faster than narrow integer ops.
+        sb = sb.to(tl.int32)
 
         b = sb & 0xFF
         b_x = (b >> 4) & 0xF
@@ -346,7 +349,7 @@ def hilbert_decode_2d_triton(
             kernel_name = "hilbert_decode_2d_7bit_sq"
             lut = lut_2d7b_sq_sb_i16(device=index.device, cache=lut_cache)
         else:
-            kernel = hilbert_decode_2d_4bit_sq
+            kernel = hilbert_decode_2d_4bit_sb
             kernel_name = "hilbert_decode_2d_4bit_sq"
             lut = lut_2d4b_sq_sb_i16(device=index.device, cache=lut_cache)
     else:
