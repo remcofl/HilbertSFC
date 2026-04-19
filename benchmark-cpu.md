@@ -1,5 +1,5 @@
 <!-- markdownlint-disable MD024 -->
-# Benchmark
+# Benchmark (CPU)
 
 This page provides additional benchmark results for Hilbert curve encoding and decoding for 2D and 3D coordinates across multiple Python and Rust implementations, including **HilbertSFC**. The goal of these benchmarks is to compare raw kernel throughput under controlled and reproducible conditions.
 
