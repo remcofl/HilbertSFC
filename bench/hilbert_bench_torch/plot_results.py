@@ -33,7 +33,29 @@ STYLE_MAP = {
     "hilbertsfc_triton": {"color": "#E15759", "linestyle": "-", "marker": "o"},
 }
 
-MAX_Y_MPTS = 88_000.0
+BAR_IMPL_COLORS = [
+    "#FF6F61",
+    "#4C72B0",
+    "#F0C05A",
+    "#009473",
+    "#D94F70",
+    "#7BC4C4",
+]
+
+BAR_IMPL_COLOR_BY_PROVIDER = {
+    "skilling_eager": BAR_IMPL_COLORS[0],
+    "hilbertsfc_torch_eager": BAR_IMPL_COLORS[1],
+    "skilling_triton_2d": BAR_IMPL_COLORS[2],
+    "skilling_triton_3d": BAR_IMPL_COLORS[2],
+    "hilbertsfc_torch_compile": BAR_IMPL_COLORS[3],
+    "hilbertsfc_triton": BAR_IMPL_COLORS[4],
+}
+
+LAYOUT_SPECS: dict[str, list[tuple[str, int]]] = {
+    "2x2": [("encode", 2), ("decode", 2), ("encode", 3), ("decode", 3)],
+    "2x1-2d": [("encode", 2), ("decode", 2)],
+    "2x1-3d": [("encode", 3), ("decode", 3)],
+}
 
 
 def _load_rows(csv_path: Path) -> list[dict[str, str]]:
@@ -49,6 +71,38 @@ def _size_label(size: int) -> str:
     return str(size)
 
 
+def _parse_size_token(token: str) -> int:
+    t = token.strip().lower().replace("_", "")
+    if not t:
+        raise ValueError("Empty size token")
+
+    multipliers = {
+        "ki": 1024,
+        "mi": 1024 * 1024,
+        "gi": 1024 * 1024 * 1024,
+        "k": 1000,
+        "m": 1000 * 1000,
+        "g": 1000 * 1000 * 1000,
+    }
+    for suffix, mult in multipliers.items():
+        if t.endswith(suffix):
+            value = t[: -len(suffix)]
+            if not value.isdigit():
+                raise ValueError(f"Invalid size token: {token}")
+            return int(value) * mult
+
+    if not t.isdigit():
+        raise ValueError(f"Invalid size token: {token}")
+    return int(t)
+
+
+def _parse_bar_sizes(value: str) -> list[int]:
+    sizes = [_parse_size_token(tok) for tok in value.split(",") if tok.strip()]
+    if not sizes:
+        raise ValueError("No sizes provided")
+    return sizes
+
+
 def _display_name(provider: str) -> str:
     return DISPLAY_NAMES.get(provider, provider)
 
@@ -59,8 +113,34 @@ def _style(provider: str) -> dict[str, str]:
     )
 
 
-def _panel_title(op: str, dim: int) -> str:
-    return f"{op.title()} {dim}D"
+def _bar_color(provider: str, fallback_index: int) -> str:
+    return BAR_IMPL_COLOR_BY_PROVIDER.get(
+        provider, BAR_IMPL_COLORS[fallback_index % len(BAR_IMPL_COLORS)]
+    )
+
+
+def _is_eager_provider(provider: str) -> bool:
+    return provider.endswith("_eager")
+
+
+def _panel_title(
+    op: str,
+    dim: int,
+    *,
+    title_prefix: str = "",
+    title_postfix: str = "",
+) -> str:
+    base = f"{op.title()} {dim}D"
+    prefix = title_prefix.strip()
+    postfix = title_postfix.strip()
+
+    if prefix and postfix:
+        return f"{prefix} - {base} - {postfix}"
+    if prefix:
+        return f"{prefix} - {base}"
+    if postfix:
+        return f"{base} - {postfix}"
+    return base
 
 
 def _set_plot_theme() -> None:
@@ -135,12 +215,31 @@ def _ordered_providers(subset: list[dict[str, str]]) -> list[str]:
     return ordered + extras
 
 
+def _ordered_bar_providers(subset: list[dict[str, str]], *, dim: int) -> list[str]:
+    providers = _ordered_providers(subset)
+    skilling_triton = "skilling_triton_2d" if dim == 2 else "skilling_triton_3d"
+
+    preferred = [
+        "skilling_eager",
+        "hilbertsfc_torch_eager",
+        skilling_triton,
+        "hilbertsfc_torch_compile",
+        "hilbertsfc_triton",
+    ]
+
+    ordered = [p for p in preferred if p in providers]
+    extras = [p for p in providers if p not in ordered]
+    return ordered + extras
+
+
 def _draw_line_panel(
     ax_left,
     *,
     rows: list[dict[str, str]],
     op: str,
     dim: int,
+    title_prefix: str,
+    title_postfix: str,
     show_legend: bool,
 ) -> bool:
     subset = [
@@ -223,8 +322,14 @@ def _draw_line_panel(
 
     ax_left.set_xlabel("Number of elements")
     ax_left.set_ylabel(rate_unit)
-    ax_left.set_title(_panel_title(op, dim))
-    ax_left.set_ylim(-2000 / rate_scale, MAX_Y_MPTS / rate_scale)
+    ax_left.set_title(
+        _panel_title(
+            op,
+            dim,
+            title_prefix=title_prefix,
+            title_postfix=title_postfix,
+        )
+    )
     ax_left.grid(True, axis="both", linestyle=":", alpha=0.35)
 
     if show_legend:
@@ -235,11 +340,275 @@ def _draw_line_panel(
             ncol=1,
             fontsize=8,
             frameon=True,
-            loc="upper center",
-            bbox_to_anchor=(0.5, 1.16),
+            loc="upper left",
+            bbox_to_anchor=(0.02, 0.98),
         )
 
     return True
+
+
+def _draw_bar_panel(
+    ax_left,
+    *,
+    rows: list[dict[str, str]],
+    op: str,
+    dim: int,
+    title_prefix: str,
+    title_postfix: str,
+    sizes: list[int],
+    show_legend: bool,
+) -> bool:
+    subset = [
+        r
+        for r in rows
+        if r.get("available", "").lower() == "true"
+        and r.get("op") == op
+        and int(r.get("dim", 0)) == dim
+    ]
+    if not subset:
+        return False
+
+    provider_order = _ordered_bar_providers(subset, dim=dim)
+    sizes_available = {int(r["size"]) for r in subset}
+    selected_sizes = [s for s in sizes if s in sizes_available]
+    if not selected_sizes:
+        selected_sizes = sorted(sizes_available)[: min(4, len(sizes_available))]
+
+    by_provider_size: dict[tuple[str, int], dict[str, str]] = {}
+    for r in subset:
+        by_provider_size[(r["provider"], int(r["size"]))] = r
+
+    ratios = [
+        float(r["gbps_p50"]) / (float(r["mpts_p50"]) / 1000.0)
+        for r in subset
+        if float(r["mpts_p50"]) > 0.0 and float(r["gbps_p50"]) >= 0.0
+    ]
+    gbps_per_gpts = (sum(ratios) / len(ratios)) if ratios else 0.0
+
+    x_positions = list(range(len(selected_sizes)))
+    n_providers = len(provider_order)
+    bar_width = min(0.8 / max(1, n_providers), 0.22)
+
+    max_y = 0.0
+    for i_provider, provider in enumerate(provider_order):
+        offset = (i_provider - (n_providers - 1) / 2.0) * bar_width
+        yvals: list[float] = []
+        for size in selected_sizes:
+            row = by_provider_size.get((provider, size))
+            if row is None:
+                yvals.append(float("nan"))
+            else:
+                yvals.append(float(row["mpts_p50"]) / 1000.0)
+
+        bars = ax_left.bar(
+            [x + offset for x in x_positions],
+            yvals,
+            width=bar_width * 0.95,
+            color=_bar_color(provider, i_provider),
+            label=_display_name(provider),
+            zorder=3,
+        )
+
+        for bar, y in zip(bars, yvals):
+            if y == y and y > 0.0:  # NaN check via self-equality
+                max_y = max(max_y, y)
+
+    text_pad = max(0.02 * max_y, 0.01)
+    for i_provider, provider in enumerate(provider_order):
+        if not _is_eager_provider(provider):
+            continue
+
+        offset = (i_provider - (n_providers - 1) / 2.0) * bar_width
+        for x, size in zip(x_positions, selected_sizes):
+            row = by_provider_size.get((provider, size))
+            if row is None:
+                ax_left.text(
+                    x + offset,
+                    text_pad,
+                    "OOM",
+                    ha="center",
+                    va="bottom",
+                    fontsize=7,
+                    color="#444444",
+                    rotation=90,
+                )
+                continue
+
+            y = float(row["mpts_p50"]) / 1000.0
+            if y > 0.0:
+                ax_left.text(
+                    x + offset,
+                    y + text_pad,
+                    f"{y:.2f}",
+                    ha="center",
+                    va="bottom",
+                    fontsize=7,
+                    color="#333333",
+                    rotation=90,
+                )
+
+    if gbps_per_gpts > 0.0:
+
+        def _to_gbps(y_left: float) -> float:
+            return y_left * gbps_per_gpts
+
+        def _to_left(y_right: float) -> float:
+            return y_right / gbps_per_gpts
+
+        ax_right = ax_left.secondary_yaxis("right", functions=(_to_gbps, _to_left))
+        ax_right.set_ylabel("GB/s")
+
+    ax_left.set_xticks(x_positions)
+    ax_left.set_xticklabels(
+        [_size_label(s) for s in selected_sizes],
+        rotation=20,
+        ha="right",
+    )
+    ax_left.set_xlabel("Number of elements")
+    ax_left.set_ylabel("Gpts/s")
+    ax_left.set_title(
+        _panel_title(
+            op,
+            dim,
+            title_prefix=title_prefix,
+            title_postfix=title_postfix,
+        )
+    )
+    ax_left.grid(True, axis="y", linestyle=":", alpha=0.35)
+
+    if show_legend:
+        h1, l1 = ax_left.get_legend_handles_labels()
+        ax_left.legend(
+            h1,
+            l1,
+            ncol=1,
+            fontsize=8,
+            frameon=True,
+            loc="upper left",
+            bbox_to_anchor=(0.02, 0.98),
+            title="Implementation",
+            title_fontsize=8,
+        )
+
+    return True
+
+
+def _layout_shape(layout: str) -> tuple[int, int, tuple[float, float]]:
+    if layout == "2x2":
+        return 2, 2, (11, 7)
+    return 1, 2, (10, 3.8)
+
+
+def _single_panel_figsize() -> tuple[float, float]:
+    # Match the visual scale of one panel in the side-by-side layout.
+    _, _, pair_size = _layout_shape("2x1-3d")
+    return pair_size[0] / 2.0, pair_size[1]
+
+
+def _plot_line_layout(
+    rows: list[dict[str, str]],
+    *,
+    layout: str,
+    title_prefix: str,
+    title_postfix: str,
+    out_path: Path,
+) -> None:
+    specs = LAYOUT_SPECS[layout]
+    nrows, ncols, figsize = _layout_shape(layout)
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize, constrained_layout=True)
+    axes_flat = list(axes.flat) if hasattr(axes, "flat") else [axes]
+
+    for ax, (op, dim) in zip(axes_flat, specs):
+        ok = _draw_line_panel(
+            ax,
+            rows=rows,
+            op=op,
+            dim=dim,
+            title_prefix=title_prefix,
+            title_postfix=title_postfix,
+            show_legend=False,
+        )
+        if not ok:
+            ax.set_title(
+                _panel_title(
+                    op,
+                    dim,
+                    title_prefix=title_prefix,
+                    title_postfix=title_postfix,
+                )
+                + " (no data)"
+            )
+
+    handles, labels = axes_flat[0].get_legend_handles_labels()
+    if handles and labels:
+        axes_flat[0].legend(
+            handles,
+            labels,
+            loc="upper left",
+            bbox_to_anchor=(0.02, 0.98),
+            ncol=1,
+            frameon=True,
+            borderaxespad=0.0,
+        )
+
+    fig.savefig(out_path)
+    plt.close(fig)
+    print(f"[ok] wrote {out_path}")
+
+
+def _plot_bar_layout(
+    rows: list[dict[str, str]],
+    *,
+    layout: str,
+    title_prefix: str,
+    title_postfix: str,
+    sizes: list[int],
+    out_path: Path,
+) -> None:
+    specs = LAYOUT_SPECS[layout]
+    nrows, ncols, figsize = _layout_shape(layout)
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize, constrained_layout=True)
+    axes_flat = list(axes.flat) if hasattr(axes, "flat") else [axes]
+
+    for ax, (op, dim) in zip(axes_flat, specs):
+        ok = _draw_bar_panel(
+            ax,
+            rows=rows,
+            op=op,
+            dim=dim,
+            title_prefix=title_prefix,
+            title_postfix=title_postfix,
+            sizes=sizes,
+            show_legend=False,
+        )
+        if not ok:
+            ax.set_title(
+                _panel_title(
+                    op,
+                    dim,
+                    title_prefix=title_prefix,
+                    title_postfix=title_postfix,
+                )
+                + " (no data)"
+            )
+
+    handles, labels = axes_flat[0].get_legend_handles_labels()
+    if handles and labels:
+        axes_flat[0].legend(
+            handles,
+            labels,
+            loc="upper left",
+            bbox_to_anchor=(0.02, 0.98),
+            ncol=1,
+            frameon=True,
+            borderaxespad=0.0,
+            title="Implementation",
+            title_fontsize=8,
+        )
+
+    fig.savefig(out_path)
+    plt.close(fig)
+    print(f"[ok] wrote {out_path}")
 
 
 def _plot_line_one(
@@ -247,15 +616,19 @@ def _plot_line_one(
     *,
     op: str,
     dim: int,
+    title_prefix: str,
+    title_postfix: str,
     out_path: Path,
 ) -> None:
 
-    fig, ax_left = plt.subplots(figsize=(13, 6.8))
+    fig, ax_left = plt.subplots(figsize=_single_panel_figsize())
     ok = _draw_line_panel(
         ax_left,
         rows=rows,
         op=op,
         dim=dim,
+        title_prefix=title_prefix,
+        title_postfix=title_postfix,
         show_legend=True,
     )
     if not ok:
@@ -269,77 +642,16 @@ def _plot_line_one(
     print(f"[ok] wrote {out_path}")
 
 
-def _plot_line_combined(rows: list[dict[str, str]], *, out_path: Path) -> None:
-
-    specs = [
-        ("encode", 2),
-        ("decode", 2),
-        ("encode", 3),
-        ("decode", 3),
-    ]
-    fig, axes = plt.subplots(2, 2, figsize=(11, 7), constrained_layout=True)
-
-    for ax, (op, dim) in zip(axes.flat, specs):
-        ok = _draw_line_panel(
-            ax,
-            rows=rows,
-            op=op,
-            dim=dim,
-            show_legend=False,
-        )
-        if not ok:
-            ax.set_title(f"{op.title()} {dim}D (no data)")
-
-    # fig.subplots_adjust(left=0.07, right=0.985, bottom=0.09, top=0.94, wspace=0.22, hspace=0.30)
-
-    handles, labels = axes.flat[0].get_legend_handles_labels()
-    if handles and labels:
-        axes.flat[0].legend(
-            handles,
-            labels,
-            loc="upper left",
-            bbox_to_anchor=(0.02, 0.98),
-            ncol=1,
-            frameon=True,
-            borderaxespad=0.0,
-        )
-
-    fig.savefig(out_path)
-    plt.close(fig)
-    print(f"[ok] wrote {out_path}")
-
-
-def _plot_line_3d_pair(rows: list[dict[str, str]], *, out_path: Path) -> None:
-    specs = [("encode", 3), ("decode", 3)]
-    fig, axes = plt.subplots(1, 2, figsize=(10, 3.5), constrained_layout=True)
-
-    for ax, (op, dim) in zip(axes.flat, specs):
-        ok = _draw_line_panel(
-            ax,
-            rows=rows,
-            op=op,
-            dim=dim,
-            show_legend=False,
-        )
-        if not ok:
-            ax.set_title(f"{op.title()} {dim}D (no data)")
-
-    handles, labels = axes.flat[0].get_legend_handles_labels()
-    if handles and labels:
-        axes.flat[0].legend(
-            handles,
-            labels,
-            loc="upper left",
-            bbox_to_anchor=(0.02, 0.98),
-            ncol=1,
-            frameon=True,
-            borderaxespad=0.0,
-        )
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path)
-    plt.close(fig)
-    print(f"[ok] wrote {out_path}")
+def _plot_line_combined(
+    rows: list[dict[str, str]], *, title_prefix: str, title_postfix: str, out_path: Path
+) -> None:
+    _plot_line_layout(
+        rows,
+        layout="2x2",
+        title_prefix=title_prefix,
+        title_postfix=title_postfix,
+        out_path=out_path,
+    )
 
 
 def main() -> int:
@@ -347,15 +659,64 @@ def main() -> int:
 
     p = argparse.ArgumentParser(
         description=(
-            "Create provider line charts from unified bench_results.csv. "
-            "Generates 4 line plots and one combined 2x2 line figure."
-        )
+            "Create line/bar benchmark charts from unified bench_results.csv. "
+            "Supports 2x2 and 2x1 layouts."
+        ),
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument(
         "--results-dir",
         type=str,
         default="bench/hilbert_bench_torch/results/unified_run",
         help="Directory containing bench_results.csv",
+    )
+    p.add_argument(
+        "--plot-mode",
+        type=str,
+        choices=["line", "bar", "both"],
+        default="line",
+        help="Select line plots, bar plots, or both.",
+    )
+    p.add_argument(
+        "--layout",
+        type=str,
+        choices=sorted(LAYOUT_SPECS.keys()),
+        default="2x2",
+        help="Panel layout for combined line/bar figures.",
+    )
+    p.add_argument(
+        "--bar-sizes",
+        type=str,
+        default="128Ki,1Mi,8Mi,32Mi",
+        help="Comma-separated sizes for bar mode (e.g. 128Ki,1Mi,8Mi,32Mi).",
+    )
+    p.add_argument(
+        "--title-prefix",
+        type=str,
+        default="",
+        help=(
+            "Optional prefix prepended to each panel title, e.g. 'MI300X - Encode 3D'."
+        ),
+    )
+    p.add_argument(
+        "--title-postfix",
+        type=str,
+        default="",
+        help=(
+            "Optional postfix appended to each panel title, e.g. "
+            "'Encode 3D - nbits=32'."
+        ),
+    )
+    # Backward-compatible aliases for older scripts.
+    p.add_argument(
+        "--subplot-title-prefix",
+        dest="title_prefix",
+        help=argparse.SUPPRESS,
+    )
+    p.add_argument(
+        "--subplot-title-postfix",
+        dest="title_postfix",
+        help=argparse.SUPPRESS,
     )
 
     args = p.parse_args()
@@ -366,23 +727,52 @@ def main() -> int:
         raise FileNotFoundError(f"Missing results CSV: {csv_path}")
 
     rows = _load_rows(csv_path)
+    selected_bar_sizes = _parse_bar_sizes(args.bar_sizes)
+    title_prefix = args.title_prefix
+    title_postfix = args.title_postfix
 
-    plots = [
-        ("encode", 2),
-        ("encode", 3),
-        ("decode", 2),
-        ("decode", 3),
-    ]
-    for op, dim in plots:
-        out_path = results_dir / f"lines_{op}_{dim}d.png"
-        _plot_line_one(rows, op=op, dim=dim, out_path=out_path)
+    if args.plot_mode in {"line", "both"}:
+        plots = [
+            ("encode", 2),
+            ("encode", 3),
+            ("decode", 2),
+            ("decode", 3),
+        ]
+        for op, dim in plots:
+            out_path = results_dir / f"lines_{op}_{dim}d.png"
+            _plot_line_one(
+                rows,
+                op=op,
+                dim=dim,
+                title_prefix=title_prefix,
+                title_postfix=title_postfix,
+                out_path=out_path,
+            )
 
-    _plot_line_combined(rows, out_path=results_dir / "lines_2x2_all.png")
+        _plot_line_layout(
+            rows,
+            layout=args.layout,
+            title_prefix=title_prefix,
+            title_postfix=title_postfix,
+            out_path=results_dir / f"lines_{args.layout}.png",
+        )
+        if args.layout == "2x2":
+            _plot_line_combined(
+                rows,
+                title_prefix=title_prefix,
+                title_postfix=title_postfix,
+                out_path=results_dir / "lines_2x2_all.png",
+            )
 
-    repo_root = Path(__file__).resolve().parents[2]
-    _plot_line_3d_pair(
-        rows, out_path=repo_root / "docs" / "img" / "torch_cuda_3d_encode_decode.png"
-    )
+    if args.plot_mode in {"bar", "both"}:
+        _plot_bar_layout(
+            rows,
+            layout=args.layout,
+            title_prefix=title_prefix,
+            title_postfix=title_postfix,
+            sizes=selected_bar_sizes,
+            out_path=results_dir / f"bars_{args.layout}.png",
+        )
 
     return 0
 
