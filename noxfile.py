@@ -1,3 +1,7 @@
+import os
+import shutil
+from collections.abc import Callable
+
 import nox
 import nox.command
 
@@ -35,6 +39,24 @@ def _show_versions(session: nox.Session) -> None:
         "-c",
         "import numpy, numba; print('numpy', numpy.__version__); print('numba', numba.__version__)",
     )
+
+
+BACKENDS: dict[str, Callable[[], bool]] = {
+    "cuda": lambda: shutil.which("nvidia-smi") is not None,
+    "rocm": lambda: shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm"),
+}
+
+GPU_BACKEND_VARIANTS = [
+    nox.param("cuda", "torch-cu130", id="cu130"),
+    nox.param("rocm", "torch-rocm", id="rocm"),
+]
+
+
+def _skip_if_backend_unavailable(session: nox.Session, backend: str) -> None:
+    if backend not in BACKENDS:
+        raise ValueError(f"Unsupported GPU backend: {backend}")
+    if not BACKENDS[backend]():
+        session.skip(f"Backend {backend} not available")
 
 
 @nox.session(venv_backend="none")
@@ -85,7 +107,7 @@ def test_min(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON_VERSIONS)
 def test_torch_cpu(session: nox.Session) -> None:
-    """Run torch frontend tests that are CPU-only and fast enough for regular CI."""
+    """Run CPU-only torch frontend tests for regular CI."""
 
     try:
         _install(session, groups=["test", "torch-cpu"])
@@ -98,7 +120,7 @@ def test_torch_cpu(session: nox.Session) -> None:
 
 @nox.session(python="3.12")
 def test_torch_cpu_min(session: nox.Session) -> None:
-    """Run torch frontend tests that are CPU-only and fast enough for regular CI."""
+    """Run CPU-only torch frontend tests with minimum deps (Python 3.12 only)."""
 
     try:
         _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
@@ -110,21 +132,26 @@ def test_torch_cpu_min(session: nox.Session) -> None:
 
 
 @nox.session(python=PYTHON_VERSIONS)
-def test_torch_cu130(session: nox.Session) -> None:
-    """Run CUDA/Triton torch tests (intended for dedicated GPU runners)."""
+@nox.parametrize("backend,torch_group", GPU_BACKEND_VARIANTS)
+def test_torch_gpu(session: nox.Session, backend: str, torch_group: str) -> None:
+    """Run torch frontend tests on GPU backends (CUDA/ROCm)."""
+
+    _skip_if_backend_unavailable(session, backend)
 
     try:
-        _install(session, groups=["test", "torch-cu130"])
+        _install(session, groups=["test", torch_group])
         _install_project(session)
     except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cu130 dependencies")
+        session.skip(f"Could not install project with {torch_group} dependencies")
 
     session.run("pytest", "-q", "-m", "torch and gpu")
 
 
 @nox.session(python="3.12")
 def test_torch_cu118_min(session: nox.Session) -> None:
-    """Run CUDA/Triton torch tests (intended for dedicated GPU runners)."""
+    """Run CUDA torch frontend tests with minimum deps (Python 3.12 only)."""
+
+    _skip_if_backend_unavailable(session, "cuda")
 
     try:
         _install(session, groups=["test", "torch-cu118-min"])
@@ -136,8 +163,8 @@ def test_torch_cu118_min(session: nox.Session) -> None:
 
 
 @nox.session(python=PYTHON_VERSIONS)
-def test_torch_compile(session: nox.Session) -> None:
-    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
+def test_torch_compile_cpu(session: nox.Session) -> None:
+    """Run CPU-only torch.compile tests (opt-in)."""
 
     try:
         _install(session, groups=["test", "torch-cpu"])
@@ -149,8 +176,8 @@ def test_torch_compile(session: nox.Session) -> None:
 
 
 @nox.session(python="3.12")
-def test_torch_compile_min(session: nox.Session) -> None:
-    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
+def test_torch_compile_cpu_min(session: nox.Session) -> None:
+    """Run CPU-only torch.compile tests with minimum deps (Python 3.12 only, opt-in)."""
 
     try:
         _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
@@ -162,21 +189,28 @@ def test_torch_compile_min(session: nox.Session) -> None:
 
 
 @nox.session(python=PYTHON_VERSIONS)
-def test_torch_compile_cu130(session: nox.Session) -> None:
-    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
+@nox.parametrize("backend,torch_group", GPU_BACKEND_VARIANTS)
+def test_torch_compile_gpu(
+    session: nox.Session, backend: str, torch_group: str
+) -> None:
+    """Run torch.compile tests on GPU backends (CUDA/ROCm, opt-in)."""
+
+    _skip_if_backend_unavailable(session, backend)
 
     try:
-        _install(session, groups=["test", "torch-cu130"])
+        _install(session, groups=["test", torch_group])
         _install_project(session)
     except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cu130 dependencies")
+        session.skip(f"Could not install project with {torch_group} dependencies")
 
     session.run("pytest", "-q", "-m", "compile and gpu")
 
 
 @nox.session(python="3.12")
 def test_torch_compile_cu118_min(session: nox.Session) -> None:
-    """Run torch.compile tests (opt-in; slower and potentially brittle)."""
+    """Run CUDA torch.compile tests with minimum deps (Python 3.12 only, opt-in)."""
+
+    _skip_if_backend_unavailable(session, "cuda")
 
     try:
         _install(session, groups=["test", "runtime-min", "torch-cu118-min"])

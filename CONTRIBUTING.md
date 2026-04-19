@@ -67,7 +67,7 @@ If you're working on notebooks, docs, benches, or scripts, you can include optio
 - Minimum-dependency test run (Python 3.12 only):
   - `uvx nox -s test_min`
 - Unit tests for torch submodule (CPU PyTorch only):
-  - `uvx nox -s test_torch`
+  - `uvx nox -s test_torch_cpu`
 - Docs build (MkDocs strict build):
   - `uvx nox -s docs`
 
