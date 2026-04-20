@@ -1,0 +1,2736 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+      
+      
+      
+        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/main/api/hilbertsfc/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../torch/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../img/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>hilbertsfc - HilbertSFC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hilbertsfc_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HilbertSFC" class="md-header__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
+      
+  <img src="../../img/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HilbertSFC
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              hilbertsfc
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="teal"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/remcofl/HilbertSFC" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    remcofl/HilbertSFC
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HilbertSFC" class="md-nav__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
+      
+  <img src="../../img/logo.png" alt="logo">
+
+    </a>
+    HilbertSFC
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/remcofl/HilbertSFC" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    remcofl/HilbertSFC
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmarks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmarks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/remcofl/HilbertSFC/blob/main/benchmark-cpu.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/remcofl/HilbertSFC/blob/main/benchmark-gpu.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GPU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hilbertsfc
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hilbertsfc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core APIs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernel-accessors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel Accessors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cache-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Management
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hilbertsfc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;hilbertsfc
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" hilbertsfc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_encode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_encode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_decode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_decode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_encode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_encode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_decode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_decode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_encode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_encode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_decode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_decode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_encode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_encode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_decode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_decode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.clear_lut_caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;clear_lut_caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.clear_kernel_caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;clear_kernel_caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.clear_all_caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;clear_all_caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../torch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hilbertsfc.torch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Types
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hilbertsfc.types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/torch-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hilbertsfc.torch.types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#core-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core APIs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernel-accessors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kernel Accessors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cache-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cache Management
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hilbertsfc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;hilbertsfc
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" hilbertsfc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_encode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_encode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_decode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_decode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_encode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_encode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.hilbert_decode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_decode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_encode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_encode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_decode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_decode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_encode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_encode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_hilbert_decode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_decode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.clear_lut_caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;clear_lut_caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.clear_kernel_caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;clear_kernel_caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.clear_all_caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;clear_all_caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="hilbertsfc_1"><code>hilbertsfc</code><a class="headerlink" href="#hilbertsfc_1" title="Permanent link">&para;</a></h1>
+<h3 id="core-apis">Core APIs<a class="headerlink" href="#core-apis" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a class="autorefs autorefs-internal" title="hilbert_encode_2d" href="#hilbertsfc.hilbert_encode_2d"><code>hilbert_encode_2d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="hilbert_decode_2d" href="#hilbertsfc.hilbert_decode_2d"><code>hilbert_decode_2d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="#hilbertsfc.hilbert_encode_3d"><code>hilbert_encode_3d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="#hilbertsfc.hilbert_decode_3d"><code>hilbert_decode_3d</code></a></li>
+</ul>
+<h3 id="kernel-accessors">Kernel Accessors<a class="headerlink" href="#kernel-accessors" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a class="autorefs autorefs-internal" title="get_hilbert_encode_2d_kernel" href="#hilbertsfc.get_hilbert_encode_2d_kernel"><code>get_hilbert_encode_2d_kernel</code></a></li>
+<li><a class="autorefs autorefs-internal" title="get_hilbert_decode_2d_kernel" href="#hilbertsfc.get_hilbert_decode_2d_kernel"><code>get_hilbert_decode_2d_kernel</code></a></li>
+<li><a class="autorefs autorefs-internal" title="get_hilbert_encode_3d_kernel" href="#hilbertsfc.get_hilbert_encode_3d_kernel"><code>get_hilbert_encode_3d_kernel</code></a></li>
+<li><a class="autorefs autorefs-internal" title="get_hilbert_decode_3d_kernel" href="#hilbertsfc.get_hilbert_decode_3d_kernel"><code>get_hilbert_decode_3d_kernel</code></a></li>
+</ul>
+<h3 id="cache-management">Cache Management<a class="headerlink" href="#cache-management" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a class="autorefs autorefs-internal" title="clear_all_caches" href="#hilbertsfc.clear_all_caches"><code>clear_all_caches</code></a></li>
+<li><a class="autorefs autorefs-internal" title="clear_kernel_caches" href="#hilbertsfc.clear_kernel_caches"><code>clear_kernel_caches</code></a></li>
+<li><a class="autorefs autorefs-internal" title="clear_lut_caches" href="#hilbertsfc.clear_lut_caches"><code>clear_lut_caches</code></a></li>
+</ul>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="hilbertsfc" class="doc doc-heading">
+            <span class="doc doc-object-name doc-module-name">hilbertsfc</span>
+
+
+<a href="#hilbertsfc" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Hilbert space-filling curve kernels.</p>
+<p>The top-level <code>hilbertsfc</code> package exposes NumPy/Numba-backed 2D/3D Hilbert
+encode/decode functions, kernel accessors, and cache management helpers.</p>
+<p>For GPU acceleration and <code>torch.Tensor</code> inputs, use the optional PyTorch frontend:
+<a class="autorefs autorefs-internal" title="hilbertsfc.torch" href="../torch/#hilbertsfc.torch"><code>hilbertsfc.torch</code></a>.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+<h3 id="hilbertsfc-functions">Functions<a href="#hilbertsfc-functions" class="headerlink" title="Permanent link">&para;</a></h3>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.hilbert_encode_2d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">hilbert_encode_2d</span>
+
+
+<a href="#hilbertsfc.hilbert_encode_2d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_encode_2d</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode 2D integer coordinates to Hilbert indices.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>x</code> and <code>y</code> are scalar integers, returns a Python
+<code>int</code>.</li>
+<li><strong>Array mode</strong>: if <code>x</code> and <code>y</code> are NumPy integer arrays, returns an array
+of unsigned indices with the same shape and supports <code>out=</code>.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>x</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coordinates to encode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer arrays of identical shape.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>y</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coordinates to encode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer arrays of identical shape.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of bits per coordinate axis. This defines a coordinate domain of
+<code>[0, 2**nbits)</code> on each axis. For inputs outside that domain, only the low
+<code>nbits</code> bits of each coordinate are used.</p>
+<p>Must satisfy <code>1 &lt;= nbits &lt;= 32</code>. If provided, it must also fit within
+the usable bits of the coordinate dtype.</p>
+<p>If <code>None</code>:</p>
+<ul>
+<li>Array mode: inferred from the coordinate dtype using its usable bit
+width, capped at 32. For example, <code>uint16</code> -&gt; 16, <code>int16</code> -&gt; 15
+(sign bit excluded), and <code>uint64</code>/<code>int64</code> -&gt; 32.</li>
+<li>Scalar mode: defaults to 32.</li>
+</ul>
+<p>For best performance and tighter output dtypes, pass the smallest value
+that covers the input coordinate range.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional output array for array mode.</p>
+<p>Must have the same shape as <code>x</code> and <code>y</code> and an unsigned integer dtype
+wide enough to hold <code>2 * nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>parallel</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Controls whether the array-mode Numba kernel may execute in parallel.</p>
+<p>In scalar mode, this argument is accepted for API consistency but has no
+effect. If <code>True</code>, a <code>UserWarning</code> is emitted.</p>
+<p>The number of threads can be controlled with <code>NUMBA_NUM_THREADS</code> or
+<code>numba.set_num_threads()</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hilbert index or indices.</p>
+<ul>
+<li>Scalar mode: the Hilbert index as a Python <code>int</code>.</li>
+<li>Array mode: an array of unsigned indices.</li>
+</ul>
+<p>If <code>out</code> is not provided in array mode, the output dtype is the smallest
+unsigned integer type that can hold <code>2 * nbits</code> bits.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>x</code> and <code>y</code> are not both scalars or not both arrays, if a
+non-integer input is provided, or if <code>out</code> is used in scalar mode.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>nbits</code> is invalid, if array inputs have mismatched shapes, or if
+<code>out</code> has the wrong shape or an insufficient dtype.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.hilbert_decode_2d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">hilbert_decode_2d</span>
+
+
+<a href="#hilbertsfc.hilbert_decode_2d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_decode_2d</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode Hilbert indices to 2D integer coordinates.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>index</code> is a scalar integer, returns <code>(x, y)</code> as
+Python <code>int</code> values.</li>
+<li><strong>Array mode</strong>: if <code>index</code> is a NumPy integer array, returns coordinate
+arrays with the same shape and supports <code>out_x=</code> / <code>out_y=</code>.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>index</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hilbert index or indices to decode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer array.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of bits per coordinate axis. This defines a coordinate domain of
+<code>[0, 2**nbits)</code> on each axis and a Hilbert index range of
+<code>[0, 2**(2 * nbits))</code>. For indices outside that range, only the low
+<code>2 * nbits</code> bits are used.</p>
+<p>Must satisfy <code>1 &lt;= nbits &lt;= 32</code>. If provided, it must also fit within
+the usable bits of the index dtype.</p>
+<p>If <code>None</code>:</p>
+<ul>
+<li>Array mode: inferred from the index dtype as half its usable bit width,
+capped at 32. For example, <code>uint16</code> -&gt; 8, <code>uint64</code> -&gt; 32, and
+<code>int64</code> -&gt; 31 (sign bit excluded).</li>
+<li>Scalar mode: defaults to 32.</li>
+</ul>
+<p>For best performance and tighter output dtypes, pass the smallest value
+that covers the input index range.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out_x</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional output coordinate arrays for array mode. Either provide both
+or neither.</p>
+<p>Each must have the same shape as <code>index</code> and an unsigned integer dtype
+wide enough to hold <code>nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out_y</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional output coordinate arrays for array mode. Either provide both
+or neither.</p>
+<p>Each must have the same shape as <code>index</code> and an unsigned integer dtype
+wide enough to hold <code>nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>parallel</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Controls whether the array-mode Numba kernel may execute in parallel.</p>
+<p>In scalar mode, this argument is accepted for API consistency but has no
+effect. If <code>True</code>, a <code>UserWarning</code> is emitted.</p>
+<p>The number of threads can be controlled with <code>NUMBA_NUM_THREADS</code> or
+<code>numba.set_num_threads()</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a>, <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Decoded coordinates.</p>
+<ul>
+<li>Scalar mode: <code>(x, y)</code> as Python <code>int</code> values.</li>
+<li>Array mode: <code>(x, y)</code> as unsigned integer arrays.</li>
+</ul>
+<p>If <code>out_x</code> and <code>out_y</code> are not provided in array mode, each result
+dtype is the smallest unsigned integer type that can hold <code>nbits</code> bits.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a non-integer input is provided or if output buffers are used in scalar
+mode.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>nbits</code> is invalid, if it does not fit in the index or output dtypes,
+or if output buffers are inconsistent or have incorrect shapes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.hilbert_encode_3d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">hilbert_encode_3d</span>
+
+
+<a href="#hilbertsfc.hilbert_encode_3d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_encode_3d</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode 3D integer coordinates to Hilbert indices.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>x</code>, <code>y</code>, and <code>z</code> are scalar integers, returns a
+Python <code>int</code>.</li>
+<li><strong>Array mode</strong>: if <code>x</code>, <code>y</code>, and <code>z</code> are NumPy integer arrays, returns
+an array of unsigned indices with the same shape and supports <code>out=</code>.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>x</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coordinates to encode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer arrays of identical shape.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>y</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coordinates to encode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer arrays of identical shape.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>z</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coordinates to encode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer arrays of identical shape.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of bits per coordinate axis. This defines a coordinate domain of
+<code>[0, 2**nbits)</code> on each axis. For inputs outside that domain, only the low
+<code>nbits</code> bits of each coordinate are used.</p>
+<p>Must satisfy <code>1 &lt;= nbits &lt;= 21</code>. If provided, it must also fit within
+the usable bits of the coordinate dtype.</p>
+<p>If <code>None</code>:</p>
+<ul>
+<li>Array mode: inferred from the coordinate dtype using its usable bit
+width, capped at 21. For example, <code>uint16</code> -&gt; 16, <code>int16</code> -&gt; 15
+(sign bit excluded), and <code>uint64</code>/<code>int64</code> -&gt; 21.</li>
+<li>Scalar mode: defaults to 21.</li>
+</ul>
+<p>For best performance and tighter output dtypes, pass the smallest value
+that covers the input coordinate range.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional output array for array mode.</p>
+<p>Must have the same shape as <code>x</code>, <code>y</code>, and <code>z</code> and an unsigned integer
+dtype wide enough to hold <code>3 * nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>parallel</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Controls whether the array-mode Numba kernel may execute in parallel.</p>
+<p>In scalar mode, this argument is accepted for API consistency but has no
+effect. If <code>True</code>, a <code>UserWarning</code> is emitted.</p>
+<p>The number of threads can be controlled with <code>NUMBA_NUM_THREADS</code> or
+<code>numba.set_num_threads()</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hilbert index or indices.</p>
+<ul>
+<li>Scalar mode: the Hilbert index as a Python <code>int</code>.</li>
+<li>Array mode: an array of unsigned indices.</li>
+</ul>
+<p>If <code>out</code> is not provided in array mode, the output dtype is the smallest
+unsigned integer type that can hold <code>3 * nbits</code> bits.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>x</code>, <code>y</code>, and <code>z</code> are not all scalars or not all arrays, if a
+non-integer input is provided, or if <code>out</code> is used in scalar mode.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>nbits</code> is invalid, if array inputs have mismatched shapes, or if
+<code>out</code> has the wrong shape or an insufficient dtype.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.hilbert_decode_3d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">hilbert_decode_3d</span>
+
+
+<a href="#hilbertsfc.hilbert_decode_3d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_decode_3d</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+    <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode Hilbert indices to 3D integer coordinates.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>index</code> is a scalar integer, returns <code>(x, y, z)</code> as
+Python <code>int</code> values.</li>
+<li><strong>Array mode</strong>: if <code>index</code> is a NumPy integer array, returns coordinate
+arrays with the same shape and supports <code>out_x=</code>, <code>out_y=</code>, and
+<code>out_z=</code>.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>index</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a> | <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hilbert index or indices to decode.</p>
+<ul>
+<li>Scalar mode: Python <code>int</code> or NumPy integer scalar.</li>
+<li>Array mode: NumPy integer array.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of bits per coordinate axis. This defines a coordinate domain of
+<code>[0, 2**nbits)</code> on each axis and a Hilbert index range of
+<code>[0, 2**(3 * nbits))</code>. For indices outside that range, only the low
+<code>3 * nbits</code> bits are used.</p>
+<p>Must satisfy <code>1 &lt;= nbits &lt;= 21</code>. If provided, it must also fit within
+the usable bits of the index dtype.</p>
+<p>If <code>None</code>:</p>
+<ul>
+<li>Array mode: inferred from the index dtype as one third of its usable bit
+width, capped at 21. For example, <code>uint16</code> -&gt; 5, and <code>int64</code> -&gt; 21.</li>
+<li>Scalar mode: defaults to 21.</li>
+</ul>
+<p>For best performance and tighter output dtypes, pass the smallest value
+that covers the input index range.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out_x</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional coordinate output arrays for array mode. Either provide all
+three or none.</p>
+<p>Each must have the same shape as <code>index</code> and an unsigned integer dtype
+wide enough to hold <code>nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out_y</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional coordinate output arrays for array mode. Either provide all
+three or none.</p>
+<p>Each must have the same shape as <code>index</code> and an unsigned integer dtype
+wide enough to hold <code>nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>out_z</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional coordinate output arrays for array mode. Either provide all
+three or none.</p>
+<p>Each must have the same shape as <code>index</code> and an unsigned integer dtype
+wide enough to hold <code>nbits</code> bits.</p>
+<p>Not allowed in scalar mode.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>parallel</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Controls whether the array-mode Numba kernel may execute in parallel.</p>
+<p>In scalar mode, this argument is accepted for API consistency but has no
+effect. If <code>True</code>, a <code>UserWarning</code> is emitted.</p>
+<p>The number of threads can be controlled with <code>NUMBA_NUM_THREADS</code> or
+<code>numba.set_num_threads()</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>] | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a>, <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a>, <a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Decoded coordinates.</p>
+<ul>
+<li>Scalar mode: <code>(x, y, z)</code> as Python <code>int</code> values.</li>
+<li>Array mode: <code>(x, y, z)</code> as unsigned integer arrays.</li>
+</ul>
+<p>If <code>out_x</code>, <code>out_y</code>, and <code>out_z</code> are not provided in array mode,
+each result dtype is the smallest unsigned integer type that can hold
+<code>nbits</code> bits.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If a non-integer input is provided or if output buffers are used in scalar
+mode.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>nbits</code> is invalid, if it does not fit in the index or output dtypes,
+or if output buffers are inconsistent or have incorrect shapes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_hilbert_encode_2d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_hilbert_encode_2d_kernel</span>
+
+
+<a href="#hilbertsfc.get_hilbert_encode_2d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_encode_2d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tile_nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TileNBits2D (hilbertsfc.types.TileNBits2D)" href="../types/types/#hilbertsfc.types.TileNBits2D">TileNBits2D</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 2D Hilbert encoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="hilbert_encode_2d" href="#hilbertsfc.hilbert_encode_2d"><code>hilbert_encode_2d</code></a> in scalar mode.
+It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tile_nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TileNBits2D (hilbertsfc.types.TileNBits2D)" href="../types/types/#hilbertsfc.types.TileNBits2D">TileNBits2D</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Select the tile size (in bits) / kernel variant.</p>
+<ul>
+<li>
+<p><code>None</code> (default): auto-select (<code>4</code> for <code>nbits &lt;= 4</code> or <code>nbits == 8</code>, else <code>7</code>).</p>
+</li>
+<li>
+<p><code>7</code>: uses 7-bit compacted LUTs (128 KiB).</p>
+</li>
+<li><code>4</code>: uses 4-bit compacted LUTs (2 KiB).</li>
+</ul>
+<p>The 7-bit variant uses a larger LUT and is generally faster.
+The 4-bit variant uses a smaller LUT, which may be preferable in
+cache-intensive kernels.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(x: int, y: int) -&gt; int</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_hilbert_decode_2d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_hilbert_decode_2d_kernel</span>
+
+
+<a href="#hilbertsfc.get_hilbert_decode_2d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_decode_2d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tile_nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TileNBits2D (hilbertsfc.types.TileNBits2D)" href="../types/types/#hilbertsfc.types.TileNBits2D">TileNBits2D</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 2D Hilbert decoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="hilbert_decode_2d" href="#hilbertsfc.hilbert_decode_2d"><code>hilbert_decode_2d</code></a> in scalar mode.
+It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tile_nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TileNBits2D (hilbertsfc.types.TileNBits2D)" href="../types/types/#hilbertsfc.types.TileNBits2D">TileNBits2D</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Select the tile size (in bits) / kernel variant.</p>
+<ul>
+<li>
+<p><code>None</code> (default): auto-select (<code>4</code> for <code>nbits &lt;= 4</code> or <code>nbits == 8</code>, else <code>7</code>).</p>
+</li>
+<li>
+<p><code>7</code>: uses 7-bit compacted LUTs (128 KiB).</p>
+</li>
+<li><code>4</code>: uses 4-bit compacted LUTs (2 KiB).</li>
+</ul>
+<p>The 7-bit variant uses a larger LUT and is generally faster.
+The 4-bit variant uses a smaller LUT, which may be preferable in
+cache-intensive kernels.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(index: int) -&gt; (x: int, y: int)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_hilbert_encode_3d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_hilbert_encode_3d_kernel</span>
+
+
+<a href="#hilbertsfc.get_hilbert_encode_3d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_encode_3d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lut_dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 3D Hilbert encoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="#hilbertsfc.hilbert_encode_3d"><code>hilbert_encode_3d</code></a> in scalar mode
+and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lut_dtype</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Element dtype used for the internal lookup tables.</p>
+<p>Default is <code>uint16</code> (smallest; 3 KiB LUT footprint). When fusing into
+a cache-intensive kernel, keeping the LUT small can help.</p>
+<p>For best throughput, it is usually better to match <code>lut_dtype</code>
+to your index dtype (<code>uint16</code>/<code>uint32</code>/<code>uint64</code>), which increases LUT
+size (6 KiB for <code>uint32</code>, 12 KiB for <code>uint64</code>) but reduces widening.
+In isolation, even the larger LUTs typically fit comfortably within the
+per-core L1 data cache of modern CPUs.</p>
+              </div>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(x: int, y: int, z: int) -&gt; int</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_hilbert_decode_3d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_hilbert_decode_3d_kernel</span>
+
+
+<a href="#hilbertsfc.get_hilbert_decode_3d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_decode_3d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lut_dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 3D Hilbert decoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="#hilbertsfc.hilbert_decode_3d"><code>hilbert_decode_3d</code></a> in scalar mode
+and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lut_dtype</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Element dtype used for the internal lookup tables.</p>
+<p>See <a class="autorefs autorefs-internal" title="get_hilbert_encode_3d_kernel" href="#hilbertsfc.get_hilbert_encode_3d_kernel"><code>get_hilbert_encode_3d_kernel</code></a> for the performance tradeoff.</p>
+              </div>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(index: int) -&gt; (x: int, y: int, z: int)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.clear_lut_caches" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clear_lut_caches</span>
+
+
+<a href="#hilbertsfc.clear_lut_caches" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clear_lut_caches</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clear all registered LUT caches.</p>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>This does <em>not</em> clear torch-side device LUT caches; for those, see
+<a class="autorefs autorefs-internal" title="clear_torch_lut_caches" href="../torch/#hilbertsfc.torch.clear_torch_lut_caches"><code>hilbertsfc.torch.clear_torch_lut_caches</code></a>.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.clear_kernel_caches" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clear_kernel_caches</span>
+
+
+<a href="#hilbertsfc.clear_kernel_caches" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clear_kernel_caches</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clear all registered kernel builder caches.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.clear_all_caches" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">clear_all_caches</span>
+
+
+<a href="#hilbertsfc.clear_all_caches" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clear_all_caches</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clear LUT caches and kernel builder caches.</p>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>This does <em>not</em> clear torch-side device LUT caches; for those, see
+<a class="autorefs autorefs-internal" title="clear_torch_lut_caches" href="../torch/#hilbertsfc.torch.clear_torch_lut_caches"><code>hilbertsfc.torch.clear_torch_lut_caches</code></a>.</p>
+</details>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -10,29 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/main/">
+        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/main/api/">
       
       
+        <link rel="prev" href="../advanced-usage/">
       
-        <link rel="next" href="quickstart/">
+      
+        <link rel="next" href="hilbertsfc/">
       
       
         
       
       
-      <link rel="icon" href="img/favicon.png">
+      <link rel="icon" href="../img/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>HilbertSFC</title>
+        <title>API Reference - HilbertSFC</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#when-and-why-to-use-hilbertsfc" class="md-skip">
+        <a href="#api-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -93,12 +95,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the latest version.
-  <a href="../.">
+  <a href="../..">
     <strong>Click here to go to latest.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -110,9 +112,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="HilbertSFC" class="md-header__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
+    <a href=".." title="HilbertSFC" class="md-header__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
       
-  <img src="img/logo.png" alt="logo">
+  <img src="../img/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -129,7 +131,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              API Reference
             
           </span>
         </div>
@@ -255,9 +257,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="HilbertSFC" class="md-nav__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
+    <a href=".." title="HilbertSFC" class="md-nav__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
       
-  <img src="img/logo.png" alt="logo">
+  <img src="../img/logo.png" alt="logo">
 
     </a>
     HilbertSFC
@@ -281,35 +283,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -325,57 +302,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#when-and-why-to-use-hilbertsfc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When and why to use HilbertSFC?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#api-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        API reference
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -387,7 +313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="quickstart/" class="md-nav__link">
+      <a href="../quickstart/" class="md-nav__link">
         
   
   
@@ -414,7 +340,7 @@
   
   
     <li class="md-nav__item">
-      <a href="advanced-usage/" class="md-nav__link">
+      <a href="../advanced-usage/" class="md-nav__link">
         
   
   
@@ -554,6 +480,8 @@
       
   
   
+    
+  
   
   
     
@@ -573,15 +501,15 @@
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="api/" class="md-nav__link ">
+            <a href="./" class="md-nav__link md-nav__link--active">
               
   
   
@@ -599,13 +527,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+              <label class="md-nav__link md-nav__link--active" for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -625,7 +553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/hilbertsfc/" class="md-nav__link">
+      <a href="hilbertsfc/" class="md-nav__link">
         
   
   
@@ -653,7 +581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/torch/" class="md-nav__link">
+      <a href="torch/" class="md-nav__link">
         
   
   
@@ -734,7 +662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/types/types/" class="md-nav__link">
+      <a href="types/types/" class="md-nav__link">
         
   
   
@@ -762,7 +690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/types/torch-types/" class="md-nav__link">
+      <a href="types/torch-types/" class="md-nav__link">
         
   
   
@@ -815,6 +743,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -823,10 +753,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#when-and-why-to-use-hilbertsfc" class="md-nav__link">
+  <a href="#modules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        When and why to use HilbertSFC?
+        Modules
       
     </span>
   </a>
@@ -834,21 +764,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
+  <a href="#types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#api-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        API reference
+        Types
       
     </span>
   </a>
@@ -875,50 +794,16 @@
   
 
 
-<!-- markdownlint-disable MD033 MD041 -->
-<hr />
-<h1 align="center">
-HilbertSFC
-</h1>
-
-<p align="center">
-    <strong>Ultra-fast 2D &amp; 3D Hilbert space-filling curve encode/decode kernels for Python.</strong>
-</p>
-
-<p align="center">
-    <img src="img/hilbert2d_grid.png" width="420" align="middle" alt="2D Hilbert curves for nbits 1..5" />
-    <img src="img/hilbert3d_grid.png" width="340" align="middle" hspace="5" alt="3D Hilbert curves animation grid for nbits 1..4" />
-</p>
-
-<p align="center">
-    <sub>2D Hilbert curves (nbits 1..5) and 3D Hilbert curves (nbits 1..4).</sub>
-</p>
-
-<p align="center">
-<strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
-</p>
-
-<hr />
-<p>This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level <em>kernel accessors</em> and clean integration with <code>torch.compile</code> for fusion with surrounding operations.</p>
-<p>The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:</p>
+<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<h3 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Branchless, fully unrolled inner loops</li>
-<li>Small, L1-cache-friendly lookup tables (LUTs)</li>
-<li>Reduced dependency chains for better ILP and MLP (e.g. state-independent lookups)</li>
-<li>Multi-threading for batch processing</li>
-<li>SIMD via LLVM vector intrinsics (CPU)</li>
-<li>Reduced register pressure (GPU)</li>
+<li><a href="hilbertsfc/"><code>hilbertsfc</code></a></li>
+<li><a href="torch/"><code>hilbertsfc.torch</code></a></li>
 </ul>
-<h2 id="when-and-why-to-use-hilbertsfc">When and why to use HilbertSFC?<a class="headerlink" href="#when-and-why-to-use-hilbertsfc" title="Permanent link">&para;</a></h2>
-<p>If you have 2D or 3D coordinates and need a 1D ordering that preserves spatial locality, the Hilbert space-filling curve is a strong choice: points that are close in Euclidean space tend to remain close after mapping to a Hilbert index. HilbertSFC
-is designed for high-throughput workloads, such as spatial indexing (GIS/databases), scientific computing, and machine/deep learning, where Hilbert curve mapping performance matters.</p>
-<h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
-<p>Start here: <a href="quickstart/">Quick start</a></p>
-<h2 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
-<p>Browse the full <a href="api/">API reference</a>, or jump directly to:</p>
+<h3 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h3>
 <ul>
-<li><a class="autorefs autorefs-internal" title="hilbertsfc" href="api/hilbertsfc/#hilbertsfc"><code>hilbertsfc</code></a></li>
-<li><a class="autorefs autorefs-internal" title="hilbertsfc.torch" href="api/torch/#hilbertsfc.torch"><code>hilbertsfc.torch</code></a></li>
+<li><a href="types/types/"><code>hilbertsfc.types</code></a></li>
+<li><a href="types/torch-types/"><code>hilbertsfc.torch.types</code></a></li>
 </ul>
 
 
@@ -969,10 +854,10 @@ is designed for high-throughput workloads, such as spatial indexing (GIS/databas
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "content.code.copy"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
