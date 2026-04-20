@@ -76,7 +76,7 @@ Additional benchmarks and details are available in the [benchmark-cpu.md](https:
 For a deep dive into how the HilbertSFC kernels are derived and why the implementation maps well to modern CPUs (FSM/LUT formulation, dependency chains, ILP/MLP, unrolling, constant folding, vectorization, gathers), see the [performance deep dive notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_performance_deep_dive.ipynb).
 
 ### GPU (CUDA/ROCm) - Torch/Triton
-HilbertSFC achieves very high throughput on modern GPUs, reaching up to ~148 billion points per second for 3D decode of 32-bit coordinates (`nbits=21`) on an NVIDIA Blackwell B200. At `size=64Mi`, compared to an eager PyTorch implementation of the Skilling algorithm, it is roughly 3100× faster for 3D encode and 2300× faster for 3D decode.
+HilbertSFC achieves very high throughput on modern GPUs, reaching up to ~143 billion points per second for 3D encode of 32-bit coordinates (`nbits=21`) on an NVIDIA Blackwell B200. At `size=64Mi`, compared to an eager PyTorch implementation of the Skilling algorithm, it is roughly 3100× faster for 3D encode and 2300× faster for 3D decode.
 
 #### 2D and 3D Points - Random, `nbits=32` (2D), `nbits=21` (3D), `size=64Mi (2^26)`, throughput in `Mpts/s`
 
