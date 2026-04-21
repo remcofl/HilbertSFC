@@ -221,14 +221,17 @@ def test_validate_gpu_backend_values() -> None:
 
 @pytest.mark.torch
 def test_validate_triton_tuning_mode_values() -> None:
-    _, mod = _torch_and_mod()
+    import hilbertsfc.torch._tuning_mode as tuning_mod
 
-    assert mod.validate_triton_tuning_mode("heuristic") == "heuristic"
-    assert mod.validate_triton_tuning_mode("autotune_bucketed") == "autotune_bucketed"
-    assert mod.validate_triton_tuning_mode("autotune_exact") == "autotune_exact"
+    assert tuning_mod.validate_triton_tuning_mode("heuristic") == "heuristic"
+    assert (
+        tuning_mod.validate_triton_tuning_mode("autotune_bucketed")
+        == "autotune_bucketed"
+    )
+    assert tuning_mod.validate_triton_tuning_mode("autotune_exact") == "autotune_exact"
 
     with pytest.raises(ValueError, match="triton_tuning must be one of"):
-        mod.validate_triton_tuning_mode("bad")
+        tuning_mod.validate_triton_tuning_mode("bad")
 
 
 @pytest.mark.torch

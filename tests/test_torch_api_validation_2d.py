@@ -150,6 +150,7 @@ def test_encode_2d_auto_backend_while_compiling_avoids_numba(
 
     x = torch.tensor([1, 2], dtype=torch.int32)
     y = torch.tensor([3, 4], dtype=torch.int32)
+    htorch.precache_compile_luts(device=x.device, op="hilbert_encode_2d")
 
     def _boom():
         raise AssertionError("numba getter should not be called while compiling")
@@ -219,6 +220,7 @@ def test_decode_2d_auto_backend_while_compiling_avoids_numba(
     torch, htorch, h2 = _torch_pair()
 
     index = torch.tensor([1, 2], dtype=torch.int32)
+    htorch.precache_compile_luts(device=index.device, op="hilbert_decode_2d")
 
     def _boom():
         raise AssertionError("numba getter should not be called while compiling")

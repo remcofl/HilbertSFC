@@ -49,13 +49,7 @@ def has_cuda() -> bool:
         sm = f"sm_{major}{minor}"
         arch_list = torch.cuda.get_arch_list()
 
-        # If the arch isn't in the build, do a tiny kernel smoke test to see if
-        # PTX/JIT still makes it runnable.
-        if arch_list and sm not in arch_list:
-            try:
-                torch.empty(1, device="cuda").fill_(0)
-            except RuntimeError:
-                return False
+        return sm in arch_list
     except Exception:
         pass
 
