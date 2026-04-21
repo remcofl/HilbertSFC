@@ -10,11 +10,11 @@ def get_hilbert_encode_2d_triton():
 
 
 def get_hilbert_encode_2d_numba() -> Callable[..., int | IntArray]:
-    import torch._dynamo as dynamo
+    import torch
 
     from ..hilbert2d import hilbert_encode_2d
 
-    return dynamo.disable(hilbert_encode_2d)  # type: ignore[return-value]
+    return torch.compiler.disable(hilbert_encode_2d)  # type: ignore[return-value]
 
 
 def get_hilbert_decode_2d_triton():
@@ -24,11 +24,11 @@ def get_hilbert_decode_2d_triton():
 
 
 def get_hilbert_decode_2d_numba() -> Callable[..., tuple[IntArray, IntArray]]:
-    import torch._dynamo as dynamo
+    import torch
 
     from ..hilbert2d import hilbert_decode_2d
 
-    return dynamo.disable(hilbert_decode_2d)  # type: ignore[return-value]
+    return torch.compiler.disable(hilbert_decode_2d)  # type: ignore[return-value]
 
 
 def get_hilbert_encode_3d_triton():
@@ -38,11 +38,11 @@ def get_hilbert_encode_3d_triton():
 
 
 def get_hilbert_encode_3d_numba() -> Callable[..., int | IntArray]:
-    import torch._dynamo as dynamo
+    import torch
 
     from ..hilbert3d import hilbert_encode_3d
 
-    return dynamo.disable(hilbert_encode_3d)  # type: ignore[return-value]
+    return torch.compiler.disable(hilbert_encode_3d)  # type: ignore[return-value]
 
 
 def get_hilbert_decode_3d_triton():
@@ -52,8 +52,8 @@ def get_hilbert_decode_3d_triton():
 
 
 def get_hilbert_decode_3d_numba() -> Callable[..., tuple[IntArray, IntArray, IntArray]]:
-    import torch._dynamo as dynamo
+    import torch
 
     from ..hilbert3d import hilbert_decode_3d
 
-    return dynamo.disable(hilbert_decode_3d)  # type: ignore[return-value]
+    return torch.compiler.disable(hilbert_decode_3d)  # type: ignore[return-value]
