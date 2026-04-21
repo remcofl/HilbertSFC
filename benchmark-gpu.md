@@ -48,6 +48,8 @@ Each `(operation, dimension, size, implementation)` benchmark case runs in an is
 
 ## MI300X
 
+- This experiment uses `triton_tuning=autotune_exact` for HilbertSFC Triton kernels, as the MI300x is more sensitive to the input size, with large differences in performance between configurations.
+
 Size used for summary table: `64Mi = 67,108,864`
 
 | Implementation | Mode | 2D enc | 2D dec | 3D enc | 3D dec |

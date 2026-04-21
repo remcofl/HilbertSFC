@@ -25,6 +25,11 @@ from hilbertsfc.torch import (
 
 QUANTILES = [0.5]
 OPS = ("encode", "decode")
+TRITON_TUNING_CHOICES = (
+    "heuristic",
+    "autotune_bucketed",
+    "autotune_exact",
+)
 ALL_PROVIDERS = (
     "skilling_eager",
     "hilbertsfc_torch_eager",
@@ -58,6 +63,7 @@ class BenchRow:
     nbits: int
     size: int
     provider: str
+    triton_tuning: str
     available: bool
     error: str
     in_dtype: str
@@ -158,6 +164,7 @@ def _make_row_unavailable(
     provider: str,
     error: str,
     in_dtype: str,
+    triton_tuning: str = "",
 ) -> BenchRow:
     nan = float("nan")
     return BenchRow(
@@ -166,6 +173,7 @@ def _make_row_unavailable(
         nbits=nbits,
         size=size,
         provider=provider,
+        triton_tuning=triton_tuning,
         available=False,
         error=error,
         in_dtype=in_dtype,
@@ -194,6 +202,7 @@ def _bench_provider(
     in_bytes_per_point: int,
     in_dtype: str,
     bench_warmup_calls: int,
+    triton_tuning: str = "",
 ) -> BenchRow:
     try:
         warm = run_once()
@@ -218,6 +227,7 @@ def _bench_provider(
             nbits=nbits,
             size=size,
             provider=provider,
+            triton_tuning=triton_tuning,
             available=True,
             error="",
             in_dtype=in_dtype,
@@ -242,6 +252,7 @@ def _bench_provider(
             provider=provider,
             error=f"{type(exc).__name__}: {exc}",
             in_dtype=in_dtype,
+            triton_tuning=triton_tuning,
         )
 
 
@@ -490,6 +501,9 @@ def _make_hilbertsfc_run_once(
     coord_dtype: torch.dtype,
     index_dtype: torch.dtype,
     gpu_backend: Literal["torch", "triton"],
+    triton_tuning: Literal[
+        "heuristic", "autotune_bucketed", "autotune_exact"
+    ] = "heuristic",
 ) -> Callable[[], object]:
     if op == "encode":
         if coords is None:
@@ -505,6 +519,7 @@ def _make_hilbertsfc_run_once(
                     nbits=nbits,
                     out=out,
                     gpu_backend=gpu_backend,
+                    triton_tuning=triton_tuning,
                 )
 
             return _run_once
@@ -518,6 +533,7 @@ def _make_hilbertsfc_run_once(
                 nbits=nbits,
                 out=out,
                 gpu_backend=gpu_backend,
+                triton_tuning=triton_tuning,
             )
 
         return _run_once
@@ -536,6 +552,7 @@ def _make_hilbertsfc_run_once(
                 out_x=out_x,
                 out_y=out_y,
                 gpu_backend=gpu_backend,
+                triton_tuning=triton_tuning,
             )
 
         return _run_once
@@ -551,6 +568,7 @@ def _make_hilbertsfc_run_once(
             out_y=out_y,
             out_z=out_z,
             gpu_backend=gpu_backend,
+            triton_tuning=triton_tuning,
         )
 
     return _run_once
@@ -657,6 +675,7 @@ def _run_single_provider_internal(
     index_dtype_3d: torch.dtype,
     include_skilling_triton: bool,
     bench_warmup_calls: int,
+    triton_tuning: Literal["heuristic", "autotune_bucketed", "autotune_exact"],
 ) -> BenchRow:
     nbits = nbits_2d if dim == 2 else nbits_3d
     if dim * nbits > 64:
@@ -716,6 +735,7 @@ def _run_single_provider_internal(
             coord_dtype=coord_dtype,
             index_dtype=index_dtype,
             gpu_backend="torch",
+            triton_tuning=triton_tuning,
         )
 
     elif provider == "hilbertsfc_torch_compile":
@@ -756,6 +776,7 @@ def _run_single_provider_internal(
             coord_dtype=coord_dtype,
             index_dtype=index_dtype,
             gpu_backend="triton",
+            triton_tuning=triton_tuning,
         )
 
     elif provider in ("skilling_triton_2d", "skilling_triton_3d"):
@@ -813,6 +834,7 @@ def _run_single_provider_internal(
             provider=provider,
             error=f"unknown provider: {provider}",
             in_dtype=in_dtype,
+            triton_tuning=(triton_tuning if provider == "hilbertsfc_triton" else ""),
         )
 
     return _bench_provider(
@@ -825,6 +847,7 @@ def _run_single_provider_internal(
         in_bytes_per_point=in_bytes_per_point,
         in_dtype=in_dtype,
         bench_warmup_calls=bench_warmup_calls,
+        triton_tuning=(triton_tuning if provider == "hilbertsfc_triton" else ""),
     )
 
 
@@ -860,6 +883,7 @@ def _build_isolated_cmd(
     index_dtype_3d: torch.dtype,
     include_skilling_triton: bool,
     bench_warmup_calls: int,
+    triton_tuning: Literal["heuristic", "autotune_bucketed", "autotune_exact"],
 ) -> list[str]:
     cmd = [
         sys.executable,
@@ -892,6 +916,8 @@ def _build_isolated_cmd(
         _dtype_name(index_dtype_3d),
         "--bench-warmup-calls",
         str(bench_warmup_calls),
+        "--triton-tuning",
+        triton_tuning,
     ]
     if not include_skilling_triton:
         cmd.append("--skip-skilling-triton")
@@ -916,6 +942,7 @@ def _run_isolated_provider(
     index_dtype_3d: torch.dtype,
     include_skilling_triton: bool,
     bench_warmup_calls: int,
+    triton_tuning: Literal["heuristic", "autotune_bucketed", "autotune_exact"],
 ) -> BenchRow:
     in_dtype = _isolated_input_dtype_name(
         op=op,
@@ -947,6 +974,7 @@ def _run_isolated_provider(
             index_dtype_3d=index_dtype_3d,
             include_skilling_triton=include_skilling_triton,
             bench_warmup_calls=bench_warmup_calls,
+            triton_tuning=triton_tuning,
         )
         proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
@@ -960,6 +988,9 @@ def _run_isolated_provider(
                 provider=provider,
                 error=f"isolated provider run failed: {err[-240:]}",
                 in_dtype=in_dtype,
+                triton_tuning=(
+                    triton_tuning if provider == "hilbertsfc_triton" else ""
+                ),
             )
 
         payload = json.loads(row_out_path.read_text(encoding="utf-8"))
@@ -984,6 +1015,10 @@ def _run_isolated(
     index_dtype_3d: torch.dtype,
     include_skilling_triton: bool,
     bench_warmup_calls: int,
+    providers: list[str] | None,
+    triton_tuning_modes: list[
+        Literal["heuristic", "autotune_bucketed", "autotune_exact"]
+    ],
 ) -> list[BenchRow]:
     rows: list[BenchRow] = []
     script_path = Path(__file__).resolve()
@@ -997,29 +1032,49 @@ def _run_isolated(
                     f"dim*nbits must be <= 64, got dim={dim}, nbits={nbits}"
                 )
 
-            providers = _provider_sequence(dim)
+            providers_for_dim = _provider_sequence(dim)
+            if providers is not None:
+                provider_set = set(providers)
+                providers_for_dim = [p for p in providers_for_dim if p in provider_set]
+            if not providers_for_dim:
+                raise ValueError(
+                    f"No providers selected for dim={dim}. Check --providers values."
+                )
             for size in sizes:
-                for provider in providers:
-                    rows.append(
-                        _run_isolated_provider(
-                            script_path=script_path,
-                            op=op,
-                            provider=provider,
-                            dim=dim,
-                            size=size,
-                            nbits=nbits,
-                            nbits_2d=nbits_2d,
-                            nbits_3d=nbits_3d,
-                            device=device,
-                            seed=seed,
-                            coord_dtype_2d=coord_dtype_2d,
-                            coord_dtype_3d=coord_dtype_3d,
-                            index_dtype_2d=index_dtype_2d,
-                            index_dtype_3d=index_dtype_3d,
-                            include_skilling_triton=include_skilling_triton,
-                            bench_warmup_calls=bench_warmup_calls,
+                for provider in providers_for_dim:
+                    if provider == "hilbertsfc_triton":
+                        provider_tunings = triton_tuning_modes
+                    else:
+                        provider_tunings = cast(
+                            list[
+                                Literal[
+                                    "heuristic", "autotune_bucketed", "autotune_exact"
+                                ]
+                            ],
+                            ["heuristic"],
                         )
-                    )
+                    for triton_tuning in provider_tunings:
+                        rows.append(
+                            _run_isolated_provider(
+                                script_path=script_path,
+                                op=op,
+                                provider=provider,
+                                dim=dim,
+                                size=size,
+                                nbits=nbits,
+                                nbits_2d=nbits_2d,
+                                nbits_3d=nbits_3d,
+                                device=device,
+                                seed=seed,
+                                coord_dtype_2d=coord_dtype_2d,
+                                coord_dtype_3d=coord_dtype_3d,
+                                index_dtype_2d=index_dtype_2d,
+                                index_dtype_3d=index_dtype_3d,
+                                include_skilling_triton=include_skilling_triton,
+                                bench_warmup_calls=bench_warmup_calls,
+                                triton_tuning=triton_tuning,
+                            )
+                        )
 
                 print(
                     f"bench done: op={op} dim={dim} nbits={nbits} size={size:,} [isolated]"
@@ -1047,7 +1102,7 @@ def _write_json(rows: list[BenchRow], out_path: Path, meta: dict[str, object]) -
 def _print_summary(rows: list[BenchRow]) -> None:
     print("\nSummary (p50):")
     print(
-        "op      dim  provider                   size        mpts/s      gb/s        ms      status"
+        "op      dim  provider                   tuning           size        mpts/s      gb/s        ms      status"
     )
     for row in rows:
         status = "ok" if row.available else "skip"
@@ -1055,7 +1110,7 @@ def _print_summary(rows: list[BenchRow]) -> None:
         gbps = "nan" if math.isnan(row.gbps_p50) else f"{row.gbps_p50:9.2f}"
         ms = "nan" if math.isnan(row.ms_p50) else f"{row.ms_p50:8.3f}"
         print(
-            f"{row.op:<7} {row.dim:>3}  {row.provider:<24} {row.size:>8,}  {mpts:>9}  {gbps:>9}  {ms:>8}  {status}"
+            f"{row.op:<7} {row.dim:>3}  {row.provider:<24} {row.triton_tuning or '-':<15} {row.size:>8,}  {mpts:>9}  {gbps:>9}  {ms:>8}  {status}"
         )
 
 
@@ -1079,6 +1134,24 @@ def _parse_ops(args: argparse.Namespace) -> list[str]:
     return [op for op in OPS if op in ops]
 
 
+def _parse_triton_tuning_modes(
+    args: argparse.Namespace,
+) -> list[Literal["heuristic", "autotune_bucketed", "autotune_exact"]]:
+    selected: set[str] = set()
+    for item in args.triton_tuning:
+        if item == "both":
+            selected.add("heuristic")
+            selected.add("autotune_exact")
+        else:
+            selected.add(item)
+
+    ordered = [m for m in TRITON_TUNING_CHOICES if m in selected]
+    return cast(
+        list[Literal["heuristic", "autotune_bucketed", "autotune_exact"]],
+        ordered,
+    )
+
+
 def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description=(
@@ -1092,13 +1165,13 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--encode", action="store_true", help="Include encode op.")
     p.add_argument("--decode", action="store_true", help="Include decode op.")
     p.add_argument("--dims", type=int, nargs="+", default=[2, 3])
-    p.add_argument("--nbits-2d", type=int, default=16)
-    p.add_argument("--nbits-3d", type=int, default=16)
+    p.add_argument("--nbits-2d", type=int, default=32)
+    p.add_argument("--nbits-3d", type=int, default=21)
     p.add_argument(
-        "--2d-coord-dtype", dest="coord_dtype_2d", type=str, default="uint64"
+        "--2d-coord-dtype", dest="coord_dtype_2d", type=str, default="uint32"
     )
     p.add_argument(
-        "--3d-coord-dtype", dest="coord_dtype_3d", type=str, default="uint64"
+        "--3d-coord-dtype", dest="coord_dtype_3d", type=str, default="uint32"
     )
     p.add_argument(
         "--2d-index-dtype", dest="index_dtype_2d", type=str, default="uint64"
@@ -1107,8 +1180,26 @@ def _parse_args() -> argparse.Namespace:
         "--3d-index-dtype", dest="index_dtype_3d", type=str, default="uint64"
     )
     p.add_argument("--min-exp", type=int, default=12)
-    p.add_argument("--max-exp", type=int, default=21)
+    p.add_argument("--max-exp", type=int, default=26)
     p.add_argument("--device", type=str, default=_default_device())
+    p.add_argument(
+        "--providers",
+        nargs="+",
+        choices=list(ALL_PROVIDERS),
+        default=None,
+        help=(
+            "Optional provider subset to run. If omitted, runs the default sequence per dim."
+        ),
+    )
+    p.add_argument(
+        "--triton-tuning",
+        nargs="+",
+        choices=["heuristic", "autotune_bucketed", "autotune_exact", "both"],
+        default=["heuristic"],
+        help=(
+            "Tuning mode(s) for provider=hilbertsfc_triton. Use 'both' to run heuristic and autotune_exact in one run."
+        ),
+    )
     p.add_argument("--seed", type=int, default=0)
     p.add_argument(
         "--out-dir", type=str, default=str(Path("bench/hilbert_bench_torch/results"))
@@ -1142,6 +1233,7 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
+    triton_tuning_modes = _parse_triton_tuning_modes(args)
 
     coord_dtype_2d = _parse_dtype(args.coord_dtype_2d)
     coord_dtype_3d = _parse_dtype(args.coord_dtype_3d)
@@ -1173,6 +1265,7 @@ def main() -> int:
             index_dtype_3d=index_dtype_3d,
             include_skilling_triton=not bool(args.skip_skilling_triton),
             bench_warmup_calls=int(args.bench_warmup_calls),
+            triton_tuning=triton_tuning_modes[0],
         )
         Path(args.internal_row_out).write_text(
             json.dumps(asdict(row)), encoding="utf-8"
@@ -1209,6 +1302,8 @@ def main() -> int:
         index_dtype_3d=index_dtype_3d,
         include_skilling_triton=not bool(args.skip_skilling_triton),
         bench_warmup_calls=int(args.bench_warmup_calls),
+        providers=args.providers,
+        triton_tuning_modes=triton_tuning_modes,
     )
 
     csv_path = out_dir / "bench_results.csv"
@@ -1231,6 +1326,8 @@ def main() -> int:
             "max_exp": int(args.max_exp),
             "quantiles": QUANTILES,
             "bench_warmup_calls": int(args.bench_warmup_calls),
+            "providers": list(args.providers) if args.providers is not None else None,
+            "triton_tuning_modes": triton_tuning_modes,
             "isolation": "always_subprocess",
         },
     )

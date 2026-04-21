@@ -8,6 +8,7 @@
 import argparse
 import csv
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
@@ -19,6 +20,12 @@ DISPLAY_NAMES = {
     "hilbertsfc_torch_eager": "HilbertSFC: eager",
     "hilbertsfc_torch_compile": "HilbertSFC: compile",
     "hilbertsfc_triton": "HilbertSFC: triton",
+}
+
+TRITON_TUNING_LABELS = {
+    "heuristic": "heuristic",
+    "autotune_bucketed": "autotune bucketed",
+    "autotune_exact": "autotune exact",
 }
 
 
@@ -107,10 +114,51 @@ def _display_name(provider: str) -> str:
     return DISPLAY_NAMES.get(provider, provider)
 
 
+def _series_key(row: dict[str, str]) -> str:
+    provider = row.get("provider", "")
+    tuning = row.get("triton_tuning", "").strip()
+    if provider == "hilbertsfc_triton" and tuning:
+        return f"{provider}:{tuning}"
+    return provider
+
+
+def _provider_from_series(series_key: str) -> str:
+    return series_key.split(":", 1)[0]
+
+
+def _tuning_from_series(series_key: str) -> str:
+    parts = series_key.split(":", 1)
+    return parts[1] if len(parts) == 2 else ""
+
+
+def _series_display_name(series_key: str) -> str:
+    provider = _provider_from_series(series_key)
+    tuning = _tuning_from_series(series_key)
+    base = _display_name(provider)
+    if provider == "hilbertsfc_triton" and tuning:
+        tuning_label = TRITON_TUNING_LABELS.get(tuning, tuning)
+        return f"{base} ({tuning_label})"
+    return base
+
+
 def _style(provider: str) -> dict[str, str]:
     return STYLE_MAP.get(
         provider, {"color": "#666666", "linestyle": "-", "marker": "o"}
     )
+
+
+def _style_for_series(series_key: str) -> dict[str, str]:
+    provider = _provider_from_series(series_key)
+    tuning = _tuning_from_series(series_key)
+    sty = dict(_style(provider))
+    if provider == "hilbertsfc_triton":
+        if tuning == "heuristic":
+            sty["linestyle"] = "-"
+        elif tuning == "autotune_bucketed":
+            sty["linestyle"] = "--"
+        elif tuning == "autotune_exact":
+            sty["linestyle"] = ":"
+    return sty
 
 
 def _bar_color(provider: str, fallback_index: int) -> str:
@@ -195,11 +243,11 @@ def _select_rate_unit(max_mpts: float) -> tuple[str, float]:
 
 
 def _ordered_providers(subset: list[dict[str, str]]) -> list[str]:
-    providers: list[str] = []
+    series_keys: list[str] = []
     for r in subset:
-        p = r["provider"]
-        if p not in providers:
-            providers.append(p)
+        key = _series_key(r)
+        if key not in series_keys:
+            series_keys.append(key)
 
     preferred = [
         "skilling_eager",
@@ -210,13 +258,27 @@ def _ordered_providers(subset: list[dict[str, str]]) -> list[str]:
         "hilbertsfc_triton",
     ]
 
-    ordered = [p for p in preferred if p in providers]
-    extras = [p for p in providers if p not in ordered]
+    tuning_order = ["heuristic", "autotune_bucketed", "autotune_exact"]
+
+    ordered: list[str] = []
+    for provider in preferred:
+        matching = [k for k in series_keys if _provider_from_series(k) == provider]
+        for tuning in tuning_order:
+            tuned = f"{provider}:{tuning}"
+            if tuned in matching:
+                ordered.append(tuned)
+        if provider in matching:
+            ordered.append(provider)
+        for key in matching:
+            if key not in ordered:
+                ordered.append(key)
+
+    extras = [k for k in series_keys if k not in ordered]
     return ordered + extras
 
 
 def _ordered_bar_providers(subset: list[dict[str, str]], *, dim: int) -> list[str]:
-    providers = _ordered_providers(subset)
+    series_keys = _ordered_providers(subset)
     skilling_triton = "skilling_triton_2d" if dim == 2 else "skilling_triton_3d"
 
     preferred = [
@@ -227,8 +289,10 @@ def _ordered_bar_providers(subset: list[dict[str, str]], *, dim: int) -> list[st
         "hilbertsfc_triton",
     ]
 
-    ordered = [p for p in preferred if p in providers]
-    extras = [p for p in providers if p not in ordered]
+    ordered: list[str] = []
+    for provider in preferred:
+        ordered.extend([k for k in series_keys if _provider_from_series(k) == provider])
+    extras = [k for k in series_keys if k not in ordered]
     return ordered + extras
 
 
@@ -257,7 +321,7 @@ def _draw_line_panel(
 
     by_provider_size: dict[tuple[str, int], dict[str, str]] = {}
     for r in subset:
-        by_provider_size[(r["provider"], int(r["size"]))] = r
+        by_provider_size[(_series_key(r), int(r["size"]))] = r
 
     valid_mpts = [
         float(r["mpts_p50"])
@@ -277,7 +341,7 @@ def _draw_line_panel(
     x_positions = list(range(len(sizes_all)))
 
     for i, provider in enumerate(provider_order):
-        sty = _style(provider)
+        sty = _style_for_series(provider)
         yvals: list[float] = []
         for size in sizes_all:
             row = by_provider_size.get((provider, int(size)))
@@ -293,7 +357,7 @@ def _draw_line_panel(
             markersize=4.0,
             linestyle=sty["linestyle"],
             color=sty["color"],
-            label=_display_name(provider),
+            label=_series_display_name(provider),
             zorder=3,
         )
 
@@ -376,7 +440,7 @@ def _draw_bar_panel(
 
     by_provider_size: dict[tuple[str, int], dict[str, str]] = {}
     for r in subset:
-        by_provider_size[(r["provider"], int(r["size"]))] = r
+        by_provider_size[(_series_key(r), int(r["size"]))] = r
 
     ratios = [
         float(r["gbps_p50"]) / (float(r["mpts_p50"]) / 1000.0)
@@ -404,8 +468,8 @@ def _draw_bar_panel(
             [x + offset for x in x_positions],
             yvals,
             width=bar_width * 0.95,
-            color=_bar_color(provider, i_provider),
-            label=_display_name(provider),
+            color=_bar_color(_provider_from_series(provider), i_provider),
+            label=_series_display_name(provider),
             zorder=3,
         )
 
@@ -516,8 +580,9 @@ def _plot_line_layout(
     specs = LAYOUT_SPECS[layout]
     nrows, ncols, figsize = _layout_shape(layout)
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize, constrained_layout=True)
-    axes_flat = list(axes.flat) if hasattr(axes, "flat") else [axes]
+    axes_flat: list[Any] = list(axes.flat) if hasattr(axes, "flat") else [axes]
 
+    first_legend_axis = None
     for ax, (op, dim) in zip(axes_flat, specs):
         ok = _draw_line_panel(
             ax,
@@ -538,10 +603,15 @@ def _plot_line_layout(
                 )
                 + " (no data)"
             )
+        elif first_legend_axis is None:
+            first_legend_axis = ax
 
-    handles, labels = axes_flat[0].get_legend_handles_labels()
+    legend_axis: Any = (
+        first_legend_axis if first_legend_axis is not None else axes_flat[0]
+    )
+    handles, labels = legend_axis.get_legend_handles_labels()
     if handles and labels:
-        axes_flat[0].legend(
+        legend_axis.legend(
             handles,
             labels,
             loc="upper left",
@@ -551,7 +621,7 @@ def _plot_line_layout(
             borderaxespad=0.0,
         )
 
-    fig.savefig(out_path)
+    fig.savefig(str(out_path))
     plt.close(fig)
     print(f"[ok] wrote {out_path}")
 
@@ -568,8 +638,9 @@ def _plot_bar_layout(
     specs = LAYOUT_SPECS[layout]
     nrows, ncols, figsize = _layout_shape(layout)
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize, constrained_layout=True)
-    axes_flat = list(axes.flat) if hasattr(axes, "flat") else [axes]
+    axes_flat: list[Any] = list(axes.flat) if hasattr(axes, "flat") else [axes]
 
+    first_legend_axis = None
     for ax, (op, dim) in zip(axes_flat, specs):
         ok = _draw_bar_panel(
             ax,
@@ -591,10 +662,15 @@ def _plot_bar_layout(
                 )
                 + " (no data)"
             )
+        elif first_legend_axis is None:
+            first_legend_axis = ax
 
-    handles, labels = axes_flat[0].get_legend_handles_labels()
+    legend_axis: Any = (
+        first_legend_axis if first_legend_axis is not None else axes_flat[0]
+    )
+    handles, labels = legend_axis.get_legend_handles_labels()
     if handles and labels:
-        axes_flat[0].legend(
+        legend_axis.legend(
             handles,
             labels,
             loc="upper left",
@@ -606,7 +682,7 @@ def _plot_bar_layout(
             title_fontsize=8,
         )
 
-    fig.savefig(out_path)
+    fig.savefig(str(out_path))
     plt.close(fig)
     print(f"[ok] wrote {out_path}")
 
@@ -637,7 +713,7 @@ def _plot_line_one(
         return
 
     fig.tight_layout()
-    fig.savefig(out_path, dpi=180)
+    fig.savefig(str(out_path), dpi=180)
     plt.close(fig)
     print(f"[ok] wrote {out_path}")
 
