@@ -427,7 +427,7 @@
   <span class="md-ellipsis">
     
   
-    CPU
+    CPU ↗
   
 
     
@@ -455,7 +455,7 @@
   <span class="md-ellipsis">
     
   
-    GPU
+    GPU ↗
   
 
     
@@ -1095,6 +1095,7 @@ integer <code>torch.Tensor</code> inputs.</p>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
 </code></pre></div>
 
@@ -1289,6 +1290,30 @@ not a scalar tensor. If <code>None</code>, a heuristic is used.</p>
                   <code>&#39;auto&#39;</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>triton_tuning</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Triton launch config selection policy.</p>
+<ul>
+<li><code>"heuristic"</code> (default): use static launch heuristics.</li>
+<li><code>"autotune_bucketed"</code>: autotune from a fixed config set and cache by
+input size bucket.</li>
+<li><code>"autotune_exact"</code>: autotune from the same config set and cache by
+exact input size.</li>
+</ul>
+<p>Only applies when the Triton backend is used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;heuristic&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -1405,6 +1430,7 @@ with <code>fullgraph=True</code>.</p>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -1598,6 +1624,30 @@ inputs/outputs; raises on violation or kernel failure.</li>
                   <code>&#39;auto&#39;</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>triton_tuning</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Triton launch config selection policy.</p>
+<ul>
+<li><code>"heuristic"</code> (default): use static launch heuristics.</li>
+<li><code>"autotune_bucketed"</code>: autotune from a fixed config set and cache by
+input size bucket.</li>
+<li><code>"autotune_exact"</code>: autotune from the same config set and cache by
+exact input size.</li>
+</ul>
+<p>Only applies when the Triton backend is used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;heuristic&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -1715,6 +1765,7 @@ with <code>fullgraph=True</code>.</p>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
 </code></pre></div>
 
@@ -1925,6 +1976,30 @@ not a scalar tensor. If <code>None</code>, a heuristic is used.</p>
                   <code>&#39;auto&#39;</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>triton_tuning</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Triton launch config selection policy.</p>
+<ul>
+<li><code>"heuristic"</code> (default): use static launch heuristics.</li>
+<li><code>"autotune_bucketed"</code>: autotune from a fixed config set and cache by
+input size bucket.</li>
+<li><code>"autotune_exact"</code>: autotune from the same config set and cache by
+exact input size.</li>
+</ul>
+<p>Only applies when the Triton backend is used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;heuristic&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -2042,6 +2117,7 @@ with <code>fullgraph=True</code>.</p>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2251,6 +2327,30 @@ inputs/outputs; raises on violation or kernel failure.</li>
             </td>
             <td>
                   <code>&#39;auto&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>triton_tuning</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Triton launch config selection policy.</p>
+<ul>
+<li><code>"heuristic"</code> (default): use static launch heuristics.</li>
+<li><code>"autotune_bucketed"</code>: autotune from a fixed config set and cache by
+input size bucket.</li>
+<li><code>"autotune_exact"</code>: autotune from the same config set and cache by
+exact input size.</li>
+</ul>
+<p>Only applies when the Triton backend is used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;heuristic&#39;</code>
             </td>
           </tr>
       </tbody>
