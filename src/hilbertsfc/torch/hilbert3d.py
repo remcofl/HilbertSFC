@@ -33,6 +33,7 @@ from ._tensor_int import (
     is_uint_torch_dtype,
     require_int_tensor,
 )
+from ._tuning_mode import TritonTuningMode, validate_triton_tuning_mode
 
 
 def hilbert_encode_3d(
@@ -46,6 +47,7 @@ def hilbert_encode_3d(
     cpu_parallel: bool | None = None,
     cpu_backend: CPUBackend = "auto",
     gpu_backend: GPUBackend = "auto",
+    triton_tuning: TritonTuningMode = "heuristic",
 ) -> torch.Tensor:
     """Encode 3D integer coordinates to Hilbert indices.
 
@@ -114,6 +116,16 @@ def hilbert_encode_3d(
         - ``"triton"``: require CUDA tensors, Triton availability, and contiguous
           inputs/outputs; raises on violation or kernel failure.
         - ``"torch"``: force the Torch implementation.
+    triton_tuning
+        Triton launch config selection policy.
+
+        - ``"heuristic"`` (default): use static launch heuristics.
+        - ``"autotune_bucketed"``: autotune from a fixed config set and cache by
+        input size bucket.
+        - ``"autotune_exact"``: autotune from the same config set and cache by
+        exact input size.
+
+        Only applies when the Triton backend is used.
 
     Returns
     -------
@@ -149,6 +161,7 @@ def hilbert_encode_3d(
 
     cpu_backend = validate_cpu_backend(cpu_backend)
     gpu_backend = validate_gpu_backend(gpu_backend)
+    triton_tuning = validate_triton_tuning_mode(triton_tuning)
 
     if x.device != y.device or x.device != z.device:
         raise ValueError(
@@ -288,7 +301,15 @@ def hilbert_encode_3d(
 
         def _call() -> None:
             triton_encode_3d = get_hilbert_encode_3d_triton()
-            triton_encode_3d(x, y, z, nbits=nbits, out=out, lut_cache=lut_cache)
+            triton_encode_3d(
+                x,
+                y,
+                z,
+                nbits=nbits,
+                out=out,
+                lut_cache=lut_cache,
+                triton_tuning=triton_tuning,
+            )
 
         if attempt_run_triton(
             gpu_backend=gpu_backend,
@@ -318,6 +339,7 @@ def hilbert_decode_3d(
     cpu_parallel: bool | None = None,
     cpu_backend: CPUBackend = "auto",
     gpu_backend: GPUBackend = "auto",
+    triton_tuning: TritonTuningMode = "heuristic",
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Decode Hilbert indices to 3D integer coordinates.
 
@@ -384,6 +406,16 @@ def hilbert_decode_3d(
         - ``"triton"``: require CUDA tensors, Triton availability, and contiguous
         inputs/outputs; raises on violation or kernel failure.
         - ``"torch"``: force the Torch implementation.
+    triton_tuning
+        Triton launch config selection policy.
+
+        - ``"heuristic"`` (default): use static launch heuristics.
+        - ``"autotune_bucketed"``: autotune from a fixed config set and cache by
+        input size bucket.
+        - ``"autotune_exact"``: autotune from the same config set and cache by
+        exact input size.
+
+        Only applies when the Triton backend is used.
 
     Returns
     -------
@@ -420,6 +452,7 @@ def hilbert_decode_3d(
 
     cpu_backend = validate_cpu_backend(cpu_backend)
     gpu_backend = validate_gpu_backend(gpu_backend)
+    triton_tuning = validate_triton_tuning_mode(triton_tuning)
 
     require_int_tensor(index, "index")
 
@@ -552,6 +585,7 @@ def hilbert_decode_3d(
                 out_y=out_y,
                 out_z=out_z,
                 lut_cache=lut_cache,
+                triton_tuning=triton_tuning,
             )
 
         if attempt_run_triton(

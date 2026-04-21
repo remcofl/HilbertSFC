@@ -8,6 +8,13 @@ import triton.language as tl  # type: ignore[reportMissingImports]
 from hilbertsfc._nbits import validate_nbits_3d
 from hilbertsfc.torch._luts import TorchCacheMode, lut_3d2b_sb_so_i16
 
+from ._tuning import (
+    TritonTuningMode,
+    autotune_key_for_elements,
+    triton_autotune_configs,
+    validate_tuning_mode,
+)
+
 
 @triton.jit
 def hilbert_encode_3d_2bit_so(
@@ -16,6 +23,7 @@ def hilbert_encode_3d_2bit_so(
     z_ptr: tl.tensor,
     out_ptr: tl.tensor,
     n_elements: int,
+    AUTOTUNE_KEY: int,
     lut_ptr: tl.const,
     BLOCK_SIZE: tl.constexpr,
     NBITS: tl.constexpr,
@@ -74,7 +82,13 @@ def hilbert_encode_3d_2bit_so(
     tl.store(out_ptr + offsets, idx, mask=mask)
 
 
-def _choose_launch_config(n_elements: int, *, shmem_lut: bool) -> tuple[int, int]:
+hilbert_encode_3d_2bit_so_autotuned = triton.autotune(
+    configs=triton_autotune_configs(),
+    key=["AUTOTUNE_KEY", "NBITS", "SHMEM_LUT"],
+)(hilbert_encode_3d_2bit_so)
+
+
+def _choose_launch_config(n_elements: int, shmem_lut: bool) -> tuple[int, int]:
     """Choose a reasonable default without autotune.
 
     Returns
@@ -103,10 +117,12 @@ def hilbert_encode_3d_triton(
     out: torch.Tensor | None = None,
     lut_cache: TorchCacheMode = "device",
     load_lut_into_shared_memory: bool = True,
+    triton_tuning: TritonTuningMode = "heuristic",
 ) -> torch.Tensor:
     """Encode (x, y, z) to Hilbert indices using Triton."""
 
     validate_nbits_3d(nbits)
+    triton_tuning = validate_tuning_mode(triton_tuning)
 
     if out is None:
         out = torch.empty_like(x, dtype=torch.int64)
@@ -121,21 +137,37 @@ def hilbert_encode_3d_triton(
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
     load_lut_into_shared_memory = True if hasattr(tl, "gather") else False
-    block_size, num_warps = _choose_launch_config(
-        n_elements, shmem_lut=load_lut_into_shared_memory
-    )
+    if triton_tuning == "heuristic":
+        block_size, num_warps = _choose_launch_config(
+            n_elements,
+            shmem_lut=load_lut_into_shared_memory,
+        )
+        hilbert_encode_3d_2bit_so[grid](  # type: ignore[reportIndexIssue]
+            x,
+            y,
+            z,
+            out,
+            n_elements,
+            AUTOTUNE_KEY=0,
+            lut_ptr=lut,
+            BLOCK_SIZE=block_size,
+            NBITS=nbits,
+            SHMEM_LUT=load_lut_into_shared_memory,
+            num_warps=num_warps,  # type: ignore[reportCallIssue]
+        )
+        return out
 
-    hilbert_encode_3d_2bit_so[grid](  # type: ignore[reportIndexIssue]
+    autotune_key = autotune_key_for_elements(n_elements, tuning=triton_tuning)
+    hilbert_encode_3d_2bit_so_autotuned[grid](  # type: ignore[reportIndexIssue]
         x,
         y,
         z,
         out,
         n_elements,
-        lut,
-        BLOCK_SIZE=block_size,
+        AUTOTUNE_KEY=autotune_key,
+        lut_ptr=lut,
         NBITS=nbits,
         SHMEM_LUT=load_lut_into_shared_memory,
-        num_warps=num_warps,  # type: ignore[reportCallIssue]
     )
 
     return out
