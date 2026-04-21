@@ -54,8 +54,8 @@ nav:
   - Quick start: quickstart.md
   - Advanced usage: advanced-usage.md
   - Benchmarks:
-      - CPU: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-cpu.md
-      - GPU: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-gpu.md
+      - CPU ↗: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-cpu.md
+      - GPU ↗: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-gpu.md
   - API Reference:
       - api/index.md
       - hilbertsfc: api/hilbertsfc.md
