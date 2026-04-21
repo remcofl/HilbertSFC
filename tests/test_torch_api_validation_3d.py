@@ -51,6 +51,26 @@ def test_encode_3d_requires_integer_inputs() -> None:
 
 
 @pytest.mark.torch
+def test_encode_3d_invalid_triton_tuning_raises() -> None:
+    torch, htorch, _ = _torch_pair()
+
+    x = torch.tensor([1, 2], dtype=torch.int32)
+    y = torch.tensor([3, 4], dtype=torch.int32)
+    z = torch.tensor([5, 6], dtype=torch.int32)
+
+    with pytest.raises(ValueError, match="triton_tuning must be one of"):
+        htorch.hilbert_encode_3d(
+            x,
+            y,
+            z,
+            nbits=4,
+            cpu_backend="torch",
+            gpu_backend="torch",
+            triton_tuning="bad",  # type: ignore[arg-type]
+        )
+
+
+@pytest.mark.torch
 def test_encode_3d_warns_when_default_nbits_exceeds_algorithm_max() -> None:
     torch, htorch, _ = _torch_pair()
 

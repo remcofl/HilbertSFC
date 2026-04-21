@@ -35,6 +35,7 @@ from ._tensor_int import (
     is_uint_torch_dtype,
     require_int_tensor,
 )
+from ._tuning_mode import TritonTuningMode, validate_triton_tuning_mode
 
 
 def hilbert_encode_2d(
@@ -47,6 +48,7 @@ def hilbert_encode_2d(
     cpu_parallel: bool | None = None,
     cpu_backend: CPUBackend = "auto",
     gpu_backend: GPUBackend = "auto",
+    triton_tuning: TritonTuningMode = "heuristic",
 ) -> torch.Tensor:
     """Encode 2D integer coordinates to Hilbert indices.
 
@@ -116,6 +118,16 @@ def hilbert_encode_2d(
             Triton availability, and contiguous inputs/outputs;
             raises on violation or kernel failure.
         - ``"torch"``: force the Torch implementation.
+    triton_tuning
+        Triton launch config selection policy.
+
+        - ``"heuristic"`` (default): use static launch heuristics.
+        - ``"autotune_bucketed"``: autotune from a fixed config set and cache by
+        input size bucket.
+        - ``"autotune_exact"``: autotune from the same config set and cache by
+        exact input size.
+
+        Only applies when the Triton backend is used.
 
     Returns
     -------
@@ -150,6 +162,7 @@ def hilbert_encode_2d(
     """
     cpu_backend = validate_cpu_backend(cpu_backend)
     gpu_backend = validate_gpu_backend(gpu_backend)
+    triton_tuning = validate_triton_tuning_mode(triton_tuning)
 
     if x.device != y.device:
         raise ValueError(
@@ -266,7 +279,14 @@ def hilbert_encode_2d(
             # Do not pass a dtype-view alias of `out` into Triton.
             # When in compiled region inductor can hit an internal assertion when a Triton
             # wrapper mutates via `out.view(int64)` and the graph returns the base `out`.
-            triton_encode_2d(x, y, nbits=nbits, out=out, lut_cache=lut_cache)
+            triton_encode_2d(
+                x,
+                y,
+                nbits=nbits,
+                out=out,
+                lut_cache=lut_cache,
+                triton_tuning=triton_tuning,
+            )
 
         if attempt_run_triton(
             gpu_backend=gpu_backend,
@@ -299,6 +319,7 @@ def hilbert_decode_2d(
     cpu_parallel: bool | None = None,
     cpu_backend: CPUBackend = "auto",
     gpu_backend: GPUBackend = "auto",
+    triton_tuning: TritonTuningMode = "heuristic",
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Decode Hilbert indices to 2D integer coordinates.
 
@@ -365,6 +386,16 @@ def hilbert_decode_2d(
         - ``"triton"``: require CUDA tensors, Triton availability, and contiguous
         inputs/outputs; raises on violation or kernel failure.
         - ``"torch"``: force the Torch implementation.
+    triton_tuning
+        Triton launch config selection policy.
+
+        - ``"heuristic"`` (default): use static launch heuristics.
+        - ``"autotune_bucketed"``: autotune from a fixed config set and cache by
+        input size bucket.
+        - ``"autotune_exact"``: autotune from the same config set and cache by
+        exact input size.
+
+        Only applies when the Triton backend is used.
 
     Returns
     -------
@@ -400,6 +431,7 @@ def hilbert_decode_2d(
 
     cpu_backend = validate_cpu_backend(cpu_backend)
     gpu_backend = validate_gpu_backend(gpu_backend)
+    triton_tuning = validate_triton_tuning_mode(triton_tuning)
 
     require_int_tensor(index, "index")
 
@@ -508,6 +540,7 @@ def hilbert_decode_2d(
                 out_x=out_x,
                 out_y=out_y,
                 lut_cache=lut_cache,
+                triton_tuning=triton_tuning,
             )
 
         if attempt_run_triton(
