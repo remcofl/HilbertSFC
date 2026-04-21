@@ -24,6 +24,7 @@ breaks and extra compile-time overhead. Use [`precache_compile_luts`][hilbertsfc
 materialize the required LUT(s) before compilation.
 """
 
+import warnings
 from collections.abc import Callable
 from typing import Literal
 
@@ -106,6 +107,14 @@ _OP_TO_LUT_NAMES_COMPILE: dict[TorchHilbertOp, tuple[str, ...]] = {
         "lut_3d2b_sb_so_i16",
         "lut_3d2b_so_sb_i16",
     ),
+}
+
+
+_COMPILE_LUT_NAME_TO_OP: dict[str, TorchHilbertOp] = {
+    name: op
+    for op, names in _OP_TO_LUT_NAMES_COMPILE.items()
+    if op != "all"
+    for name in names
 }
 
 
@@ -211,6 +220,54 @@ def precache_compile_luts(
         fn(device=dev, cache="device")
 
 
+def _compile_cache_miss_message(
+    *,
+    name: str,
+    device: torch.device,
+    cache: TorchCacheMode,
+) -> str:
+    op = _COMPILE_LUT_NAME_TO_OP.get(name, "all")
+    precache = f"precache_compile_luts(device={device!r}, op={op!r})"
+
+    if cache == "host_only":
+        detail = (
+            "`lut_cache='host_only'` rematerializes LUTs on every call, which can "
+            "cause a graph break under `torch.compile`. Prefer "
+            f"`lut_cache='device'` and call `{precache}` before the first compiled call. "
+        )
+    else:
+        detail = (
+            f"Prefer calling `{precache}` before the first compiled call to avoid "
+            "cache misses during tracing. "
+        )
+
+    return (
+        "HilbertSFC hit an uncached LUT while tracing with `torch.compile` "
+        f"(op={op!r}, lut={name!r}, device={_device_key(device)!r}). "
+        f"{detail}"
+        "With `fullgraph=True`, LUTs must be pre-cached."
+    )
+
+
+def _build_with_compile_cache_miss_warning(
+    *,
+    name: str,
+    device: torch.device,
+    cache: TorchCacheMode,
+    build: Callable[[], torch.Tensor],
+) -> torch.Tensor:
+    @torch.compiler.disable()
+    def _warn_and_build() -> torch.Tensor:
+        warnings.warn(
+            _compile_cache_miss_message(name=name, device=device, cache=cache),
+            RuntimeWarning,
+            stacklevel=3,
+        )
+        return build()
+
+    return _warn_and_build()
+
+
 def _cached_tensor(
     *,
     name: str,
@@ -218,18 +275,28 @@ def _cached_tensor(
     cache: TorchCacheMode,
     build: Callable[[], torch.Tensor],
 ) -> torch.Tensor:
-    if cache == "host_only":
-        return build()
-    if cache != "device":
+    if cache not in ("device", "host_only"):
         raise ValueError("cache must be one of: 'device', 'host_only'")
 
-    key = (_device_key(device), name)
-    t = _DEVICE_LUT_CACHE.get(key)
-    if t is not None:
-        return t
+    key: tuple[str, str] | None = None
+    if cache == "device":
+        key = (_device_key(device), name)
+        t = _DEVICE_LUT_CACHE.get(key)
+        if t is not None:
+            return t
 
-    t = build()
-    _DEVICE_LUT_CACHE[key] = t
+    if torch.compiler.is_compiling():
+        t = _build_with_compile_cache_miss_warning(
+            name=name,
+            device=device,
+            cache=cache,
+            build=build,
+        )
+    else:
+        t = build()
+
+    if key is not None:
+        _DEVICE_LUT_CACHE[key] = t
     return t
 
 
