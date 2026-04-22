@@ -61,8 +61,8 @@ HilbertSFC is orders of magnitude faster than existing Python implementations. I
 
 | Implementation | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc (multi-threaded)** | 0.41 | 0.48 | 2410.39 | 2084.98 |
-| 🔥**hilbertsfc (Python)** | 1.38 | 1.59 | 726.68 | 629.52 |
+| **hilbertsfc (multi-threaded)** | 0.41 | 0.48 | 2410.39 | 2084.98 |
+| **hilbertsfc (Python)** | 1.38 | 1.59 | 726.68 | 629.52 |
 | [fast_hilbert (Rust)](https://crates.io/crates/fast_hilbert) | 12.24 | 12.03 | 81.67 | 83.11 |
 | [hilbert_2d (Rust)](https://crates.io/crates/hilbert_2d) | 121.23 | 101.34 | 8.25 | 9.87 |
 | [hilbert-bytes (Python)](https://pypi.org/project/hilbert-bytes/) | 2997.51 | 2642.86 | 0.334 | 0.378 |
@@ -82,7 +82,7 @@ HilbertSFC achieves very high throughput on modern GPUs, reaching up to ~143 bil
 
 | Implementation | Mode | 2D enc | 2D dec | 3D enc | 3D dec |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 🔥**HilbertSFC** | triton | 225234 | 238367 | 143405 | 147926 |
+| **HilbertSFC** | triton | 225234 | 238367 | 143405 | 147926 |
 | HilbertSFC | eager | 5668 | 5324 | 2745 | 2886 |
 | [Skilling (Pointcept)](https://github.com/Pointcept/Pointcept/blob/d74c646db6abec569d0f23e0c34e7ddfce142789/pointcept/models/utils/serialization/hilbert.py) | eager | 37.9 | 48.4 | 46.4 | 63.1 |
 
