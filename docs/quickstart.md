@@ -1,6 +1,6 @@
 # Quick start
 
-HilbertSFC provides simple Hilbert encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.
+HilbertSFC provides simple Hilbert and Morton encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.
 
 ## Installation
 
@@ -86,7 +86,7 @@ x, y = hilbert_decode_2d(index, nbits=10)     # x = 17, y = 23
 `nbits` controls the coordinate domain `[0, 2**nbits)` on each axis. For best performance, pass the smallest value that covers your input range.
 
 
-The 3D API follows the same pattern via [`hilbert_encode_3d`][hilbertsfc.hilbert_encode_3d] and [`hilbert_decode_3d`][hilbertsfc.hilbert_decode_3d].
+The 3D API follows the same pattern via [`hilbert_encode_3d`][hilbertsfc.hilbert_encode_3d] and [`hilbert_decode_3d`][hilbertsfc.hilbert_decode_3d]. Morton/z-order functions mirror these names with [`morton_encode_2d`][hilbertsfc.morton_encode_2d], [`morton_decode_2d`][hilbertsfc.morton_decode_2d], [`morton_encode_3d`][hilbertsfc.morton_encode_3d], and [`morton_decode_3d`][hilbertsfc.morton_decode_3d].
 
 /// admonition | `nbits` compatibility
     type: info

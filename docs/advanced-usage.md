@@ -4,7 +4,7 @@ This page covers lower-level integration patterns and performance-oriented usage
 
 ## Embedding kernels in custom Numba code
 
-While the main API is designed for ease of use, the package also provides *kernel accessors* that expose the scalar encode/decode kernels. This allows you to embed the Hilbert curve logic directly into your own `@numba.njit` code.
+While the main API is designed for ease of use, the package also provides *kernel accessors* that expose the scalar encode/decode kernels. This allows you to embed Hilbert/Morton curve logic directly into your own `@numba.njit` code.
 
 This is useful for fusing surrounding numerical operations such as quantization, tiling, or other pre- and post-processing steps into a single compiled loop. This can improve performance by keeping intermediate data in registers, reducing memory movement, avoiding temporary arrays, and reducing Python call overhead.
 
