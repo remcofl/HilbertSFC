@@ -15,7 +15,12 @@ from ._dtype import (
 from ._flatten import flatten_nocopy as _flatten_nocopy
 from ._input_checks import is_int_scalar_or_0d_array
 from ._nbits import MAX_NBITS_3D, validate_nbits_3d
-from ._public_api_adapters import Decode3DAdapter, Encode3DAdapter
+from ._public_api_types import (
+    BuildDecode3DBatch,
+    BuildDecode3DScalar,
+    BuildEncode3DBatch,
+    BuildEncode3DScalar,
+)
 from .types import IntArray, IntScalar
 
 
@@ -27,7 +32,8 @@ def encode_3d_api(
     nbits: int | None,
     out: IntArray | None,
     parallel: bool,
-    adapter: Encode3DAdapter,
+    build_scalar: BuildEncode3DScalar,
+    build_batch: BuildEncode3DBatch,
 ) -> int | IntArray:
     """Shared implementation for public 3D encoders."""
 
@@ -51,7 +57,7 @@ def encode_3d_api(
             cast(IntScalar, y),
             cast(IntScalar, z),
             nbits,
-            adapter,
+            build_scalar,
         )
 
     return _encode_3d_batch(
@@ -61,7 +67,7 @@ def encode_3d_api(
         nbits,
         out=out,
         parallel=parallel,
-        adapter=adapter,
+        build_batch=build_batch,
     )
 
 
@@ -73,7 +79,8 @@ def decode_3d_api(
     out_y: IntArray | None,
     out_z: IntArray | None,
     parallel: bool,
-    adapter: Decode3DAdapter,
+    build_scalar: BuildDecode3DScalar,
+    build_batch: BuildDecode3DBatch,
 ) -> tuple[int, int, int] | tuple[IntArray, IntArray, IntArray]:
     """Shared implementation for public 3D decoders."""
 
@@ -87,7 +94,7 @@ def decode_3d_api(
                 UserWarning,
                 stacklevel=2,
             )
-        return _decode_3d_scalar(cast(IntScalar, index), nbits, adapter)
+        return _decode_3d_scalar(cast(IntScalar, index), nbits, build_scalar)
 
     return _decode_3d_batch(
         cast(IntArray, index),
@@ -96,7 +103,7 @@ def decode_3d_api(
         out_y=out_y,
         out_z=out_z,
         parallel=parallel,
-        adapter=adapter,
+        build_batch=build_batch,
     )
 
 
@@ -105,7 +112,7 @@ def _encode_3d_scalar(
     y: IntScalar,
     z: IntScalar,
     nbits: int | None,
-    adapter: Encode3DAdapter,
+    build_scalar: BuildEncode3DScalar,
 ) -> int:
     if nbits is None:
         nbits = MAX_NBITS_3D
@@ -118,14 +125,14 @@ def _encode_3d_scalar(
             f"got x={x_i}, y={y_i}, z={z_i}"
         )
 
-    impl = adapter.build_scalar(nbits)
+    impl = build_scalar(nbits)
     return impl(np.uint32(x_i), np.uint32(y_i), np.uint32(z_i))
 
 
 def _decode_3d_scalar(
     index: IntScalar,
     nbits: int | None,
-    adapter: Decode3DAdapter,
+    build_scalar: BuildDecode3DScalar,
 ) -> tuple[int, int, int]:
     if nbits is None:
         nbits = MAX_NBITS_3D
@@ -137,7 +144,7 @@ def _decode_3d_scalar(
             f"Scalar index must be non-negative and fit in uint64; got index={index_i}"
         )
 
-    impl = adapter.build_scalar(nbits)
+    impl = build_scalar(nbits)
     return impl(np.uint64(index_i))
 
 
@@ -149,7 +156,7 @@ def _encode_3d_batch(
     *,
     out: IntArray | None,
     parallel: bool,
-    adapter: Encode3DAdapter,
+    build_batch: BuildEncode3DBatch,
 ) -> IntArray:
     if x.shape != y.shape or x.shape != z.shape:
         raise ValueError(
@@ -211,7 +218,7 @@ def _encode_3d_batch(
     z_1d = _flatten_nocopy(z_u, "z", order="C", strict=False)
     out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
-    impl = adapter.build_batch(nbits, parallel, out.dtype)
+    impl = build_batch(nbits, parallel=parallel, index_dtype=out.dtype)
     impl(x_1d, y_1d, z_1d, out_1d)
     return out
 
@@ -224,7 +231,7 @@ def _decode_3d_batch(
     out_y: IntArray | None,
     out_z: IntArray | None,
     parallel: bool,
-    adapter: Decode3DAdapter,
+    build_batch: BuildDecode3DBatch,
 ) -> tuple[IntArray, IntArray, IntArray]:
     max_index_nbits = max_nbits_for_index_dtype(index.dtype, dims=3)
     if nbits is None:
@@ -282,6 +289,6 @@ def _decode_3d_batch(
     out_y_1d = _flatten_nocopy(out_y_u, "out_y", order="C", strict=False)
     out_z_1d = _flatten_nocopy(out_z_u, "out_z", order="C", strict=False)
 
-    impl = adapter.build_batch(nbits, parallel, index.dtype)
+    impl = build_batch(nbits, parallel=parallel, index_dtype=index.dtype)
     impl(index_1d, out_x_1d, out_y_1d, out_z_1d)
     return out_x, out_y, out_z

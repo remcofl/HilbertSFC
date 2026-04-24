@@ -15,7 +15,12 @@ from ._dtype import (
 from ._flatten import flatten_nocopy as _flatten_nocopy
 from ._input_checks import is_int_scalar_or_0d_array
 from ._nbits import MAX_NBITS_2D, validate_nbits_2d
-from ._public_api_adapters import Decode2DAdapter, Encode2DAdapter
+from ._public_api_types import (
+    BuildDecode2DBatch,
+    BuildDecode2DScalar,
+    BuildEncode2DBatch,
+    BuildEncode2DScalar,
+)
 from .types import IntArray, IntScalar
 
 
@@ -26,7 +31,8 @@ def encode_2d_api(
     nbits: int | None,
     out: IntArray | None,
     parallel: bool,
-    adapter: Encode2DAdapter,
+    build_scalar: BuildEncode2DScalar,
+    build_batch: BuildEncode2DBatch,
 ) -> int | IntArray:
     """Shared implementation for public 2D encoders."""
 
@@ -44,7 +50,12 @@ def encode_2d_api(
                 UserWarning,
                 stacklevel=2,
             )
-        return _encode_2d_scalar(cast(IntScalar, x), cast(IntScalar, y), nbits, adapter)
+        return _encode_2d_scalar(
+            cast(IntScalar, x),
+            cast(IntScalar, y),
+            nbits,
+            build_scalar,
+        )
 
     return _encode_2d_batch(
         cast(IntArray, x),
@@ -52,7 +63,7 @@ def encode_2d_api(
         nbits,
         out=out,
         parallel=parallel,
-        adapter=adapter,
+        build_batch=build_batch,
     )
 
 
@@ -63,7 +74,8 @@ def decode_2d_api(
     out_x: IntArray | None,
     out_y: IntArray | None,
     parallel: bool,
-    adapter: Decode2DAdapter,
+    build_scalar: BuildDecode2DScalar,
+    build_batch: BuildDecode2DBatch,
 ) -> tuple[int, int] | tuple[IntArray, IntArray]:
     """Shared implementation for public 2D decoders."""
 
@@ -77,7 +89,7 @@ def decode_2d_api(
                 UserWarning,
                 stacklevel=2,
             )
-        return _decode_2d_scalar(cast(IntScalar, index), nbits, adapter)
+        return _decode_2d_scalar(cast(IntScalar, index), nbits, build_scalar)
 
     return _decode_2d_batch(
         cast(IntArray, index),
@@ -85,7 +97,7 @@ def decode_2d_api(
         out_x=out_x,
         out_y=out_y,
         parallel=parallel,
-        adapter=adapter,
+        build_batch=build_batch,
     )
 
 
@@ -93,7 +105,7 @@ def _encode_2d_scalar(
     x: IntScalar,
     y: IntScalar,
     nbits: int | None,
-    adapter: Encode2DAdapter,
+    build_scalar: BuildEncode2DScalar,
 ) -> int:
     if nbits is None:
         nbits = MAX_NBITS_2D
@@ -106,14 +118,14 @@ def _encode_2d_scalar(
             f"got x={x_i}, y={y_i}"
         )
 
-    impl = adapter.build_scalar(nbits)
+    impl = build_scalar(nbits)
     return impl(np.uint32(x_i), np.uint32(y_i))
 
 
 def _decode_2d_scalar(
     index: IntScalar,
     nbits: int | None,
-    adapter: Decode2DAdapter,
+    build_scalar: BuildDecode2DScalar,
 ) -> tuple[int, int]:
     if nbits is None:
         nbits = MAX_NBITS_2D
@@ -125,7 +137,7 @@ def _decode_2d_scalar(
             f"Scalar index must be non-negative and fit in uint64; got index={index_i}"
         )
 
-    impl = adapter.build_scalar(nbits)
+    impl = build_scalar(nbits)
     return impl(np.uint64(index_i))
 
 
@@ -136,7 +148,7 @@ def _encode_2d_batch(
     *,
     out: IntArray | None,
     parallel: bool,
-    adapter: Encode2DAdapter,
+    build_batch: BuildEncode2DBatch,
 ) -> IntArray:
     if x.shape != y.shape:
         raise ValueError(
@@ -191,7 +203,7 @@ def _encode_2d_batch(
     y_1d = _flatten_nocopy(y_u, "y", order="C", strict=False)
     out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
-    impl = adapter.build_batch(nbits, parallel)
+    impl = build_batch(nbits, parallel=parallel)
     impl(x_1d, y_1d, out_1d)
 
     return out
@@ -204,7 +216,7 @@ def _decode_2d_batch(
     out_x: IntArray | None,
     out_y: IntArray | None,
     parallel: bool,
-    adapter: Decode2DAdapter,
+    build_batch: BuildDecode2DBatch,
 ) -> tuple[IntArray, IntArray]:
     max_index_nbits = max_nbits_for_index_dtype(index.dtype, dims=2)
     if nbits is None:
@@ -251,6 +263,6 @@ def _decode_2d_batch(
     out_x_1d = _flatten_nocopy(out_x_u, "out_x", order="C", strict=False)
     out_y_1d = _flatten_nocopy(out_y_u, "out_y", order="C", strict=False)
 
-    impl = adapter.build_batch(nbits, parallel)
+    impl = build_batch(nbits, parallel=parallel)
     impl(index_1d, out_x_1d, out_y_1d)
     return out_x, out_y

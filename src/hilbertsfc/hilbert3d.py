@@ -29,31 +29,24 @@ from ._dispatch import (
 from ._dtype import (
     choose_lut_dtype_for_index_dtype,
 )
-from ._public_api_shared import (
-    Decode3DAdapter,
-    Encode3DAdapter,
-    decode_3d_api,
-    encode_3d_api,
-)
+from ._public_api_shared_3d import decode_3d_api, encode_3d_api
 from .types import IntArray, IntScalar, LutUIntDTypeLike
 
-_HILBERT_ENCODE_3D_ADAPTER = Encode3DAdapter(
-    build_scalar=lambda nbits: get_encode_3d_scalar_builder()(nbits),
-    build_batch=lambda nbits, parallel, out_dtype: get_encode_3d_batch_builder()(
-        nbits,
-        parallel=parallel,
-        lut_dtype=choose_lut_dtype_for_index_dtype(out_dtype),
-    ),
-)
 
-_HILBERT_DECODE_3D_ADAPTER = Decode3DAdapter(
-    build_scalar=lambda nbits: get_decode_3d_scalar_builder()(nbits),
-    build_batch=lambda nbits, parallel, index_dtype: get_decode_3d_batch_builder()(
+def _build_hilbert_encode_3d_batch(nbits, *, parallel=False, index_dtype):
+    return get_encode_3d_batch_builder()(
         nbits,
         parallel=parallel,
         lut_dtype=choose_lut_dtype_for_index_dtype(index_dtype),
-    ),
-)
+    )
+
+
+def _build_hilbert_decode_3d_batch(nbits, *, parallel=False, index_dtype):
+    return get_decode_3d_batch_builder()(
+        nbits,
+        parallel=parallel,
+        lut_dtype=choose_lut_dtype_for_index_dtype(index_dtype),
+    )
 
 
 def hilbert_encode_3d(
@@ -134,6 +127,17 @@ def hilbert_encode_3d(
         If ``nbits`` is invalid, if array inputs have mismatched shapes, or if
         ``out`` has the wrong shape or an insufficient dtype.
     """
+
+    build_scalar = get_encode_3d_scalar_builder()
+    build_batch = get_encode_3d_batch_builder()
+
+    def build_batch_wrapped(nbits, *, parallel=False, index_dtype):
+        return build_batch(
+            nbits,
+            parallel=parallel,
+            lut_dtype=choose_lut_dtype_for_index_dtype(index_dtype),
+        )
+
     return encode_3d_api(
         x,
         y,
@@ -141,7 +145,8 @@ def hilbert_encode_3d(
         nbits=nbits,
         out=out,
         parallel=parallel,
-        adapter=_HILBERT_ENCODE_3D_ADAPTER,
+        build_scalar=build_scalar,
+        build_batch=build_batch_wrapped,
     )
 
 
@@ -227,6 +232,16 @@ def hilbert_decode_3d(
         or if output buffers are inconsistent or have incorrect shapes.
     """
 
+    build_scalar = get_decode_3d_scalar_builder()
+    build_batch = get_decode_3d_batch_builder()
+
+    def build_batch_wrapped(nbits, *, parallel=False, index_dtype):
+        return build_batch(
+            nbits,
+            parallel=parallel,
+            lut_dtype=choose_lut_dtype_for_index_dtype(index_dtype),
+        )
+
     return decode_3d_api(
         index,
         nbits=nbits,
@@ -234,7 +249,8 @@ def hilbert_decode_3d(
         out_y=out_y,
         out_z=out_z,
         parallel=parallel,
-        adapter=_HILBERT_DECODE_3D_ADAPTER,
+        build_scalar=build_scalar,
+        build_batch=build_batch_wrapped,
     )
 
 
