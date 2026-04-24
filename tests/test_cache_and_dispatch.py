@@ -10,22 +10,46 @@ from hilbertsfc._dispatch import (
     get_encode_2d_scalar_builder,
     get_encode_3d_batch_builder,
     get_encode_3d_scalar_builder,
+    get_morton_decode_2d_batch_builder,
+    get_morton_decode_2d_scalar_builder,
+    get_morton_decode_3d_batch_builder,
+    get_morton_decode_3d_scalar_builder,
+    get_morton_encode_2d_batch_builder,
+    get_morton_encode_2d_scalar_builder,
+    get_morton_encode_3d_batch_builder,
+    get_morton_encode_3d_scalar_builder,
 )
-from hilbertsfc._kernels.hilbert2d_decode import (
+from hilbertsfc._kernels.numba.hilbert2d_decode import (
     build_hilbert_decode_2d_batch_impl,
     build_hilbert_decode_2d_impl,
 )
-from hilbertsfc._kernels.hilbert2d_encode import (
+from hilbertsfc._kernels.numba.hilbert2d_encode import (
     build_hilbert_encode_2d_batch_impl,
     build_hilbert_encode_2d_impl,
 )
-from hilbertsfc._kernels.hilbert3d_decode import (
+from hilbertsfc._kernels.numba.hilbert3d_decode import (
     build_hilbert_decode_3d_batch_impl,
     build_hilbert_decode_3d_impl,
 )
-from hilbertsfc._kernels.hilbert3d_encode import (
+from hilbertsfc._kernels.numba.hilbert3d_encode import (
     build_hilbert_encode_3d_batch_impl,
     build_hilbert_encode_3d_impl,
+)
+from hilbertsfc._kernels.numba.morton2d_decode import (
+    build_morton_decode_2d_batch_impl,
+    build_morton_decode_2d_impl,
+)
+from hilbertsfc._kernels.numba.morton2d_encode import (
+    build_morton_encode_2d_batch_impl,
+    build_morton_encode_2d_impl,
+)
+from hilbertsfc._kernels.numba.morton3d_decode import (
+    build_morton_decode_3d_batch_impl,
+    build_morton_decode_3d_impl,
+)
+from hilbertsfc._kernels.numba.morton3d_encode import (
+    build_morton_encode_3d_batch_impl,
+    build_morton_encode_3d_impl,
 )
 from hilbertsfc._luts import lut_2d4b_b_qs_u64
 
@@ -40,6 +64,16 @@ def test_dispatch_points_to_expected_builders() -> None:
     assert get_decode_3d_scalar_builder() is build_hilbert_decode_3d_impl
     assert get_encode_3d_batch_builder() is build_hilbert_encode_3d_batch_impl
     assert get_decode_3d_batch_builder() is build_hilbert_decode_3d_batch_impl
+
+    assert get_morton_encode_2d_scalar_builder() is build_morton_encode_2d_impl
+    assert get_morton_decode_2d_scalar_builder() is build_morton_decode_2d_impl
+    assert get_morton_encode_2d_batch_builder() is build_morton_encode_2d_batch_impl
+    assert get_morton_decode_2d_batch_builder() is build_morton_decode_2d_batch_impl
+
+    assert get_morton_encode_3d_scalar_builder() is build_morton_encode_3d_impl
+    assert get_morton_decode_3d_scalar_builder() is build_morton_decode_3d_impl
+    assert get_morton_encode_3d_batch_builder() is build_morton_encode_3d_batch_impl
+    assert get_morton_decode_3d_batch_builder() is build_morton_decode_3d_batch_impl
 
 
 def test_kernel_builder_cache_clear_refreshes_function_object() -> None:

@@ -3,10 +3,10 @@
 import numba as nb
 import numpy as np
 
-from .._cache import kernel_cache
-from .._luts import lut_3d2b_so_sb
-from .._nbits import validate_nbits_3d
-from ..types import IntScalar, LutUIntDTypeLike, UIntArray
+from ..._cache import kernel_cache
+from ..._luts import lut_3d2b_so_sb
+from ..._nbits import validate_nbits_3d
+from ...types import IntScalar, LutUIntDTypeLike, UIntArray
 
 
 @nb.njit(inline="always")

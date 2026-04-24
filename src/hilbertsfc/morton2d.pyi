@@ -1,0 +1,235 @@
+from collections.abc import Callable
+from typing import Literal, overload
+
+import numpy as np
+from numpy.typing import NDArray
+
+from .types import (
+    Int8Array,
+    Int16Array,
+    Int32Array,
+    Int64Array,
+    IntArray,
+    IntScalar,
+    UInt8Array,
+    UInt16Array,
+    UInt32Array,
+    UInt64Array,
+    UIntArray,
+)
+
+# --- Scalar versions:
+@overload
+def morton_encode_2d(
+    x: IntScalar,
+    y: IntScalar,
+    *,
+    nbits: int | None = None,
+    parallel: Literal[False] = False,
+) -> int: ...
+@overload
+def morton_decode_2d(
+    index: IntScalar,
+    *,
+    nbits: int | None = None,
+    parallel: Literal[False] = False,
+) -> tuple[int, int]: ...
+
+# --- Array version with out:
+@overload
+def morton_encode_2d[OutDType: np.integer](
+    x: IntArray,
+    y: IntArray,
+    *,
+    nbits: int | None = None,
+    out: NDArray[OutDType],
+    parallel: bool = False,
+) -> NDArray[OutDType]: ...
+
+# 2*nbits <= 8
+type _NBits2DIndexU8 = Literal[1, 2, 3, 4]
+
+# 2*nbits <= 16
+type _NBits2DIndexU16 = Literal[5, 6, 7, 8]
+
+# 2*nbits <= 32
+type _NBits2DIndexU32 = Literal[9, 10, 11, 12, 13, 14, 15, 16]
+
+# 2*nbits <= 64
+type _NBits2DIndexU64 = Literal[
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+]
+
+# --- Array version with nbits but no out:
+@overload
+def morton_encode_2d(
+    x: IntArray,
+    y: IntArray,
+    *,
+    nbits: _NBits2DIndexU8,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt8Array: ...
+@overload
+def morton_encode_2d(
+    x: IntArray,
+    y: IntArray,
+    *,
+    nbits: _NBits2DIndexU16,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt16Array: ...
+@overload
+def morton_encode_2d(
+    x: IntArray,
+    y: IntArray,
+    *,
+    nbits: _NBits2DIndexU32,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt32Array: ...
+@overload
+def morton_encode_2d(
+    x: IntArray,
+    y: IntArray,
+    *,
+    nbits: _NBits2DIndexU64,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt64Array: ...
+
+# --- Array version with no nbits and no out:
+@overload
+def morton_encode_2d(
+    x: UInt8Array | Int8Array,
+    y: UInt8Array | Int8Array,
+    *,
+    nbits: None = None,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt16Array: ...
+@overload
+def morton_encode_2d(
+    x: UInt16Array | Int16Array,
+    y: UInt16Array | Int16Array,
+    *,
+    nbits: None = None,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt32Array: ...
+@overload
+def morton_encode_2d(
+    x: UInt32Array | Int32Array | UInt64Array | Int64Array,
+    y: UInt32Array | Int32Array | UInt64Array | Int64Array,
+    *,
+    nbits: None = None,
+    out: None = None,
+    parallel: bool = False,
+) -> UInt64Array: ...
+
+# (Other combinations of x and y dtypes, also non-literal nbits):
+@overload
+def morton_encode_2d(
+    x: IntArray,
+    y: IntArray,
+    *,
+    nbits: int | None = None,
+    out: None = None,
+    parallel: bool = False,
+) -> UIntArray: ...
+
+# --- Array version with out:
+@overload
+def morton_decode_2d[XCoordDType: np.integer, YCoordDType: np.integer](
+    index: IntArray,
+    *,
+    nbits: int | None = None,
+    out_x: NDArray[XCoordDType],
+    out_y: NDArray[YCoordDType],
+    parallel: bool = False,
+) -> tuple[NDArray[XCoordDType], NDArray[YCoordDType]]: ...
+
+type _NBitsCoordU8 = Literal[1, 2, 3, 4, 5, 6, 7, 8]
+
+type _NBitsCoordU16 = Literal[9, 10, 11, 12, 13, 14, 15, 16]
+
+type _NBitsCoordU32 = Literal[
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+]
+
+# --- Array version with nbits but no out:
+@overload
+def morton_decode_2d(
+    index: IntArray,
+    *,
+    nbits: _NBitsCoordU8,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UInt8Array, UInt8Array]: ...
+@overload
+def morton_decode_2d(
+    index: IntArray,
+    *,
+    nbits: _NBitsCoordU16,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UInt16Array, UInt16Array]: ...
+@overload
+def morton_decode_2d(
+    index: IntArray,
+    *,
+    nbits: _NBitsCoordU32,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UInt32Array, UInt32Array]: ...
+
+# --- Array version with no nbits and no out:
+@overload
+def morton_decode_2d(
+    index: UInt8Array | Int8Array | UInt16Array | Int16Array,
+    *,
+    nbits: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UInt8Array, UInt8Array]: ...
+@overload
+def morton_decode_2d(
+    index: UInt32Array | Int32Array,
+    *,
+    nbits: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UInt16Array, UInt16Array]: ...
+@overload
+def morton_decode_2d(
+    index: UInt64Array | Int64Array,
+    *,
+    nbits: None = None,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UInt32Array, UInt32Array]: ...
+
+# (Other combinations of indices dtype, also non-literal nbits):
+@overload
+def morton_decode_2d(
+    index: IntArray,
+    *,
+    nbits: int | None = None,
+    out_x: None = None,
+    out_y: None = None,
+    parallel: bool = False,
+) -> tuple[UIntArray, UIntArray]: ...
+
+# --- Kernel accessors:
+def get_morton_encode_2d_kernel(
+    nbits: int,
+) -> Callable[[IntScalar, IntScalar], int]: ...
+def get_morton_decode_2d_kernel(
+    nbits: int,
+) -> Callable[[IntScalar], tuple[int, int]]: ...

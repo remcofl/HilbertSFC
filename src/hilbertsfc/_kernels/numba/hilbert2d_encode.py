@@ -3,11 +3,10 @@
 import numba as nb
 import numpy as np
 
-from hilbertsfc.types import IntScalar, TileNBits2D, UIntArray
-
-from .._cache import kernel_cache
-from .._luts import lut_2d4b_b_qs_u64, lut_2d7b_b_qs_u64
-from .._nbits import validate_nbits_2d
+from ..._cache import kernel_cache
+from ..._luts import lut_2d4b_b_qs_u64, lut_2d7b_b_qs_u64
+from ..._nbits import validate_nbits_2d
+from ...types import IntScalar, TileNBits2D, UIntArray
 
 
 @nb.njit(inline="always")
