@@ -30,7 +30,7 @@ Run one or more builtin implementations:
 
 ```powershell
 uv run --group bench python bench/bench_cli.py --ndim 2 --nbits 32 --n 1000000 --trials 1 --min-time 2 --threads 1 \
-  --impl-name hilbertsfc --impl-name hilbert-bytes
+  --impl-name hilbertsfc --impl-name hilbertsfc-morton --impl-name hilbert-bytes
 ```
 
 Load external implementations:

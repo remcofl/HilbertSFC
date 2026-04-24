@@ -22,6 +22,20 @@ def _decode_hilbertsfc(idx, xs, ys, zs, *, nbits):
     )
 
 
+def _encode_hilbertsfc_morton(xs, ys, zs, out, *, nbits):
+    from hilbertsfc import morton_encode_3d
+
+    return morton_encode_3d(xs, ys, zs, nbits=nbits, parallel=True, out=out)
+
+
+def _decode_hilbertsfc_morton(idx, xs, ys, zs, *, nbits):
+    from hilbertsfc import morton_decode_3d
+
+    return morton_decode_3d(
+        idx, nbits=nbits, parallel=True, out_x=xs, out_y=ys, out_z=zs
+    )
+
+
 def _encode_numpy_hilbert_curve(xs, ys, zs, out, *, nbits):
     from hilbert import encode
 
@@ -136,6 +150,12 @@ HILBERTSFC_3D = HilbertImplementation(
     decode=_decode_hilbertsfc,
 )
 
+HILBERTSFC_MORTON_3D = HilbertImplementation(
+    name="hilbertsfc-morton/3d",
+    encode=_encode_hilbertsfc_morton,
+    decode=_decode_hilbertsfc_morton,
+)
+
 NUMPY_HILBERT_CURVE_3D = HilbertImplementation(
     name="numpy-hilbert-curve/3d",
     encode=_encode_numpy_hilbert_curve,
@@ -158,6 +178,7 @@ IMPLS: dict[str, HilbertImplementation] = {
     impl.name: impl
     for impl in (
         HILBERTSFC_3D,
+        HILBERTSFC_MORTON_3D,
         HILBERT_BYTES_3D,
         NUMPY_HILBERT_CURVE_3D,
         HILBERTCURVE_3D,

@@ -20,6 +20,9 @@ DISPLAY_NAMES = {
     "hilbertsfc_torch_eager": "HilbertSFC: eager",
     "hilbertsfc_torch_compile": "HilbertSFC: compile",
     "hilbertsfc_triton": "HilbertSFC: triton",
+    "hilbertsfc_morton_torch_eager": "HilbertSFC Morton: eager",
+    "hilbertsfc_morton_torch_compile": "HilbertSFC Morton: compile",
+    "hilbertsfc_morton_triton": "HilbertSFC Morton: triton",
 }
 
 TRITON_TUNING_LABELS = {
@@ -38,6 +41,21 @@ STYLE_MAP = {
     "hilbertsfc_torch_eager": {"color": "#F28E2B", "linestyle": "-", "marker": "o"},
     "hilbertsfc_torch_compile": {"color": "#A16340", "linestyle": "--", "marker": "o"},
     "hilbertsfc_triton": {"color": "#E15759", "linestyle": "-", "marker": "o"},
+    "hilbertsfc_morton_torch_eager": {
+        "color": "#59A14F",
+        "linestyle": "-",
+        "marker": "s",
+    },
+    "hilbertsfc_morton_torch_compile": {
+        "color": "#2C7A3F",
+        "linestyle": "--",
+        "marker": "s",
+    },
+    "hilbertsfc_morton_triton": {
+        "color": "#76B7B2",
+        "linestyle": "-",
+        "marker": "s",
+    },
 }
 
 BAR_IMPL_COLORS = [
@@ -56,6 +74,9 @@ BAR_IMPL_COLOR_BY_PROVIDER = {
     "skilling_triton_3d": BAR_IMPL_COLORS[2],
     "hilbertsfc_torch_compile": BAR_IMPL_COLORS[3],
     "hilbertsfc_triton": BAR_IMPL_COLORS[4],
+    "hilbertsfc_morton_torch_eager": BAR_IMPL_COLORS[5],
+    "hilbertsfc_morton_torch_compile": "#2C7A3F",
+    "hilbertsfc_morton_triton": "#76B7B2",
 }
 
 LAYOUT_SPECS: dict[str, list[tuple[str, int]]] = {
@@ -117,7 +138,7 @@ def _display_name(provider: str) -> str:
 def _series_key(row: dict[str, str]) -> str:
     provider = row.get("provider", "")
     tuning = row.get("triton_tuning", "").strip()
-    if provider == "hilbertsfc_triton" and tuning:
+    if provider in ("hilbertsfc_triton", "hilbertsfc_morton_triton") and tuning:
         return f"{provider}:{tuning}"
     return provider
 
@@ -135,7 +156,7 @@ def _series_display_name(series_key: str) -> str:
     provider = _provider_from_series(series_key)
     tuning = _tuning_from_series(series_key)
     base = _display_name(provider)
-    if provider == "hilbertsfc_triton" and tuning:
+    if provider in ("hilbertsfc_triton", "hilbertsfc_morton_triton") and tuning:
         tuning_label = TRITON_TUNING_LABELS.get(tuning, tuning)
         return f"{base} ({tuning_label})"
     return base
@@ -151,7 +172,7 @@ def _style_for_series(series_key: str) -> dict[str, str]:
     provider = _provider_from_series(series_key)
     tuning = _tuning_from_series(series_key)
     sty = dict(_style(provider))
-    if provider == "hilbertsfc_triton":
+    if provider in ("hilbertsfc_triton", "hilbertsfc_morton_triton"):
         if tuning == "heuristic":
             sty["linestyle"] = "-"
         elif tuning == "autotune_bucketed":
@@ -256,6 +277,9 @@ def _ordered_providers(subset: list[dict[str, str]]) -> list[str]:
         "hilbertsfc_torch_eager",
         "hilbertsfc_torch_compile",
         "hilbertsfc_triton",
+        "hilbertsfc_morton_torch_eager",
+        "hilbertsfc_morton_torch_compile",
+        "hilbertsfc_morton_triton",
     ]
 
     tuning_order = ["heuristic", "autotune_bucketed", "autotune_exact"]
@@ -284,9 +308,12 @@ def _ordered_bar_providers(subset: list[dict[str, str]], *, dim: int) -> list[st
     preferred = [
         "skilling_eager",
         "hilbertsfc_torch_eager",
+        "hilbertsfc_morton_torch_eager",
         skilling_triton,
         "hilbertsfc_torch_compile",
+        "hilbertsfc_morton_torch_compile",
         "hilbertsfc_triton",
+        "hilbertsfc_morton_triton",
     ]
 
     ordered: list[str] = []
