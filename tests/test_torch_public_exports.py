@@ -10,6 +10,10 @@ def test_torch_package_exports() -> None:
         "hilbert_decode_2d",
         "hilbert_encode_3d",
         "hilbert_decode_3d",
+        "morton_encode_2d",
+        "morton_decode_2d",
+        "morton_encode_3d",
+        "morton_decode_3d",
         "precache_compile_luts",
         "clear_torch_lut_caches",
     ]:

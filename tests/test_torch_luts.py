@@ -44,8 +44,26 @@ def test_lut_accessors_return_expected_torch_dtypes() -> None:
 def test_lut_invalid_cache_mode_raises() -> None:
     mod = _torch_luts_module()
 
-    with pytest.raises(ValueError, match="cache must be one of"):
+    with pytest.raises(ValueError, match="lut_cache must be one of"):
         mod.lut_2d4b_b_qs_i64(cache="bad")
+
+
+@pytest.mark.torch
+def test_public_hilbert_invalid_lut_cache_raises_before_backend_dispatch() -> None:
+    torch = pytest.importorskip("torch")
+    htorch = pytest.importorskip("hilbertsfc.torch")
+
+    x = torch.tensor([0, 1], dtype=torch.int32)
+    y = torch.tensor([0, 1], dtype=torch.int32)
+
+    with pytest.raises(ValueError, match="lut_cache must be one of"):
+        htorch.hilbert_encode_2d(
+            x,
+            y,
+            nbits=2,
+            lut_cache="bad",  # type: ignore[arg-type]
+            cpu_backend="numba",
+        )
 
 
 @pytest.mark.torch
