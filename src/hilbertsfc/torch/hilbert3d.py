@@ -1,39 +1,19 @@
 """Torch 3D Hilbert API dispatch layer."""
 
-import warnings
-from typing import cast
-
 import torch
 
-from .._nbits import MAX_NBITS_3D, validate_nbits_3d
 from ._dispatch import (
     get_hilbert_decode_3d_numba,
     get_hilbert_decode_3d_triton,
     get_hilbert_encode_3d_numba,
     get_hilbert_encode_3d_triton,
 )
-from ._dispatch_common import (
-    CPUBackend,
-    GPUBackend,
-    attempt_run_triton,
-    choose_coord_torch_dtype,
-    choose_index_torch_dtype,
-    effective_bits_torch_dtype,
-    max_nbits_for_torch_index_dtype,
-    resolve_cpu_parallel,
-    validate_cpu_backend,
-    validate_gpu_backend,
-)
+from ._dispatch_common import CPUBackend, GPUBackend
 from ._kernels.torch.hilbert3d_decode import hilbert_decode_3d_torch
 from ._kernels.torch.hilbert3d_encode import hilbert_encode_3d_torch
-from ._luts import TorchCacheMode
-from ._numpy_interop import int_tensor_to_numpy_view
-from ._tensor_int import (
-    int_tensor_to_signed_view,
-    is_uint_torch_dtype,
-    require_int_tensor,
-)
-from ._tuning_mode import TritonTuningMode, validate_triton_tuning_mode
+from ._luts import TorchCacheMode, validate_torch_cache_mode
+from ._public_api_shared_3d import decode_3d_api, encode_3d_api
+from ._tuning_mode import TritonTuningMode
 
 
 def hilbert_encode_3d(
@@ -159,173 +139,33 @@ def hilbert_encode_3d(
     with ``fullgraph=True``.
     """
 
-    cpu_backend = validate_cpu_backend(cpu_backend)
-    gpu_backend = validate_gpu_backend(gpu_backend)
-    triton_tuning = validate_triton_tuning_mode(triton_tuning)
+    lut_cache = validate_torch_cache_mode(lut_cache)
 
-    if x.device != y.device or x.device != z.device:
-        raise ValueError(
-            "x, y, z must be on the same device; "
-            f"got {x.device=}, {y.device=}, {z.device=}"
-        )
-    if x.shape != y.shape or x.shape != z.shape:
-        raise ValueError(
-            f"x, y, z must have the same shape; got {x.shape=}, {y.shape=}, {z.shape=}"
-        )
+    def torch_kernel(*args, **kwargs):
+        return hilbert_encode_3d_torch(*args, **kwargs, lut_cache=lut_cache)
 
-    require_int_tensor(x, "x")
-    require_int_tensor(y, "y")
-    require_int_tensor(z, "z")
+    def get_triton():
+        triton_kernel = get_hilbert_encode_3d_triton()
 
-    max_coord_nbits = max(
-        effective_bits_torch_dtype(x.dtype),
-        effective_bits_torch_dtype(y.dtype),
-        effective_bits_torch_dtype(z.dtype),
+        def kernel(*args, **kwargs):
+            return triton_kernel(*args, **kwargs, lut_cache=lut_cache)
+
+        return kernel
+
+    return encode_3d_api(
+        x,
+        y,
+        z,
+        nbits=nbits,
+        out=out,
+        cpu_parallel=cpu_parallel,
+        cpu_backend=cpu_backend,
+        gpu_backend=gpu_backend,
+        triton_tuning=triton_tuning,
+        torch_kernel=torch_kernel,
+        get_numba=get_hilbert_encode_3d_numba,
+        get_triton=get_triton,
     )
-    if nbits is None:
-        nbits = max_coord_nbits
-        if nbits > MAX_NBITS_3D:
-            warnings.warn(
-                f"The maximum effective bits of the coordinate dtype is {nbits}, "
-                f"which exceeds the algorithm maximum of {MAX_NBITS_3D}. "
-                f"Using nbits={MAX_NBITS_3D} instead. This means that excess bits in the input coordinates "
-                f"will be ignored. To silence this warning, explicitly set nbits<={MAX_NBITS_3D}.",
-                UserWarning,
-                stacklevel=2,
-            )
-            nbits = MAX_NBITS_3D
-    else:
-        validate_nbits_3d(nbits)
-        if nbits > max_coord_nbits:
-            raise ValueError(
-                f"{nbits=} does not fit in coordinate dtypes; "
-                f"got {x.dtype=} with {effective_bits_torch_dtype(x.dtype)} effective bits, "
-                f"{y.dtype=} with {effective_bits_torch_dtype(y.dtype)} effective bits, "
-                f"{z.dtype=} with {effective_bits_torch_dtype(z.dtype)} effective bits; "
-                f"max nbits is {max_coord_nbits}."
-            )
-
-    out_provided = out is not None
-
-    if not out_provided:
-        prefer_uint = (
-            is_uint_torch_dtype(x.dtype)
-            and is_uint_torch_dtype(y.dtype)
-            and is_uint_torch_dtype(z.dtype)
-        )
-        auto_out_dtype = choose_index_torch_dtype(
-            nbits=nbits,
-            dims=3,
-            prefer_unsigned=prefer_uint,
-        )
-        out = torch.empty(x.shape, dtype=auto_out_dtype, device=x.device)
-    else:
-        if out.device != x.device:
-            raise ValueError(f"out must be on {x.device}; got {out.device=}")
-        if out.shape != x.shape:
-            raise ValueError(f"out must have shape {x.shape}; got {out.shape=}")
-        require_int_tensor(out, "out")
-
-        max_index_nbits = max_nbits_for_torch_index_dtype(out.dtype, dims=3)
-        if nbits > max_index_nbits:
-            prefer_uint = (
-                is_uint_torch_dtype(x.dtype)
-                and is_uint_torch_dtype(y.dtype)
-                and is_uint_torch_dtype(z.dtype)
-            )
-            try:
-                viable_dtype = choose_index_torch_dtype(
-                    nbits=nbits, dims=3, prefer_unsigned=prefer_uint
-                )
-            except Exception:
-                viable_dtype = None
-
-            msg = (
-                f"{nbits=} does not fit in out dtype; got {out.dtype=} "
-                f"which supports up to nbits={max_index_nbits}."
-            )
-            if viable_dtype is not None:
-                msg += f" Consider using {viable_dtype} or a wider dtype, or reduce nbits to fit the out dtype."
-            else:
-                msg += " Reduce nbits to fit the out dtype."
-            raise ValueError(msg)
-
-    is_cpu = x.device.type == "cpu"
-    is_cuda = x.device.type == "cuda"
-    is_accelerator = not is_cpu
-    is_compiling = torch.compiler.is_compiling()
-
-    if is_accelerator and (not is_cuda) and gpu_backend == "triton":
-        raise RuntimeError(
-            f"gpu_backend='triton' requires CUDA tensors; got {x.device.type=}"
-        )
-
-    if is_cpu and (
-        cpu_backend == "numba" or (cpu_backend == "auto" and not is_compiling)
-    ):
-        x_np = int_tensor_to_numpy_view(x, "x")
-        y_np = int_tensor_to_numpy_view(y, "y")
-        z_np = int_tensor_to_numpy_view(z, "z")
-        out_np = int_tensor_to_numpy_view(out, "out")
-
-        hilbert_encode_3d_numba = get_hilbert_encode_3d_numba()
-
-        if x.ndim == 0:
-            idx = hilbert_encode_3d_numba(x_np, y_np, z_np, nbits=nbits)
-            out_np[...] = idx
-            return out
-
-        parallel = resolve_cpu_parallel(cpu_parallel, x.numel())
-        hilbert_encode_3d_numba(
-            x_np,
-            y_np,
-            z_np,
-            nbits=nbits,
-            out=out_np,
-            parallel=parallel,
-        )
-        return out
-
-    if is_cuda and (gpu_backend == "auto" or gpu_backend == "triton"):
-        all_contiguous = (
-            x.is_contiguous()
-            and y.is_contiguous()
-            and z.is_contiguous()
-            and out.is_contiguous()
-        )
-        contig_details = (
-            f"{x.is_contiguous()=}, {y.is_contiguous()=}, {z.is_contiguous()=}, {out.is_contiguous()=}"
-            if out_provided
-            else f"{x.is_contiguous()=}, {y.is_contiguous()=}, {z.is_contiguous()=}"
-        )
-
-        def _call() -> None:
-            triton_encode_3d = get_hilbert_encode_3d_triton()
-            triton_encode_3d(
-                x,
-                y,
-                z,
-                nbits=nbits,
-                out=out,
-                lut_cache=lut_cache,
-                triton_tuning=triton_tuning,
-            )
-
-        if attempt_run_triton(
-            gpu_backend=gpu_backend,
-            all_contiguous=all_contiguous,
-            contiguity_details=contig_details,
-            call_triton=_call,
-        ):
-            return out
-
-    x_i = int_tensor_to_signed_view(x, "x")
-    y_i = int_tensor_to_signed_view(y, "y")
-    z_i = int_tensor_to_signed_view(z, "z")
-    out_i = int_tensor_to_signed_view(out, "out")
-
-    hilbert_encode_3d_torch(x_i, y_i, z_i, nbits=nbits, out=out_i, lut_cache=lut_cache)
-    return out
 
 
 def hilbert_decode_3d(
@@ -450,163 +290,30 @@ def hilbert_decode_3d(
     with ``fullgraph=True``.
     """
 
-    cpu_backend = validate_cpu_backend(cpu_backend)
-    gpu_backend = validate_gpu_backend(gpu_backend)
-    triton_tuning = validate_triton_tuning_mode(triton_tuning)
+    lut_cache = validate_torch_cache_mode(lut_cache)
 
-    require_int_tensor(index, "index")
+    def torch_kernel(*args, **kwargs):
+        return hilbert_decode_3d_torch(*args, **kwargs, lut_cache=lut_cache)
 
-    max_index_nbits = max_nbits_for_torch_index_dtype(index.dtype, dims=3)
-    if nbits is None:
-        nbits = max_index_nbits
-    else:
-        validate_nbits_3d(nbits)
-        if nbits > max_index_nbits:
-            raise ValueError(
-                f"nbits={nbits} exceeds the effective bits of the index dtype; "
-                f"got {index.dtype=} which supports up to {max_index_nbits} bits for 3D coordinates. "
-                f"max nbits is {max_index_nbits}."
-            )
+    def get_triton():
+        triton_kernel = get_hilbert_decode_3d_triton()
 
-    n_outs = (out_x is not None) + (out_y is not None) + (out_z is not None)
-    if n_outs not in (0, 3):
-        raise ValueError("out_x, out_y, out_z must be provided together")
+        def kernel(*args, **kwargs):
+            return triton_kernel(*args, **kwargs, lut_cache=lut_cache)
 
-    out_provided = n_outs == 3
+        return kernel
 
-    if not out_provided:
-        prefer_uint = is_uint_torch_dtype(index.dtype)
-        auto_coord_dtype = choose_coord_torch_dtype(
-            nbits=nbits,
-            prefer_unsigned=prefer_uint,
-        )
-        out_x = torch.empty(index.shape, dtype=auto_coord_dtype, device=index.device)
-        out_y = torch.empty(index.shape, dtype=auto_coord_dtype, device=index.device)
-        out_z = torch.empty(index.shape, dtype=auto_coord_dtype, device=index.device)
-    else:
-        out_x = cast(torch.Tensor, out_x)
-        out_y = cast(torch.Tensor, out_y)
-        out_z = cast(torch.Tensor, out_z)
-
-        if (
-            out_x.device != index.device
-            or out_y.device != index.device
-            or out_z.device != index.device
-        ):
-            raise ValueError(
-                "out_x, out_y, out_z must be on the same device as index; "
-                f"got {index.device=}, {out_x.device=}, {out_y.device=}, {out_z.device=}"
-            )
-        if (
-            out_x.shape != index.shape
-            or out_y.shape != index.shape
-            or out_z.shape != index.shape
-        ):
-            raise ValueError(
-                "out_x, out_y, out_z must have the same shape as index; "
-                f"got {index.shape=}, {out_x.shape=}, {out_y.shape=}, {out_z.shape=}"
-            )
-
-        require_int_tensor(out_x, "out_x")
-        require_int_tensor(out_y, "out_y")
-        require_int_tensor(out_z, "out_z")
-
-        max_coord_nbits = min(
-            effective_bits_torch_dtype(out_x.dtype),
-            effective_bits_torch_dtype(out_y.dtype),
-            effective_bits_torch_dtype(out_z.dtype),
-        )
-        if nbits > max_coord_nbits:
-            raise ValueError(
-                f"{nbits=} does not fit in out_x/out_y/out_z dtypes; "
-                f"got {out_x.dtype=} with {effective_bits_torch_dtype(out_x.dtype)} effective bits, "
-                f"{out_y.dtype=} with {effective_bits_torch_dtype(out_y.dtype)} effective bits, "
-                f"{out_z.dtype=} with {effective_bits_torch_dtype(out_z.dtype)} effective bits; "
-                f"max nbits is {max_coord_nbits}"
-            )
-
-    is_cpu = index.device.type == "cpu"
-    is_cuda = index.device.type == "cuda"
-    is_accelerator = not is_cpu
-    is_compiling = torch.compiler.is_compiling()
-
-    if is_accelerator and (not is_cuda) and gpu_backend == "triton":
-        raise RuntimeError(
-            f"gpu_backend='triton' requires CUDA tensors; got {index.device.type=}"
-        )
-
-    if is_cpu and (
-        cpu_backend == "numba" or (cpu_backend == "auto" and not is_compiling)
-    ):
-        index_np = int_tensor_to_numpy_view(index, "index")
-        out_x_np = int_tensor_to_numpy_view(out_x, "out_x")
-        out_y_np = int_tensor_to_numpy_view(out_y, "out_y")
-        out_z_np = int_tensor_to_numpy_view(out_z, "out_z")
-
-        hilbert_decode_3d_numba = get_hilbert_decode_3d_numba()
-
-        if index.ndim == 0:
-            x_i, y_i, z_i = hilbert_decode_3d_numba(index_np, nbits=nbits)
-            out_x_np[...] = x_i
-            out_y_np[...] = y_i
-            out_z_np[...] = z_i
-            return out_x, out_y, out_z
-
-        parallel = resolve_cpu_parallel(cpu_parallel, index.numel())
-        hilbert_decode_3d_numba(
-            index_np,
-            nbits=nbits,
-            out_x=out_x_np,
-            out_y=out_y_np,
-            out_z=out_z_np,
-            parallel=parallel,
-        )
-        return out_x, out_y, out_z
-
-    if is_cuda and (gpu_backend == "auto" or gpu_backend == "triton"):
-        all_contiguous = (
-            index.is_contiguous()
-            and out_x.is_contiguous()
-            and out_y.is_contiguous()
-            and out_z.is_contiguous()
-        )
-        contig_details = (
-            f"{index.is_contiguous()=}, {out_x.is_contiguous()=}, {out_y.is_contiguous()=}, {out_z.is_contiguous()=}"
-            if out_provided
-            else f"{index.is_contiguous()=}"
-        )
-
-        def _call() -> None:
-            triton_decode_3d = get_hilbert_decode_3d_triton()
-            triton_decode_3d(
-                index,
-                nbits=nbits,
-                out_x=out_x,
-                out_y=out_y,
-                out_z=out_z,
-                lut_cache=lut_cache,
-                triton_tuning=triton_tuning,
-            )
-
-        if attempt_run_triton(
-            gpu_backend=gpu_backend,
-            all_contiguous=all_contiguous,
-            contiguity_details=contig_details,
-            call_triton=_call,
-        ):
-            return out_x, out_y, out_z
-
-    index_i = int_tensor_to_signed_view(index, "index")
-    out_x_i = int_tensor_to_signed_view(out_x, "out_x")
-    out_y_i = int_tensor_to_signed_view(out_y, "out_y")
-    out_z_i = int_tensor_to_signed_view(out_z, "out_z")
-
-    hilbert_decode_3d_torch(
-        index_i,
+    return decode_3d_api(
+        index,
         nbits=nbits,
-        out_x=out_x_i,
-        out_y=out_y_i,
-        out_z=out_z_i,
-        lut_cache=lut_cache,
+        out_x=out_x,
+        out_y=out_y,
+        out_z=out_z,
+        cpu_parallel=cpu_parallel,
+        cpu_backend=cpu_backend,
+        gpu_backend=gpu_backend,
+        triton_tuning=triton_tuning,
+        torch_kernel=torch_kernel,
+        get_numba=get_hilbert_decode_3d_numba,
+        get_triton=get_triton,
     )
-    return out_x, out_y, out_z

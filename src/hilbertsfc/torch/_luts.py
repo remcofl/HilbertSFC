@@ -38,6 +38,17 @@ type TorchDeviceLike = torch.device | str | None
 type TorchCacheMode = Literal["device", "host_only"]
 """Cache mode for torch look-up tables (LUTs)."""
 
+TORCH_CACHE_MODES = ("device", "host_only")
+
+
+def validate_torch_cache_mode(cache: str) -> TorchCacheMode:
+    if cache not in TORCH_CACHE_MODES:
+        raise ValueError(
+            f"lut_cache must be one of: {TORCH_CACHE_MODES}; got {cache!r}"
+        )
+    return cache  # type: ignore[return-value]
+
+
 # Public operation names (used for compile pre-caching and targeted cache clears).
 type TorchHilbertOp = Literal[
     "hilbert_encode_2d",
@@ -275,8 +286,7 @@ def _cached_tensor(
     cache: TorchCacheMode,
     build: Callable[[], torch.Tensor],
 ) -> torch.Tensor:
-    if cache not in ("device", "host_only"):
-        raise ValueError("cache must be one of: 'device', 'host_only'")
+    cache = validate_torch_cache_mode(cache)
 
     key: tuple[str, str] | None = None
     if cache == "device":
