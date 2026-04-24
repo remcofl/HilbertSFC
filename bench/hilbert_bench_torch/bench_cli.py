@@ -20,6 +20,10 @@ from hilbertsfc.torch import (
     hilbert_decode_3d,
     hilbert_encode_2d,
     hilbert_encode_3d,
+    morton_decode_2d,
+    morton_decode_3d,
+    morton_encode_2d,
+    morton_encode_3d,
     precache_compile_luts,
 )
 
@@ -35,6 +39,9 @@ ALL_PROVIDERS = (
     "hilbertsfc_torch_eager",
     "hilbertsfc_torch_compile",
     "hilbertsfc_triton",
+    "hilbertsfc_morton_torch_eager",
+    "hilbertsfc_morton_torch_compile",
+    "hilbertsfc_morton_triton",
     "skilling_triton_2d",
     "skilling_triton_3d",
 )
@@ -51,7 +58,7 @@ _DTYPE_MAP: dict[str, torch.dtype] = {
 }
 
 _COMPILED_CACHE: dict[
-    tuple[str, int, int, int, str, str, str], Callable[..., object]
+    tuple[str, str, int, int, int, str, str, str], Callable[..., object]
 ] = {}
 _PRECACHE_DONE: set[tuple[str, str]] = set()
 
@@ -270,17 +277,28 @@ def _ensure_precache_compile_luts(
     _PRECACHE_DONE.add(key)
 
 
+def _provider_curve(provider: str) -> Literal["hilbert", "morton"]:
+    return "morton" if provider.startswith("hilbertsfc_morton_") else "hilbert"
+
+
+def _is_hilbertsfc_triton_provider(provider: str) -> bool:
+    return provider in ("hilbertsfc_triton", "hilbertsfc_morton_triton")
+
+
 def _provider_sequence(dim: int) -> list[str]:
     providers = [
         "skilling_eager",
         "hilbertsfc_torch_eager",
+        "hilbertsfc_morton_torch_eager",
         "hilbertsfc_triton",
+        "hilbertsfc_morton_triton",
     ]
     if dim == 2:
         providers.append("skilling_triton_2d")
     else:
         providers.append("skilling_triton_3d")
     providers.append("hilbertsfc_torch_compile")
+    providers.append("hilbertsfc_morton_torch_compile")
     return providers
 
 
@@ -363,6 +381,7 @@ def _build_index(
 
 def _get_compiled_hsfc_torch(
     *,
+    curve: Literal["hilbert", "morton"],
     op: str,
     dim: int,
     nbits: int,
@@ -376,6 +395,7 @@ def _get_compiled_hsfc_torch(
 
     dev = _canonical_device(device)
     key = (
+        curve,
         op,
         int(dim),
         int(nbits),
@@ -389,14 +409,20 @@ def _get_compiled_hsfc_torch(
         return fn
 
     try:
-        _ensure_precache_compile_luts(op, dim, dev)
+        if curve == "hilbert":
+            _ensure_precache_compile_luts(op, dim, dev)
+
+        encode_2d = hilbert_encode_2d if curve == "hilbert" else morton_encode_2d
+        encode_3d = hilbert_encode_3d if curve == "hilbert" else morton_encode_3d
+        decode_2d = hilbert_decode_2d if curve == "hilbert" else morton_decode_2d
+        decode_3d = hilbert_decode_3d if curve == "hilbert" else morton_decode_3d
 
         if op == "encode":
             if dim == 2:
 
                 def _f(x: torch.Tensor, y: torch.Tensor):  # type: ignore[reportRedeclaration]
                     out = torch.empty_like(x, dtype=index_dtype)
-                    return hilbert_encode_2d(
+                    return encode_2d(
                         x,
                         y,
                         nbits=nbits,
@@ -408,7 +434,7 @@ def _get_compiled_hsfc_torch(
 
                 def _f(x: torch.Tensor, y: torch.Tensor, z: torch.Tensor):  # type: ignore[reportRedeclaration]
                     out = torch.empty_like(x, dtype=index_dtype)
-                    return hilbert_encode_3d(
+                    return encode_3d(
                         x,
                         y,
                         z,
@@ -423,7 +449,7 @@ def _get_compiled_hsfc_torch(
                 def _f(index: torch.Tensor):  # type: ignore[reportRedeclaration]
                     out_x = torch.empty_like(index, dtype=coord_dtype)
                     out_y = torch.empty_like(index, dtype=coord_dtype)
-                    return hilbert_decode_2d(
+                    return decode_2d(
                         index,
                         nbits=nbits,
                         out_x=out_x,
@@ -437,7 +463,7 @@ def _get_compiled_hsfc_torch(
                     out_x = torch.empty_like(index, dtype=coord_dtype)
                     out_y = torch.empty_like(index, dtype=coord_dtype)
                     out_z = torch.empty_like(index, dtype=coord_dtype)
-                    return hilbert_decode_3d(
+                    return decode_3d(
                         index,
                         nbits=nbits,
                         out_x=out_x,
@@ -493,6 +519,7 @@ def _make_skilling_eager_run_once(
 
 def _make_hilbertsfc_run_once(
     *,
+    curve: Literal["hilbert", "morton"],
     op: str,
     dim: int,
     nbits: int,
@@ -505,6 +532,11 @@ def _make_hilbertsfc_run_once(
         "heuristic", "autotune_bucketed", "autotune_exact"
     ] = "heuristic",
 ) -> Callable[[], object]:
+    encode_2d = hilbert_encode_2d if curve == "hilbert" else morton_encode_2d
+    encode_3d = hilbert_encode_3d if curve == "hilbert" else morton_encode_3d
+    decode_2d = hilbert_decode_2d if curve == "hilbert" else morton_decode_2d
+    decode_3d = hilbert_decode_3d if curve == "hilbert" else morton_decode_3d
+
     if op == "encode":
         if coords is None:
             raise ValueError("encode requires coords")
@@ -513,7 +545,7 @@ def _make_hilbertsfc_run_once(
 
             def _run_once() -> object:
                 out = torch.empty_like(coords[0], dtype=index_dtype)
-                return hilbert_encode_2d(
+                return encode_2d(
                     coords[0],
                     coords[1],
                     nbits=nbits,
@@ -526,7 +558,7 @@ def _make_hilbertsfc_run_once(
 
         def _run_once() -> object:
             out = torch.empty_like(coords[0], dtype=index_dtype)
-            return hilbert_encode_3d(
+            return encode_3d(
                 coords[0],
                 coords[1],
                 coords[2],
@@ -546,7 +578,7 @@ def _make_hilbertsfc_run_once(
         def _run_once() -> object:
             out_x = torch.empty_like(index, dtype=coord_dtype)
             out_y = torch.empty_like(index, dtype=coord_dtype)
-            return hilbert_decode_2d(
+            return decode_2d(
                 index,
                 nbits=nbits,
                 out_x=out_x,
@@ -561,7 +593,7 @@ def _make_hilbertsfc_run_once(
         out_x = torch.empty_like(index, dtype=coord_dtype)
         out_y = torch.empty_like(index, dtype=coord_dtype)
         out_z = torch.empty_like(index, dtype=coord_dtype)
-        return hilbert_decode_3d(
+        return decode_3d(
             index,
             nbits=nbits,
             out_x=out_x,
@@ -713,6 +745,7 @@ def _run_single_provider_internal(
         coords = None
         locs = None
 
+    curve = _provider_curve(provider)
     run_once: Callable[[], object]
     if provider == "skilling_eager":
         run_once = _make_skilling_eager_run_once(
@@ -725,8 +758,9 @@ def _run_single_provider_internal(
             index_dtype=index_dtype,
         )
 
-    elif provider == "hilbertsfc_torch_eager":
+    elif provider in ("hilbertsfc_torch_eager", "hilbertsfc_morton_torch_eager"):
         run_once = _make_hilbertsfc_run_once(
+            curve=curve,
             op=op,
             dim=dim,
             nbits=nbits,
@@ -738,8 +772,9 @@ def _run_single_provider_internal(
             triton_tuning=triton_tuning,
         )
 
-    elif provider == "hilbertsfc_torch_compile":
+    elif provider in ("hilbertsfc_torch_compile", "hilbertsfc_morton_torch_compile"):
         compiled = _get_compiled_hsfc_torch(
+            curve=curve,
             op=op,
             dim=dim,
             nbits=nbits,
@@ -766,8 +801,9 @@ def _run_single_provider_internal(
             index=index,
         )
 
-    elif provider == "hilbertsfc_triton":
+    elif provider in ("hilbertsfc_triton", "hilbertsfc_morton_triton"):
         run_once = _make_hilbertsfc_run_once(
+            curve=curve,
             op=op,
             dim=dim,
             nbits=nbits,
@@ -834,7 +870,9 @@ def _run_single_provider_internal(
             provider=provider,
             error=f"unknown provider: {provider}",
             in_dtype=in_dtype,
-            triton_tuning=(triton_tuning if provider == "hilbertsfc_triton" else ""),
+            triton_tuning=(
+                triton_tuning if _is_hilbertsfc_triton_provider(provider) else ""
+            ),
         )
 
     return _bench_provider(
@@ -847,7 +885,9 @@ def _run_single_provider_internal(
         in_bytes_per_point=in_bytes_per_point,
         in_dtype=in_dtype,
         bench_warmup_calls=bench_warmup_calls,
-        triton_tuning=(triton_tuning if provider == "hilbertsfc_triton" else ""),
+        triton_tuning=(
+            triton_tuning if _is_hilbertsfc_triton_provider(provider) else ""
+        ),
     )
 
 
@@ -989,7 +1029,7 @@ def _run_isolated_provider(
                 error=f"isolated provider run failed: {err[-240:]}",
                 in_dtype=in_dtype,
                 triton_tuning=(
-                    triton_tuning if provider == "hilbertsfc_triton" else ""
+                    triton_tuning if _is_hilbertsfc_triton_provider(provider) else ""
                 ),
             )
 
@@ -1042,7 +1082,7 @@ def _run_isolated(
                 )
             for size in sizes:
                 for provider in providers_for_dim:
-                    if provider == "hilbertsfc_triton":
+                    if _is_hilbertsfc_triton_provider(provider):
                         provider_tunings = triton_tuning_modes
                     else:
                         provider_tunings = cast(
@@ -1197,7 +1237,7 @@ def _parse_args() -> argparse.Namespace:
         choices=["heuristic", "autotune_bucketed", "autotune_exact", "both"],
         default=["heuristic"],
         help=(
-            "Tuning mode(s) for provider=hilbertsfc_triton. Use 'both' to run heuristic and autotune_exact in one run."
+            "Tuning mode(s) for HilbertSFC Triton providers. Use 'both' to run heuristic and autotune_exact in one run."
         ),
     )
     p.add_argument("--seed", type=int, default=0)

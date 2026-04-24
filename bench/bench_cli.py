@@ -15,12 +15,14 @@ RateUnit = Literal["m", "k", "auto"]
 _BUILTIN_IMPL_SPECS: dict[int, dict[str, str]] = {
     2: {
         "hilbertsfc": "hilbert_impls_2d:HILBERTSFC_2D",
+        "hilbertsfc-morton": "hilbert_impls_2d:HILBERTSFC_MORTON_2D",
         "hilbert-bytes": "hilbert_impls_2d:HILBERT_BYTES_2D",
         "numpy-hilbert-curve": "hilbert_impls_2d:NUMPY_HILBERT_CURVE_2D",
         "hilbertcurve": "hilbert_impls_2d:HILBERTCURVE_2D",
     },
     3: {
         "hilbertsfc": "hilbert_impls_3d:HILBERTSFC_3D",
+        "hilbertsfc-morton": "hilbert_impls_3d:HILBERTSFC_MORTON_3D",
         "hilbert-bytes": "hilbert_impls_3d:HILBERT_BYTES_3D",
         "numpy-hilbert-curve": "hilbert_impls_3d:NUMPY_HILBERT_CURVE_3D",
         "hilbertcurve": "hilbert_impls_3d:HILBERTCURVE_3D",
