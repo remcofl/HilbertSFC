@@ -1,7 +1,8 @@
 """Hilbert space-filling curve kernels.
 
 The top-level `hilbertsfc` package exposes NumPy/Numba-backed 2D/3D Hilbert
-encode/decode functions, kernel accessors, and cache management helpers.
+encode/decode functions, plus matching Morton/z-order helpers, kernel accessors,
+and cache management utilities.
 
 For GPU acceleration and `torch.Tensor` inputs, use the optional PyTorch frontend:
 [`hilbertsfc.torch`][hilbertsfc.torch].

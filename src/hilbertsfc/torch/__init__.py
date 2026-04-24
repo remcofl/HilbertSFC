@@ -1,6 +1,6 @@
 """PyTorch-API for HilbertSFC.
 
-This subpackage provides 2D/3D Hilbert encode/decode functions that operate on
+This subpackage provides 2D/3D Hilbert and Morton encode/decode functions that operate on
 integer `torch.Tensor` inputs.
 """
 
@@ -16,6 +16,8 @@ if find_spec("torch") is None:
 from ._luts import clear_torch_lut_caches, precache_compile_luts
 from .hilbert2d import hilbert_decode_2d, hilbert_encode_2d
 from .hilbert3d import hilbert_decode_3d, hilbert_encode_3d
+from .morton2d import morton_decode_2d, morton_encode_2d
+from .morton3d import morton_decode_3d, morton_encode_3d
 
 __all__ = [
     "clear_torch_lut_caches",
@@ -23,5 +25,9 @@ __all__ = [
     "hilbert_decode_3d",
     "hilbert_encode_2d",
     "hilbert_encode_3d",
+    "morton_decode_2d",
+    "morton_decode_3d",
+    "morton_encode_2d",
+    "morton_encode_3d",
     "precache_compile_luts",
 ]
