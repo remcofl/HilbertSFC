@@ -8,10 +8,25 @@ from ..._nbits import validate_nbits_2d
 from ...types import IntScalar, UIntArray
 
 u64 = np.uint64
+u32 = np.uint32
 
 
 @nb.njit(inline="always")
-def _compact1by1(x, nbits):
+def _compact1by1_u32(x, nbits):
+    x &= u32(0x55555555)
+    if nbits > 1:
+        x = (x | (x >> 1)) & u32(0x33333333)
+    if nbits > 2:
+        x = (x | (x >> 2)) & u32(0x0F0F0F0F)
+    if nbits > 4:
+        x = (x | (x >> 4)) & u32(0x00FF00FF)
+    if nbits > 8:
+        x = (x | (x >> 8)) & u32(0x0000FFFF)
+    return x
+
+
+@nb.njit(inline="always")
+def _compact1by1_u64(x, nbits):
     x &= u64(0x5555555555555555)
     if nbits > 1:
         x = (x | (x >> 1)) & u64(0x3333333333333333)
@@ -28,11 +43,21 @@ def _compact1by1(x, nbits):
 
 @nb.njit(inline="always")
 def _morton_decode_2d(index, nbits):
+    if nbits <= 16:
+        if nbits < 16:
+            index = u32(index) & u32((1 << (nbits << 1)) - 1)
+        else:
+            index = u32(index)
+
+        x = _compact1by1_u32(index, nbits)
+        y = _compact1by1_u32(index >> 1, nbits)
+        return x, y
+
     if nbits < 32:
         index &= u64((1 << (nbits << 1)) - 1)
 
-    x = _compact1by1(index, nbits)
-    y = _compact1by1(index >> 1, nbits)
+    x = _compact1by1_u64(index, nbits)
+    y = _compact1by1_u64(index >> 1, nbits)
     return x, y
 
 

@@ -28,6 +28,14 @@ from ._public_api_shared_3d import decode_3d_api, encode_3d_api
 from .types import IntArray, IntScalar
 
 
+def _build_morton_encode_3d_batch(nbits, *, parallel=False, index_dtype):
+    return get_morton_encode_3d_batch_builder()(nbits, parallel=parallel)
+
+
+def _build_morton_decode_3d_batch(nbits, *, parallel=False, index_dtype):
+    return get_morton_decode_3d_batch_builder()(nbits, parallel=parallel)
+
+
 def morton_encode_3d(
     x: IntScalar | IntArray,
     y: IntScalar | IntArray,
@@ -37,7 +45,7 @@ def morton_encode_3d(
     out: IntArray | None = None,
     parallel: bool = False,
 ) -> int | IntArray:
-    """Encode 3D integer coordinates to Morton indices.
+    """Encode 3D integer coordinates to Morton (Z-order) indices.
 
     API semantics (parameters, returns, errors) match
     [`hilbert_encode_3d`][hilbertsfc.hilbert3d.hilbert_encode_3d].
@@ -50,15 +58,6 @@ def morton_encode_3d(
     an array of unsigned indices with the same shape and supports ``out=``.
     """
 
-    build_scalar = get_morton_encode_3d_scalar_builder()
-    build_batch = get_morton_encode_3d_batch_builder()
-
-    def build_batch_wrapped(nbits, *, parallel=False, index_dtype):
-        return build_batch(
-            nbits,
-            parallel=parallel,
-        )
-
     return encode_3d_api(
         x,
         y,
@@ -66,8 +65,8 @@ def morton_encode_3d(
         nbits=nbits,
         out=out,
         parallel=parallel,
-        build_scalar=build_scalar,
-        build_batch=build_batch_wrapped,
+        build_scalar=get_morton_encode_3d_scalar_builder(),
+        build_batch=_build_morton_encode_3d_batch,
     )
 
 
@@ -80,7 +79,7 @@ def morton_decode_3d(
     out_z: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[int, int, int] | tuple[IntArray, IntArray, IntArray]:
-    """Decode Morton indices to 3D integer coordinates.
+    """Decode Morton (Z-order) indices to 3D integer coordinates.
 
     API semantics (parameters, returns, errors) match
     [`hilbert_decode_3d`][hilbertsfc.hilbert3d.hilbert_decode_3d].
@@ -94,15 +93,6 @@ def morton_decode_3d(
     ``out_z=``.
     """
 
-    build_scalar = get_morton_decode_3d_scalar_builder()
-    build_batch = get_morton_decode_3d_batch_builder()
-
-    def build_batch_wrapped(nbits, *, parallel=False, index_dtype):
-        return build_batch(
-            nbits,
-            parallel=parallel,
-        )
-
     return decode_3d_api(
         index,
         nbits=nbits,
@@ -110,15 +100,29 @@ def morton_decode_3d(
         out_y=out_y,
         out_z=out_z,
         parallel=parallel,
-        build_scalar=build_scalar,
-        build_batch=build_batch_wrapped,
+        build_scalar=get_morton_decode_3d_scalar_builder(),
+        build_batch=_build_morton_decode_3d_batch,
     )
 
 
 def get_morton_encode_3d_kernel(
     nbits: int,
 ) -> Callable[[IntScalar, IntScalar, IntScalar], IntScalar]:
-    """Return a Numba-compiled *scalar* 3D Morton encoder."""
+    """Return a Numba-compiled *scalar* 3D Morton encoder.
+
+    This is the low-level kernel used by [`morton_encode_3d`][hilbertsfc.morton3d.morton_encode_3d] in scalar mode.
+    It is intended for fusing into your own ``@numba.njit`` loops.
+
+    Parameters
+    ----------
+    nbits
+        Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+
+    Returns
+    -------
+    callable
+        A Numba-compiled function with signature ``(x: int, y: int, z: int) -> int``.
+    """
 
     builder = get_morton_encode_3d_scalar_builder()
     return builder(nbits)
@@ -127,7 +131,21 @@ def get_morton_encode_3d_kernel(
 def get_morton_decode_3d_kernel(
     nbits: int,
 ) -> Callable[[IntScalar], tuple[int, int, int]]:
-    """Return a Numba-compiled *scalar* 3D Morton decoder."""
+    """Return a Numba-compiled *scalar* 3D Morton decoder.
+
+    This is the low-level kernel used by [`morton_decode_3d`][hilbertsfc.morton3d.morton_decode_3d] in scalar mode.
+    It is intended for fusing into your own ``@numba.njit`` loops.
+
+    Parameters
+    ----------
+    nbits
+        Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+
+    Returns
+    -------
+    callable
+        A Numba-compiled function with signature ``(index: int) -> (x: int, y: int, z: int)``.
+    """
 
     builder = get_morton_decode_3d_scalar_builder()
     return builder(nbits)

@@ -8,10 +8,25 @@ from ..._nbits import validate_nbits_3d
 from ...types import IntScalar, UIntArray
 
 u64 = np.uint64
+u32 = np.uint32
 
 
 @nb.njit(inline="always")
-def _compact1by2(x, nbits):
+def _compact1by2_u32(x, nbits):
+    x &= u32(0x09249249)
+    if nbits > 1:
+        x = (x ^ (x >> 2)) & u32(0x030C30C3)
+    if nbits > 2:
+        x = (x ^ (x >> 4)) & u32(0x0300F00F)
+    if nbits > 3:
+        x = (x ^ (x >> 8)) & u32(0x030000FF)
+    if nbits > 5:
+        x = (x ^ (x >> 16)) & u32(0x000003FF)
+    return x
+
+
+@nb.njit(inline="always")
+def _compact1by2_u64(x, nbits):
     x &= u64(0x1249249249249249)
     if nbits > 1:
         x = (x ^ (x >> 2)) & u64(0x10C30C30C30C30C3)
@@ -28,12 +43,23 @@ def _compact1by2(x, nbits):
 
 @nb.njit(inline="always")
 def _morton_decode_3d(index, nbits):
+    if nbits <= 10:
+        if nbits < 10:
+            index = u32(index) & u32((1 << (3 * nbits)) - 1)
+        else:
+            index = u32(index)
+
+        x = _compact1by2_u32(index, nbits)
+        y = _compact1by2_u32(index >> 1, nbits)
+        z = _compact1by2_u32(index >> 2, nbits)
+        return x, y, z
+
     if nbits < 21:
         index &= u64((1 << (3 * nbits)) - 1)
 
-    x = _compact1by2(index, nbits)
-    y = _compact1by2(index >> 1, nbits)
-    z = _compact1by2(index >> 2, nbits)
+    x = _compact1by2_u64(index, nbits)
+    y = _compact1by2_u64(index >> 1, nbits)
+    z = _compact1by2_u64(index >> 2, nbits)
     return x, y, z
 
 

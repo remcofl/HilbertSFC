@@ -36,7 +36,7 @@ def morton_encode_2d(
     out: IntArray | None = None,
     parallel: bool = False,
 ) -> int | IntArray:
-    """Encode 2D integer coordinates to Morton indices.
+    """Encode 2D integer coordinates to Morton (Z-order) indices.
 
     API semantics (parameters, returns, errors) match
     [`hilbert_encode_2d`][hilbertsfc.hilbert2d.hilbert_encode_2d].
@@ -68,7 +68,7 @@ def morton_decode_2d(
     out_y: IntArray | None = None,
     parallel: bool = False,
 ) -> tuple[int, int] | tuple[IntArray, IntArray]:
-    """Decode Morton indices to 2D integer coordinates.
+    """Decode Morton (Z-order) indices to 2D integer coordinates.
 
     API semantics (parameters, returns, errors) match
     [`hilbert_decode_2d`][hilbertsfc.hilbert2d.hilbert_decode_2d].
@@ -93,14 +93,42 @@ def morton_decode_2d(
 
 
 def get_morton_encode_2d_kernel(nbits: int) -> Callable[[IntScalar, IntScalar], int]:
-    """Return a Numba-compiled *scalar* 2D Morton encoder."""
+    """Return a Numba-compiled *scalar* 2D Morton encoder.
+
+    This is the low-level kernel used by [`morton_encode_2d`][hilbertsfc.morton2d.morton_encode_2d] in scalar mode.
+    It is intended for fusing into your own ``@numba.njit`` loops.
+
+    Parameters
+    ----------
+    nbits
+        Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+
+    Returns
+    -------
+    callable
+        A Numba-compiled function with signature ``(x: int, y: int) -> int``.
+    """
 
     builder = get_morton_encode_2d_scalar_builder()
     return builder(nbits)
 
 
 def get_morton_decode_2d_kernel(nbits: int) -> Callable[[IntScalar], tuple[int, int]]:
-    """Return a Numba-compiled *scalar* 2D Morton decoder."""
+    """Return a Numba-compiled *scalar* 2D Morton decoder.
+
+    This is the low-level kernel used by [`morton_decode_2d`][hilbertsfc.morton2d.morton_decode_2d] in scalar mode.
+    It is intended for fusing into your own ``@numba.njit`` loops.
+
+    Parameters
+    ----------
+    nbits
+        Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+
+    Returns
+    -------
+    callable
+        A Numba-compiled function with signature ``(index: int) -> (x: int, y: int)``.
+    """
 
     builder = get_morton_decode_2d_scalar_builder()
     return builder(nbits)
