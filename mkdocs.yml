@@ -1,5 +1,5 @@
 site_name: HilbertSFC
-site_description: Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).
+site_description: Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.
 repo_url: https://github.com/remcofl/HilbertSFC
 repo_name: remcofl/HilbertSFC
 site_url: https://remcofl.github.io/HilbertSFC/

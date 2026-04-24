@@ -37,11 +37,12 @@ HilbertSFC
 
 <p align="center">
 <strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
+<strong>New in v0.4.0</strong>: Morton/z-order curves</br>
 </p>
 
 ---
 
-This library is **performance-first** and **implemented entirely in Python**. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding code.
+This library is **performance-first** and **implemented entirely in Python**. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding code. For completeness, it also includes Morton/z-order curve kernels.
 
 The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:
 
@@ -133,7 +134,7 @@ pip install hilbertsfc[torch]
 
 ### Usage
 
-Hilbert curves map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides simple Hilbert encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.
+Space-filling curves such as Hilbert and Morton map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides simple encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.
 
 #### Python scalars
 
@@ -148,7 +149,7 @@ x, y = hilbert_decode_2d(index, nbits=10)
 
 `nbits` controls the coordinate domain `[0, 2**nbits)` on each axis. It is optional, but when you know the coordinate range ahead of time, passing a tighter value can improve performance and reduce output dtypes.
 
-The 3D API follows the same pattern via `hilbert_encode_3d` and `hilbert_decode_3d`.
+The 3D API follows the same pattern via `hilbert_encode_3d` and `hilbert_decode_3d`. The Morton/z-order functions mirror these names with `morton_encode_2d`, `morton_decode_2d`, `morton_encode_3d`, and `morton_decode_3d`.
 
 #### NumPy arrays
 

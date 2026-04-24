@@ -19,11 +19,12 @@ HilbertSFC
 
 <p align="center">
 <strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
+<strong>New in v0.4.0</strong>: Morton/z-order curves</br>
 </p>
 
 ---
 
-This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level *kernel accessors* and clean integration with `torch.compile` for fusion with surrounding operations.
+This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, low-level *kernel accessors*, and clean integration with `torch.compile` for fusion with surrounding operations. For completeness, it also includes Morton/z-order curve kernels.
 
 The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:
 
