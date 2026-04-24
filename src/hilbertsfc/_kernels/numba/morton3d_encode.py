@@ -8,10 +8,24 @@ from ..._nbits import validate_nbits_3d
 from ...types import IntScalar, UIntArray
 
 u64 = np.uint64
+u32 = np.uint32
 
 
 @nb.njit(inline="always")
-def _part1by2(x, nbits):
+def _part1by2_u32(x, nbits):
+    if nbits > 5:
+        x = (x | (x << 16)) & u32(0x030000FF)
+    if nbits > 3:
+        x = (x | (x << 8)) & u32(0x0300F00F)
+    if nbits > 2:
+        x = (x | (x << 4)) & u32(0x030C30C3)
+    if nbits > 1:
+        x = (x | (x << 2)) & u32(0x09249249)
+    return x
+
+
+@nb.njit(inline="always")
+def _part1by2_u64(x, nbits):
     if nbits > 10:
         x = (x | (x << 32)) & u64(0x001F00000000FFFF)
     if nbits > 5:
@@ -27,14 +41,26 @@ def _part1by2(x, nbits):
 
 @nb.njit(inline="always")
 def _morton_encode_3d(x, y, z, nbits):
-    if nbits < 21:
-        mask = u64((1 << nbits) - 1)
-        x &= mask
-        y &= mask
-        z &= mask
+    if nbits <= 10:
+        mask = u32((1 << nbits) - 1)
+        x = x & mask
+        y = y & mask
+        z = z & mask
+        return (
+            _part1by2_u32(x, nbits)
+            | (_part1by2_u32(y, nbits) << 1)
+            | (_part1by2_u32(z, nbits) << 2)
+        )
 
-    return u64(
-        _part1by2(x, nbits) | (_part1by2(y, nbits) << 1) | (_part1by2(z, nbits) << 2)
+    mask = u64((1 << nbits) - 1)
+    x &= mask
+    y &= mask
+    z &= mask
+
+    return (
+        _part1by2_u64(x, nbits)
+        | (_part1by2_u64(y, nbits) << 1)
+        | (_part1by2_u64(z, nbits) << 2)
     )
 
 
