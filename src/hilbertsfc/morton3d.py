@@ -24,29 +24,8 @@ from ._dispatch import (
     get_morton_encode_3d_batch_builder,
     get_morton_encode_3d_scalar_builder,
 )
-from ._public_api_shared import (
-    Decode3DAdapter,
-    Encode3DAdapter,
-    decode_3d_api,
-    encode_3d_api,
-)
+from ._public_api_shared_3d import decode_3d_api, encode_3d_api
 from .types import IntArray, IntScalar
-
-_MORTON_ENCODE_3D_ADAPTER = Encode3DAdapter(
-    build_scalar=lambda nbits: get_morton_encode_3d_scalar_builder()(nbits),
-    build_batch=lambda nbits, parallel, _dtype: get_morton_encode_3d_batch_builder()(
-        nbits,
-        parallel=parallel,
-    ),
-)
-
-_MORTON_DECODE_3D_ADAPTER = Decode3DAdapter(
-    build_scalar=lambda nbits: get_morton_decode_3d_scalar_builder()(nbits),
-    build_batch=lambda nbits, parallel, _dtype: get_morton_decode_3d_batch_builder()(
-        nbits,
-        parallel=parallel,
-    ),
-)
 
 
 def morton_encode_3d(
@@ -71,6 +50,15 @@ def morton_encode_3d(
     an array of unsigned indices with the same shape and supports ``out=``.
     """
 
+    build_scalar = get_morton_encode_3d_scalar_builder()
+    build_batch = get_morton_encode_3d_batch_builder()
+
+    def build_batch_wrapped(nbits, *, parallel=False, index_dtype):
+        return build_batch(
+            nbits,
+            parallel=parallel,
+        )
+
     return encode_3d_api(
         x,
         y,
@@ -78,7 +66,8 @@ def morton_encode_3d(
         nbits=nbits,
         out=out,
         parallel=parallel,
-        adapter=_MORTON_ENCODE_3D_ADAPTER,
+        build_scalar=build_scalar,
+        build_batch=build_batch_wrapped,
     )
 
 
@@ -105,6 +94,15 @@ def morton_decode_3d(
     ``out_z=``.
     """
 
+    build_scalar = get_morton_decode_3d_scalar_builder()
+    build_batch = get_morton_decode_3d_batch_builder()
+
+    def build_batch_wrapped(nbits, *, parallel=False, index_dtype):
+        return build_batch(
+            nbits,
+            parallel=parallel,
+        )
+
     return decode_3d_api(
         index,
         nbits=nbits,
@@ -112,7 +110,8 @@ def morton_decode_3d(
         out_y=out_y,
         out_z=out_z,
         parallel=parallel,
-        adapter=_MORTON_DECODE_3D_ADAPTER,
+        build_scalar=build_scalar,
+        build_batch=build_batch_wrapped,
     )
 
 

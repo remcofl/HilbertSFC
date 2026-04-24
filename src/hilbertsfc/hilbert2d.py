@@ -24,29 +24,8 @@ from ._dispatch import (
     get_encode_2d_batch_builder,
     get_encode_2d_scalar_builder,
 )
-from ._public_api_shared import (
-    Decode2DAdapter,
-    Encode2DAdapter,
-    decode_2d_api,
-    encode_2d_api,
-)
+from ._public_api_shared_2d import decode_2d_api, encode_2d_api
 from .types import IntArray, IntScalar, TileNBits2D
-
-_HILBERT_ENCODE_2D_ADAPTER = Encode2DAdapter(
-    build_scalar=lambda nbits: get_encode_2d_scalar_builder()(nbits),
-    build_batch=lambda nbits, parallel: get_encode_2d_batch_builder()(
-        nbits,
-        parallel=parallel,
-    ),
-)
-
-_HILBERT_DECODE_2D_ADAPTER = Decode2DAdapter(
-    build_scalar=lambda nbits: get_decode_2d_scalar_builder()(nbits),
-    build_batch=lambda nbits, parallel: get_decode_2d_batch_builder()(
-        nbits,
-        parallel=parallel,
-    ),
-)
 
 
 def hilbert_encode_2d(
@@ -133,7 +112,8 @@ def hilbert_encode_2d(
         nbits=nbits,
         out=out,
         parallel=parallel,
-        adapter=_HILBERT_ENCODE_2D_ADAPTER,
+        build_scalar=get_encode_2d_scalar_builder(),
+        build_batch=get_encode_2d_batch_builder(),
     )
 
 
@@ -223,7 +203,8 @@ def hilbert_decode_2d(
         out_x=out_x,
         out_y=out_y,
         parallel=parallel,
-        adapter=_HILBERT_DECODE_2D_ADAPTER,
+        build_scalar=get_decode_2d_scalar_builder(),
+        build_batch=get_decode_2d_batch_builder(),
     )
 
 

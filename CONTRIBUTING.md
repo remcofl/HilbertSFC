@@ -80,6 +80,7 @@ Public function signatures are typed via stub files (`.pyi`) in the package dire
 - If you change a public signature in `src/hilbertsfc/hilbert2d.py` or `src/hilbertsfc/hilbert3d.py`, update the matching stub:
   - `src/hilbertsfc/hilbert2d.pyi`
   - `src/hilbertsfc/hilbert3d.pyi`
+The same applies to `morton2d.py` and `morton3d.py` and their stubs.
 - `src/hilbertsfc/py.typed` marks the package as typed (PEP 561); keep it included when packaging.
 
 ## Documentation
