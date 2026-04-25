@@ -1,6 +1,6 @@
 [project]
 name = "hilbertsfc"
-version = "0.3.0"
+version = "0.4.0"
 description = "Ultra-fast 2D and 3D Hilbert space-filling curve encode/decode kernels (NumPy/Numba + PyTorch/Triton)."
 readme = "README.md"
 authors = [{ name = "Remco Leijenaar" }]
