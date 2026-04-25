@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.">
       
       
       
-        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.3.0/advanced-usage/">
+        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.4.0/advanced-usage/">
       
       
         <link rel="prev" href="../quickstart/">
@@ -954,7 +954,7 @@
 <h1 id="advanced-usage">Advanced usage<a class="headerlink" href="#advanced-usage" title="Permanent link">&para;</a></h1>
 <p>This page covers lower-level integration patterns and performance-oriented usage beyond the basic API usage shown in the <a href="../quickstart/">Quick start</a>.</p>
 <h2 id="embedding-kernels-in-custom-numba-code">Embedding kernels in custom Numba code<a class="headerlink" href="#embedding-kernels-in-custom-numba-code" title="Permanent link">&para;</a></h2>
-<p>While the main API is designed for ease of use, the package also provides <em>kernel accessors</em> that expose the scalar encode/decode kernels. This allows you to embed the Hilbert curve logic directly into your own <code>@numba.njit</code> code.</p>
+<p>While the main API is designed for ease of use, the package also provides <em>kernel accessors</em> that expose the scalar encode/decode kernels. This allows you to embed Hilbert/Morton curve logic directly into your own <code>@numba.njit</code> code.</p>
 <p>This is useful for fusing surrounding numerical operations such as quantization, tiling, or other pre- and post-processing steps into a single compiled loop. This can improve performance by keeping intermediate data in registers, reducing memory movement, avoiding temporary arrays, and reducing Python call overhead.</p>
 <h3 id="example-tiling-quantization-inside-a-fused-numba-loop">Example: tiling / quantization inside a fused Numba loop<a class="headerlink" href="#example-tiling-quantization-inside-a-fused-numba-loop" title="Permanent link">&para;</a></h3>
 <p>A common use case is to quantize (floating-point) coordinates into a fixed tile grid. With kernel accessors, you can perform the quantization and Hilbert encoding inside one compiled loop.</p>

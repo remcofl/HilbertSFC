@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.">
       
       
       
@@ -16,7 +16,7 @@
         
       
       
-      <link rel="icon" href="/HilbertSFC/0.3.0/img/favicon.png">
+      <link rel="icon" href="/HilbertSFC/0.4.0/img/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -25,10 +25,10 @@
       
     
     
-      <link rel="stylesheet" href="/HilbertSFC/0.3.0/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="/HilbertSFC/0.4.0/assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/HilbertSFC/0.3.0/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="/HilbertSFC/0.4.0/assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,9 +47,9 @@
       
     
     
-      <link rel="stylesheet" href="/HilbertSFC/0.3.0/assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="/HilbertSFC/0.4.0/assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("/HilbertSFC/0.3.0",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("/HilbertSFC/0.4.0",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -84,12 +84,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the latest version.
-  <a href="..//HilbertSFC/0.3.0">
+  <a href="..//HilbertSFC/0.4.0">
     <strong>Click here to go to latest.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("/HilbertSFC/0.3.0"),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("/HilbertSFC/0.4.0"),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -101,9 +101,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/HilbertSFC/0.3.0/." title="HilbertSFC" class="md-header__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
+    <a href="/HilbertSFC/0.4.0/." title="HilbertSFC" class="md-header__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
       
-  <img src="/HilbertSFC/0.3.0/img/logo.png" alt="logo">
+  <img src="/HilbertSFC/0.4.0/img/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -246,9 +246,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/HilbertSFC/0.3.0/." title="HilbertSFC" class="md-nav__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
+    <a href="/HilbertSFC/0.4.0/." title="HilbertSFC" class="md-nav__button md-logo" aria-label="HilbertSFC" data-md-component="logo">
       
-  <img src="/HilbertSFC/0.3.0/img/logo.png" alt="logo">
+  <img src="/HilbertSFC/0.4.0/img/logo.png" alt="logo">
 
     </a>
     HilbertSFC
@@ -275,7 +275,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/." class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/." class="md-nav__link">
         
   
   
@@ -302,7 +302,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/quickstart/" class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/quickstart/" class="md-nav__link">
         
   
   
@@ -329,7 +329,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/advanced-usage/" class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/advanced-usage/" class="md-nav__link">
         
   
   
@@ -496,7 +496,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="/HilbertSFC/0.3.0/api/" class="md-nav__link ">
+            <a href="/HilbertSFC/0.4.0/api/" class="md-nav__link ">
               
   
   
@@ -540,7 +540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/api/hilbertsfc/" class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/api/hilbertsfc/" class="md-nav__link">
         
   
   
@@ -568,7 +568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/api/torch/" class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/api/torch/" class="md-nav__link">
         
   
   
@@ -649,7 +649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/api/types/types/" class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/api/types/types/" class="md-nav__link">
         
   
   
@@ -677,7 +677,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/HilbertSFC/0.3.0/api/types/torch-types/" class="md-nav__link">
+      <a href="/HilbertSFC/0.4.0/api/types/torch-types/" class="md-nav__link">
         
   
   
@@ -780,10 +780,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/HilbertSFC/0.3.0", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "content.code.copy"], "search": "/HilbertSFC/0.3.0/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "/HilbertSFC/0.4.0", "features": ["navigation.instant", "navigation.tracking", "navigation.indexes", "content.code.copy"], "search": "/HilbertSFC/0.4.0/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="/HilbertSFC/0.3.0/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="/HilbertSFC/0.4.0/assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

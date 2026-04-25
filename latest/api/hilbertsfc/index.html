@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.">
       
       
       
-        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.3.0/api/hilbertsfc/">
+        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.4.0/api/hilbertsfc/">
       
       
         <link rel="prev" href="../">
@@ -621,6 +621,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Core APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hilbert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#morton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Morton
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -631,6 +659,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Kernel Accessors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbert_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hilbert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#morton_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Morton
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -714,6 +770,50 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_encode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_decode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_encode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_decode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#hilbertsfc.get_hilbert_encode_2d_kernel" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -751,6 +851,50 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_decode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_encode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_encode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_decode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_decode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_encode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_encode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_decode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_decode_3d_kernel
       
     </span>
   </a>
@@ -996,6 +1140,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Core APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hilbert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#morton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Morton
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1006,6 +1178,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Kernel Accessors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbert_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hilbert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#morton_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Morton
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1089,6 +1289,50 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_encode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_decode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_encode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.morton_decode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#hilbertsfc.get_hilbert_encode_2d_kernel" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1126,6 +1370,50 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_hilbert_decode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_encode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_encode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_decode_2d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_decode_2d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_encode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_encode_3d_kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.get_morton_decode_3d_kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;get_morton_decode_3d_kernel
       
     </span>
   </a>
@@ -1197,18 +1485,34 @@
 
 <h1 id="hilbertsfc_1"><code>hilbertsfc</code><a class="headerlink" href="#hilbertsfc_1" title="Permanent link">&para;</a></h1>
 <h3 id="core-apis">Core APIs<a class="headerlink" href="#core-apis" title="Permanent link">&para;</a></h3>
+<h4 id="hilbert">Hilbert<a class="headerlink" href="#hilbert" title="Permanent link">&para;</a></h4>
 <ul>
 <li><a class="autorefs autorefs-internal" title="hilbert_encode_2d" href="#hilbertsfc.hilbert_encode_2d"><code>hilbert_encode_2d</code></a></li>
 <li><a class="autorefs autorefs-internal" title="hilbert_decode_2d" href="#hilbertsfc.hilbert_decode_2d"><code>hilbert_decode_2d</code></a></li>
 <li><a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="#hilbertsfc.hilbert_encode_3d"><code>hilbert_encode_3d</code></a></li>
 <li><a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="#hilbertsfc.hilbert_decode_3d"><code>hilbert_decode_3d</code></a></li>
 </ul>
+<h4 id="morton">Morton<a class="headerlink" href="#morton" title="Permanent link">&para;</a></h4>
+<ul>
+<li><a class="autorefs autorefs-internal" title="morton_encode_2d" href="#hilbertsfc.morton_encode_2d"><code>morton_encode_2d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="morton_decode_2d" href="#hilbertsfc.morton_decode_2d"><code>morton_decode_2d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="morton_encode_3d" href="#hilbertsfc.morton_encode_3d"><code>morton_encode_3d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="morton_decode_3d" href="#hilbertsfc.morton_decode_3d"><code>morton_decode_3d</code></a></li>
+</ul>
 <h3 id="kernel-accessors">Kernel Accessors<a class="headerlink" href="#kernel-accessors" title="Permanent link">&para;</a></h3>
+<h4 id="hilbert_1">Hilbert<a class="headerlink" href="#hilbert_1" title="Permanent link">&para;</a></h4>
 <ul>
 <li><a class="autorefs autorefs-internal" title="get_hilbert_encode_2d_kernel" href="#hilbertsfc.get_hilbert_encode_2d_kernel"><code>get_hilbert_encode_2d_kernel</code></a></li>
 <li><a class="autorefs autorefs-internal" title="get_hilbert_decode_2d_kernel" href="#hilbertsfc.get_hilbert_decode_2d_kernel"><code>get_hilbert_decode_2d_kernel</code></a></li>
 <li><a class="autorefs autorefs-internal" title="get_hilbert_encode_3d_kernel" href="#hilbertsfc.get_hilbert_encode_3d_kernel"><code>get_hilbert_encode_3d_kernel</code></a></li>
 <li><a class="autorefs autorefs-internal" title="get_hilbert_decode_3d_kernel" href="#hilbertsfc.get_hilbert_decode_3d_kernel"><code>get_hilbert_decode_3d_kernel</code></a></li>
+</ul>
+<h4 id="morton_1">Morton<a class="headerlink" href="#morton_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><a class="autorefs autorefs-internal" title="get_morton_encode_2d_kernel" href="#hilbertsfc.get_morton_encode_2d_kernel"><code>get_morton_encode_2d_kernel</code></a></li>
+<li><a class="autorefs autorefs-internal" title="get_morton_decode_2d_kernel" href="#hilbertsfc.get_morton_decode_2d_kernel"><code>get_morton_decode_2d_kernel</code></a></li>
+<li><a class="autorefs autorefs-internal" title="get_morton_encode_3d_kernel" href="#hilbertsfc.get_morton_encode_3d_kernel"><code>get_morton_encode_3d_kernel</code></a></li>
+<li><a class="autorefs autorefs-internal" title="get_morton_decode_3d_kernel" href="#hilbertsfc.get_morton_decode_3d_kernel"><code>get_morton_decode_3d_kernel</code></a></li>
 </ul>
 <h3 id="cache-management">Cache Management<a class="headerlink" href="#cache-management" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1232,7 +1536,8 @@
 
         <p>Hilbert space-filling curve kernels.</p>
 <p>The top-level <code>hilbertsfc</code> package exposes NumPy/Numba-backed 2D/3D Hilbert
-encode/decode functions, kernel accessors, and cache management helpers.</p>
+encode/decode functions, plus matching Morton/z-order helpers, kernel accessors,
+and cache management utilities.</p>
 <p>For GPU acceleration and <code>torch.Tensor</code> inputs, use the optional PyTorch frontend:
 <a class="autorefs autorefs-internal" title="hilbertsfc.torch" href="../torch/#hilbertsfc.torch"><code>hilbertsfc.torch</code></a>.</p>
 
@@ -2193,6 +2498,156 @@ or if output buffers are inconsistent or have incorrect shapes.</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="hilbertsfc.morton_encode_2d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_encode_2d</span>
+
+
+<a href="#hilbertsfc.morton_encode_2d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_encode_2d</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode 2D integer coordinates to Morton (Z-order) indices.</p>
+<p>API semantics (parameters, returns, errors) match
+<a class="autorefs autorefs-internal" title="hilbert_encode_2d" href="#hilbertsfc.hilbert_encode_2d"><code>hilbert_encode_2d</code></a>.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>x</code> and <code>y</code> are scalar integers, returns a Python
+<code>int</code>.</li>
+<li><strong>Array mode</strong>: if <code>x</code> and <code>y</code> are NumPy integer arrays, returns an array
+of unsigned indices with the same shape and supports <code>out=</code>.</li>
+</ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.morton_decode_2d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_decode_2d</span>
+
+
+<a href="#hilbertsfc.morton_decode_2d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_decode_2d</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode Morton (Z-order) indices to 2D integer coordinates.</p>
+<p>API semantics (parameters, returns, errors) match
+<a class="autorefs autorefs-internal" title="hilbert_decode_2d" href="#hilbertsfc.hilbert_decode_2d"><code>hilbert_decode_2d</code></a>.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>index</code> is a scalar integer, returns <code>(x, y)</code> as
+Python <code>int</code> values.</li>
+<li><strong>Array mode</strong>: if <code>index</code> is a NumPy integer array, returns coordinate
+arrays with the same shape and supports <code>out_x=</code> / <code>out_y=</code>.</li>
+</ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.morton_encode_3d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_encode_3d</span>
+
+
+<a href="#hilbertsfc.morton_encode_3d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_encode_3d</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode 3D integer coordinates to Morton (Z-order) indices.</p>
+<p>API semantics (parameters, returns, errors) match
+<a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="#hilbertsfc.hilbert_encode_3d"><code>hilbert_encode_3d</code></a>.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>x</code>, <code>y</code>, and <code>z</code> are scalar integers, returns a
+Python <code>int</code>.</li>
+<li><strong>Array mode</strong>: if <code>x</code>, <code>y</code>, and <code>z</code> are NumPy integer arrays, returns
+an array of unsigned indices with the same shape and supports <code>out=</code>.</li>
+</ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.morton_decode_3d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_decode_3d</span>
+
+
+<a href="#hilbertsfc.morton_decode_3d" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_decode_3d</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+    <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntArray (hilbertsfc.types.IntArray)" href="../types/types/#hilbertsfc.types.IntArray">IntArray</a></span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode Morton (Z-order) indices to 3D integer coordinates.</p>
+<p>API semantics (parameters, returns, errors) match
+<a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="#hilbertsfc.hilbert_decode_3d"><code>hilbert_decode_3d</code></a>.</p>
+<p>This function supports both scalar and array inputs:</p>
+<ul>
+<li><strong>Scalar mode</strong>: if <code>index</code> is a scalar integer, returns <code>(x, y, z)</code> as
+Python <code>int</code> values.</li>
+<li><strong>Array mode</strong>: if <code>index</code> is a NumPy integer array, returns coordinate
+arrays with the same shape and supports <code>out_x=</code>, <code>out_y=</code>, and
+<code>out_z=</code>.</li>
+</ul>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="hilbertsfc.get_hilbert_encode_2d_kernel" class="doc doc-heading">
             <span class="doc doc-object-name doc-function-name">get_hilbert_encode_2d_kernel</span>
 
@@ -2565,6 +3020,318 @@ and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
             </td>
             <td>
                   <code><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(index: int) -&gt; (x: int, y: int, z: int)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_morton_encode_2d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_morton_encode_2d_kernel</span>
+
+
+<a href="#hilbertsfc.get_morton_encode_2d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_morton_encode_2d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 2D Morton encoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="morton_encode_2d" href="#hilbertsfc.morton_encode_2d"><code>morton_encode_2d</code></a> in scalar mode.
+It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(x: int, y: int) -&gt; int</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_morton_decode_2d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_morton_decode_2d_kernel</span>
+
+
+<a href="#hilbertsfc.get_morton_decode_2d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_morton_decode_2d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 2D Morton decoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="morton_decode_2d" href="#hilbertsfc.morton_decode_2d"><code>morton_decode_2d</code></a> in scalar mode.
+It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(index: int) -&gt; (x: int, y: int)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_morton_encode_3d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_morton_encode_3d_kernel</span>
+
+
+<a href="#hilbertsfc.get_morton_encode_3d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_morton_encode_3d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 3D Morton encoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="morton_encode_3d" href="#hilbertsfc.morton_encode_3d"><code>morton_encode_3d</code></a> in scalar mode.
+It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#callable">callable</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Numba-compiled function with signature <code>(x: int, y: int, z: int) -&gt; int</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="hilbertsfc.get_morton_decode_3d_kernel" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">get_morton_decode_3d_kernel</span>
+
+
+<a href="#hilbertsfc.get_morton_decode_3d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_morton_decode_3d_kernel</span><span class="p">(</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return a Numba-compiled <em>scalar</em> 3D Morton decoder.</p>
+<p>This is the low-level kernel used by <a class="autorefs autorefs-internal" title="morton_decode_3d" href="#hilbertsfc.morton_decode_3d"><code>morton_decode_3d</code></a> in scalar mode.
+It is intended for fusing into your own <code>@numba.njit</code> loops.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of coordinate bits (grid domain is <code>[0, 2**nbits)</code> per axis).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
             </td>
           </tr>
       </tbody>

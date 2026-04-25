@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.">
       
       
       
-        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.3.0/api/torch/">
+        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.4.0/api/torch/">
       
       
         <link rel="prev" href="../hilbertsfc/">
@@ -649,6 +649,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Core APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hilbert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#morton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Morton
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -712,6 +740,50 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;hilbert_decode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_encode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_decode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_encode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_decode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_3d
       
     </span>
   </a>
@@ -913,6 +985,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Core APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hilbert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hilbert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#morton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Morton
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -983,6 +1083,50 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_encode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_decode_2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_encode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_encode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hilbertsfc.torch.morton_decode_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;morton_decode_3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#hilbertsfc.torch.precache_compile_luts" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1031,11 +1175,19 @@
 
 <h1 id="hilbertsfctorch"><code>hilbertsfc.torch</code><a class="headerlink" href="#hilbertsfctorch" title="Permanent link">&para;</a></h1>
 <h3 id="core-apis">Core APIs<a class="headerlink" href="#core-apis" title="Permanent link">&para;</a></h3>
+<h4 id="hilbert">Hilbert<a class="headerlink" href="#hilbert" title="Permanent link">&para;</a></h4>
 <ul>
 <li><a class="autorefs autorefs-internal" title="hilbert_encode_2d" href="#hilbertsfc.torch.hilbert_encode_2d"><code>hilbert_encode_2d</code></a></li>
 <li><a class="autorefs autorefs-internal" title="hilbert_decode_2d" href="#hilbertsfc.torch.hilbert_decode_2d"><code>hilbert_decode_2d</code></a></li>
 <li><a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="#hilbertsfc.torch.hilbert_encode_3d"><code>hilbert_encode_3d</code></a></li>
 <li><a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="#hilbertsfc.torch.hilbert_decode_3d"><code>hilbert_decode_3d</code></a></li>
+</ul>
+<h4 id="morton">Morton<a class="headerlink" href="#morton" title="Permanent link">&para;</a></h4>
+<ul>
+<li><a class="autorefs autorefs-internal" title="morton_encode_2d" href="#hilbertsfc.torch.morton_encode_2d"><code>morton_encode_2d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="morton_decode_2d" href="#hilbertsfc.torch.morton_decode_2d"><code>morton_decode_2d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="morton_encode_3d" href="#hilbertsfc.torch.morton_encode_3d"><code>morton_encode_3d</code></a></li>
+<li><a class="autorefs autorefs-internal" title="morton_decode_3d" href="#hilbertsfc.torch.morton_decode_3d"><code>morton_decode_3d</code></a></li>
 </ul>
 <h3 id="cache-management">Cache Management<a class="headerlink" href="#cache-management" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1057,7 +1209,7 @@
     <div class="doc doc-contents first">
 
         <p>PyTorch-API for HilbertSFC.</p>
-<p>This subpackage provides 2D/3D Hilbert encode/decode functions that operate on
+<p>This subpackage provides 2D/3D Hilbert and Morton encode/decode functions that operate on
 integer <code>torch.Tensor</code> inputs.</p>
 
 
@@ -2442,6 +2594,164 @@ before compilation. This avoids materialization of LUTs inside the
 compiled region, which causes graph breaks, extra overhead, and failure
 with <code>fullgraph=True</code>.</p>
 </details>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="hilbertsfc.torch.morton_encode_2d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_encode_2d</span>
+
+
+<a href="#hilbertsfc.torch.morton_encode_2d" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_encode_2d</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode 2D integer coordinate tensors to Morton (Z-order) indices.</p>
+<p>API semantics for parameters, returns, and errors match
+<a class="autorefs autorefs-internal" title="hilbert_encode_2d" href="#hilbertsfc.torch.hilbert_encode_2d"><code>hilbert_encode_2d</code></a>,
+except that Morton kernels do not use lookup tables and therefore do not
+accept <code>lut_cache</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="hilbertsfc.torch.morton_decode_2d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_decode_2d</span>
+
+
+<a href="#hilbertsfc.torch.morton_decode_2d" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_decode_2d</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode Morton (Z-order) index tensors to 2D integer coordinates.</p>
+<p>API semantics for parameters, returns, and errors match
+<a class="autorefs autorefs-internal" title="hilbert_decode_2d" href="#hilbertsfc.torch.hilbert_decode_2d"><code>hilbert_decode_2d</code></a>,
+except that Morton kernels do not use lookup tables and therefore do not
+accept <code>lut_cache</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="hilbertsfc.torch.morton_encode_3d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_encode_3d</span>
+
+
+<a href="#hilbertsfc.torch.morton_encode_3d" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_encode_3d</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Encode 3D integer coordinate tensors to Morton (Z-order) indices.</p>
+<p>API semantics for parameters, returns, and errors match
+<a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="#hilbertsfc.torch.hilbert_encode_3d"><code>hilbert_encode_3d</code></a>,
+except that Morton kernels do not use lookup tables and therefore do not
+accept <code>lut_cache</code>.</p>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="hilbertsfc.torch.morton_decode_3d" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">morton_decode_3d</span>
+
+
+<a href="#hilbertsfc.torch.morton_decode_3d" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_decode_3d</span><span class="p">(</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+    <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Decode Morton (Z-order) index tensors to 3D integer coordinates.</p>
+<p>API semantics for parameters, returns, and errors match
+<a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="#hilbertsfc.torch.hilbert_decode_3d"><code>hilbert_decode_3d</code></a>,
+except that Morton kernels do not use lookup tables and therefore do not
+accept <code>lut_cache</code>.</p>
+
 
     </div>
 

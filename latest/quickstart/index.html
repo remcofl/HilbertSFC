@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.">
       
       
       
-        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.3.0/quickstart/">
+        <link rel="canonical" href="https://remcofl.github.io/HilbertSFC/0.4.0/quickstart/">
       
       
         <link rel="prev" href="..">
@@ -1030,7 +1030,7 @@
 
 
 <h1 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h1>
-<p>HilbertSFC provides simple Hilbert encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.</p>
+<p>HilbertSFC provides simple Hilbert and Morton encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>Install the base package with either <code>pip</code> or <code>uv</code>:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">pip</label><label for="__tabbed_1_2">uv</label></div>
@@ -1091,7 +1091,7 @@
 <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">hilbert_decode_2d</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">nbits</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>     <span class="c1"># x = 17, y = 23</span>
 </code></pre></div>
 <p><code>nbits</code> controls the coordinate domain <code>[0, 2**nbits)</code> on each axis. For best performance, pass the smallest value that covers your input range.</p>
-<p>The 3D API follows the same pattern via <a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="../api/hilbertsfc/#hilbertsfc.hilbert_encode_3d"><code>hilbert_encode_3d</code></a> and <a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="../api/hilbertsfc/#hilbertsfc.hilbert_decode_3d"><code>hilbert_decode_3d</code></a>.</p>
+<p>The 3D API follows the same pattern via <a class="autorefs autorefs-internal" title="hilbert_encode_3d" href="../api/hilbertsfc/#hilbertsfc.hilbert_encode_3d"><code>hilbert_encode_3d</code></a> and <a class="autorefs autorefs-internal" title="hilbert_decode_3d" href="../api/hilbertsfc/#hilbertsfc.hilbert_decode_3d"><code>hilbert_decode_3d</code></a>. Morton/z-order functions mirror these names with <a class="autorefs autorefs-internal" title="morton_encode_2d" href="../api/hilbertsfc/#hilbertsfc.morton_encode_2d"><code>morton_encode_2d</code></a>, <a class="autorefs autorefs-internal" title="morton_decode_2d" href="../api/hilbertsfc/#hilbertsfc.morton_decode_2d"><code>morton_decode_2d</code></a>, <a class="autorefs autorefs-internal" title="morton_encode_3d" href="../api/hilbertsfc/#hilbertsfc.morton_encode_3d"><code>morton_encode_3d</code></a>, and <a class="autorefs autorefs-internal" title="morton_decode_3d" href="../api/hilbertsfc/#hilbertsfc.morton_decode_3d"><code>morton_decode_3d</code></a>.</p>
 <div class="admonition info">
 <p class="admonition-title"><code>nbits</code> compatibility</p>
 <p>Hilbert indices obtained with a certain <code>nbits</code> are compatible with those from another <code>nbits</code>, given that the coordinates are within the valid range. This is because the kernels resolve the starting state parity to ensure compatibility.</p>
