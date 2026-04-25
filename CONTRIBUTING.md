@@ -123,7 +123,7 @@ uvx nox
 Review the version bump, then commit and tag it:
 
 ```bash
-git diff -- pyproject.toml uv.lock
+git diff -- pyproject.toml
 git add pyproject.toml uv.lock
 git commit -m "bump: hilbertsfc (${OLD_VERSION} => ${NEW_VERSION})"
 git tag -a "v${NEW_VERSION}" -m "hilbertsfc ${NEW_VERSION}"
