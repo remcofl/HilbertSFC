@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels (NumPy + Numba).">
+        <meta name="description" content="Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode kernels, with Morton/z-order support.">
       
       
       
@@ -896,10 +896,11 @@ HilbertSFC
 
 <p align="center">
 <strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
+<strong>New in v0.4.0</strong>: Morton/z-order curves</br>
 </p>
 
 <hr />
-<p>This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, as well as also low-level <em>kernel accessors</em> and clean integration with <code>torch.compile</code> for fusion with surrounding operations.</p>
+<p>This library is performance-first and implemented entirely in Python. It provides fast Hilbert encode/decode kernels for both CPU and GPU, with convenient high-level APIs for NumPy and PyTorch, low-level <em>kernel accessors</em>, and clean integration with <code>torch.compile</code> for fusion with surrounding operations. For completeness, it also includes Morton/z-order curve kernels.</p>
 <p>The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for:</p>
 <ul>
 <li>Branchless, fully unrolled inner loops</li>
