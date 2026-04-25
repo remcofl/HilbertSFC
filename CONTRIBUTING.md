@@ -98,3 +98,52 @@ Build a static site into `site/`:
 ```bash
 uv run --no-dev --group docs mkdocs build
 ```
+
+## Release workflow
+
+Releases are tag-driven. Pushing a `v*` tag builds the package, smoke-tests the
+wheel and source distribution, publishes to PyPI, creates a GitHub Release, and
+deploys versioned documentation with `mike`.
+
+For a normal release, choose the appropriate bump kind (`patch`, `minor`, or
+`major`) and let `uv` update both `pyproject.toml` and `uv.lock`:
+
+```bash
+OLD_VERSION="$(uv version --short)"
+uv version --bump minor
+NEW_VERSION="$(uv version --short)"
+```
+
+Run the usual checks before tagging:
+
+```bash
+uvx nox
+```
+
+Review the version bump, then commit and tag it:
+
+```bash
+git diff -- pyproject.toml uv.lock
+git add pyproject.toml uv.lock
+git commit -m "bump: hilbertsfc (${OLD_VERSION} => ${NEW_VERSION})"
+git tag -a "v${NEW_VERSION}" -m "hilbertsfc ${NEW_VERSION}"
+```
+
+Push the commit first, then the tag that triggers the release:
+
+```bash
+git push
+git push origin "v${NEW_VERSION}"
+```
+
+### Optional TestPyPI publish
+If you want a TestPyPI publish before the real release, push a `test-*` tag from
+the same commit instead of the `v*` tag first:
+
+```bash
+git tag -a "test-v${NEW_VERSION}" -m "hilbertsfc ${NEW_VERSION} (TestPyPI)"
+git push origin "test-v${NEW_VERSION}"
+```
+
+After the TestPyPI workflow succeeds, push `v${NEW_VERSION}` to publish the real
+release.
