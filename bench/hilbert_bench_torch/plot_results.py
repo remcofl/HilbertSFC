@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
 EXPORT_DPI = 180
+FORMAT_CHOICES = ("png", "svg", "pdf")
 
 DISPLAY_NAMES = {
     "skilling_eager": "Skilling: eager",
@@ -89,6 +90,7 @@ LAYOUT_SPECS: dict[str, list[tuple[str, int]]] = {
 }
 LAYOUT_CHOICES = [*LAYOUT_SPECS, "individual"]
 DEFAULT_LAYOUTS = "2x1-2d,2x1-3d"
+DEFAULT_FORMATS = "png"
 
 
 def _load_rows(csv_path: Path) -> list[dict[str, str]]:
@@ -151,6 +153,23 @@ def _parse_layouts(value: str) -> list[str]:
     if not layouts:
         raise ValueError("No layouts provided")
     return layouts
+
+
+def _parse_formats(value: str) -> list[str]:
+    formats: list[str] = []
+    for token in value.split(","):
+        fmt = token.strip().lower().lstrip(".")
+        if not fmt:
+            continue
+        if fmt not in FORMAT_CHOICES:
+            choices = ", ".join(FORMAT_CHOICES)
+            raise ValueError(f"Invalid format '{token}'. Expected one of: {choices}")
+        if fmt not in formats:
+            formats.append(fmt)
+
+    if not formats:
+        raise ValueError("No formats provided")
+    return formats
 
 
 def _display_name(provider: str) -> str:
@@ -275,6 +294,8 @@ def _set_plot_theme() -> None:
             "text.color": "#4D4D4D",
             "figure.facecolor": "white",
             "axes.facecolor": "#fcfcfc",
+            "svg.fonttype": "path",
+            "pdf.fonttype": 42,
             "lines.linewidth": 1.6,
             "grid.linewidth": 0.8,
             "xtick.direction": "out",
@@ -336,6 +357,13 @@ def _select_rate_unit(max_mpts: float) -> tuple[str, float]:
     if max_mpts >= 1_000.0:
         return "Gpts/s", 1_000.0
     return "Mpts/s", 1.0
+
+
+def _save_figure(fig: Any, out_base: Path, formats: list[str]) -> None:
+    for fmt in formats:
+        out_path = out_base.with_suffix(f".{fmt}")
+        fig.savefig(str(out_path), dpi=EXPORT_DPI, format=fmt)
+        print(f"[ok] wrote {out_path}")
 
 
 def _ordered_providers(subset: list[dict[str, str]]) -> list[str]:
@@ -677,7 +705,8 @@ def _plot_line_layout(
     layout: str,
     title_prefix: str,
     title_postfix: str,
-    out_path: Path,
+    out_base: Path,
+    formats: list[str],
 ) -> None:
     specs = LAYOUT_SPECS[layout]
     nrows, ncols, figsize = _layout_shape(layout)
@@ -723,9 +752,8 @@ def _plot_line_layout(
             borderaxespad=0.0,
         )
 
-    fig.savefig(str(out_path), dpi=EXPORT_DPI)
+    _save_figure(fig, out_base, formats)
     plt.close(fig)
-    print(f"[ok] wrote {out_path}")
 
 
 def _plot_bar_layout(
@@ -735,7 +763,8 @@ def _plot_bar_layout(
     title_prefix: str,
     title_postfix: str,
     sizes: list[int],
-    out_path: Path,
+    out_base: Path,
+    formats: list[str],
 ) -> None:
     specs = LAYOUT_SPECS[layout]
     nrows, ncols, figsize = _layout_shape(layout)
@@ -784,9 +813,8 @@ def _plot_bar_layout(
             title_fontsize=8,
         )
 
-    fig.savefig(str(out_path), dpi=EXPORT_DPI)
+    _save_figure(fig, out_base, formats)
     plt.close(fig)
-    print(f"[ok] wrote {out_path}")
 
 
 def _plot_bar_one(
@@ -797,7 +825,8 @@ def _plot_bar_one(
     title_prefix: str,
     title_postfix: str,
     sizes: list[int],
-    out_path: Path,
+    out_base: Path,
+    formats: list[str],
 ) -> None:
 
     fig, ax_left = plt.subplots(figsize=_single_panel_figsize())
@@ -813,13 +842,12 @@ def _plot_bar_one(
     )
     if not ok:
         plt.close(fig)
-        print(f"[warn] no rows for op={op} dim={dim}; skipping {out_path.name}")
+        print(f"[warn] no rows for op={op} dim={dim}; skipping {out_base.name}")
         return
 
     fig.tight_layout()
-    fig.savefig(str(out_path), dpi=EXPORT_DPI)
+    _save_figure(fig, out_base, formats)
     plt.close(fig)
-    print(f"[ok] wrote {out_path}")
 
 
 def _plot_line_one(
@@ -829,7 +857,8 @@ def _plot_line_one(
     dim: int,
     title_prefix: str,
     title_postfix: str,
-    out_path: Path,
+    out_base: Path,
+    formats: list[str],
 ) -> None:
 
     fig, ax_left = plt.subplots(figsize=_single_panel_figsize())
@@ -844,24 +873,29 @@ def _plot_line_one(
     )
     if not ok:
         plt.close(fig)
-        print(f"[warn] no rows for op={op} dim={dim}; skipping {out_path.name}")
+        print(f"[warn] no rows for op={op} dim={dim}; skipping {out_base.name}")
         return
 
     fig.tight_layout()
-    fig.savefig(str(out_path), dpi=EXPORT_DPI)
+    _save_figure(fig, out_base, formats)
     plt.close(fig)
-    print(f"[ok] wrote {out_path}")
 
 
 def _plot_line_combined(
-    rows: list[dict[str, str]], *, title_prefix: str, title_postfix: str, out_path: Path
+    rows: list[dict[str, str]],
+    *,
+    title_prefix: str,
+    title_postfix: str,
+    out_base: Path,
+    formats: list[str],
 ) -> None:
     _plot_line_layout(
         rows,
         layout="2x2",
         title_prefix=title_prefix,
         title_postfix=title_postfix,
-        out_path=out_path,
+        out_base=out_base,
+        formats=formats,
     )
 
 
@@ -903,6 +937,12 @@ def main() -> int:
         help="Comma-separated sizes for bar mode (e.g. 128Ki,1Mi,8Mi,32Mi).",
     )
     p.add_argument(
+        "--formats",
+        type=str,
+        default=DEFAULT_FORMATS,
+        help=(f"Comma-separated output formats. Choices: {', '.join(FORMAT_CHOICES)}."),
+    )
+    p.add_argument(
         "--title-prefix",
         type=str,
         default="",
@@ -942,6 +982,7 @@ def main() -> int:
     try:
         selected_bar_sizes = _parse_bar_sizes(args.bar_sizes)
         layouts = _parse_layouts(args.layout)
+        formats = _parse_formats(args.formats)
     except ValueError as exc:
         p.error(str(exc))
     title_prefix = args.title_prefix
@@ -956,14 +997,14 @@ def main() -> int:
     if args.plot_mode in {"line", "both"}:
         if "individual" in layouts:
             for op, dim in individual_plots:
-                out_path = results_dir / f"lines_{op}_{dim}d.png"
                 _plot_line_one(
                     rows,
                     op=op,
                     dim=dim,
                     title_prefix=title_prefix,
                     title_postfix=title_postfix,
-                    out_path=out_path,
+                    out_base=results_dir / f"lines_{op}_{dim}d",
+                    formats=formats,
                 )
 
         for layout in layouts:
@@ -974,20 +1015,21 @@ def main() -> int:
                 layout=layout,
                 title_prefix=title_prefix,
                 title_postfix=title_postfix,
-                out_path=results_dir / f"lines_{layout}.png",
+                out_base=results_dir / f"lines_{layout}",
+                formats=formats,
             )
             if layout == "2x2":
                 _plot_line_combined(
                     rows,
                     title_prefix=title_prefix,
                     title_postfix=title_postfix,
-                    out_path=results_dir / "lines_2x2_all.png",
+                    out_base=results_dir / "lines_2x2_all",
+                    formats=formats,
                 )
 
     if args.plot_mode in {"bar", "both"}:
         if "individual" in layouts:
             for op, dim in individual_plots:
-                out_path = results_dir / f"bars_{op}_{dim}d.png"
                 _plot_bar_one(
                     rows,
                     op=op,
@@ -995,7 +1037,8 @@ def main() -> int:
                     title_prefix=title_prefix,
                     title_postfix=title_postfix,
                     sizes=selected_bar_sizes,
-                    out_path=out_path,
+                    out_base=results_dir / f"bars_{op}_{dim}d",
+                    formats=formats,
                 )
 
         for layout in layouts:
@@ -1007,7 +1050,8 @@ def main() -> int:
                 title_prefix=title_prefix,
                 title_postfix=title_postfix,
                 sizes=selected_bar_sizes,
-                out_path=results_dir / f"bars_{layout}.png",
+                out_base=results_dir / f"bars_{layout}",
+                formats=formats,
             )
 
     return 0
