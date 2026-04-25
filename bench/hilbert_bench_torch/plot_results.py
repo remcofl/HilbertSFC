@@ -7,11 +7,14 @@
 
 import argparse
 import csv
+import subprocess
 from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
+
+EXPORT_DPI = 180
 
 DISPLAY_NAMES = {
     "skilling_eager": "Skilling: eager",
@@ -84,6 +87,8 @@ LAYOUT_SPECS: dict[str, list[tuple[str, int]]] = {
     "2x1-2d": [("encode", 2), ("decode", 2)],
     "2x1-3d": [("encode", 3), ("decode", 3)],
 }
+LAYOUT_CHOICES = [*LAYOUT_SPECS, "individual"]
+DEFAULT_LAYOUTS = "2x1-2d,2x1-3d"
 
 
 def _load_rows(csv_path: Path) -> list[dict[str, str]]:
@@ -129,6 +134,23 @@ def _parse_bar_sizes(value: str) -> list[int]:
     if not sizes:
         raise ValueError("No sizes provided")
     return sizes
+
+
+def _parse_layouts(value: str) -> list[str]:
+    layouts: list[str] = []
+    for token in value.split(","):
+        layout = token.strip().lower()
+        if not layout:
+            continue
+        if layout not in LAYOUT_CHOICES:
+            choices = ", ".join(LAYOUT_CHOICES)
+            raise ValueError(f"Invalid layout '{token}'. Expected one of: {choices}")
+        if layout not in layouts:
+            layouts.append(layout)
+
+    if not layouts:
+        raise ValueError("No layouts provided")
+    return layouts
 
 
 def _display_name(provider: str) -> str:
@@ -220,15 +242,28 @@ def _set_plot_theme() -> None:
         "DejaVu Sans",
         "Arial",
     ]
-    installed = {f.name for f in font_manager.fontManager.ttflist}
-    selected_font = next(
-        (name for name in preferred_fonts if name in installed), "DejaVu Sans"
-    )
+
+    installed = {f.name.casefold(): f.name for f in font_manager.fontManager.ttflist}
+    selected_font = "DejaVu Sans"
+    for font_name in preferred_fonts:
+        if font_name.casefold() in installed:
+            selected_font = installed[font_name.casefold()]
+            break
+
+        fontconfig_font = _register_fontconfig_family(font_name)
+        if fontconfig_font is not None:
+            selected_font = fontconfig_font
+            break
 
     plt.rcParams.update(
         {
-            "font.family": selected_font,
+            "font.family": "sans-serif",
+            "font.sans-serif": [
+                selected_font,
+                *[name for name in preferred_fonts if name != selected_font],
+            ],
             "axes.titlesize": 12,
+            # "axes.titleweight": "bold",
             "axes.labelsize": 9,
             "legend.fontsize": 9,
             "axes.labelweight": "bold",
@@ -252,6 +287,46 @@ def _set_plot_theme() -> None:
             "ytick.labelsize": 8,
         }
     )
+
+
+def _register_fontconfig_family(font_name: str) -> str | None:
+    """Register a font family that fontconfig knows but Matplotlib has not cached."""
+    try:
+        result = subprocess.run(
+            ["fc-match", "--format=%{family}\n%{file}\n", font_name],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return None
+
+    if result.returncode != 0:
+        return None
+
+    lines = result.stdout.splitlines()
+    if len(lines) < 2:
+        return None
+
+    matched_families = [family.strip() for family in lines[0].split(",")]
+    if font_name.casefold() not in {family.casefold() for family in matched_families}:
+        return None
+
+    font_path = Path(lines[1])
+    if not font_path.exists():
+        return None
+
+    registered_paths: set[Path] = set()
+    for pattern in ("*.ttf", "*.otf"):
+        for candidate in sorted(font_path.parent.glob(pattern)):
+            family_name = font_manager.FontProperties(fname=candidate).get_name()
+            if family_name.casefold() == font_name.casefold():
+                font_manager.fontManager.addfont(candidate)
+                registered_paths.add(candidate)
+
+    if font_path not in registered_paths:
+        font_manager.fontManager.addfont(font_path)
+    return font_manager.FontProperties(fname=font_path).get_name()
 
 
 def _select_rate_unit(max_mpts: float) -> tuple[str, float]:
@@ -648,7 +723,7 @@ def _plot_line_layout(
             borderaxespad=0.0,
         )
 
-    fig.savefig(str(out_path))
+    fig.savefig(str(out_path), dpi=EXPORT_DPI)
     plt.close(fig)
     print(f"[ok] wrote {out_path}")
 
@@ -709,7 +784,40 @@ def _plot_bar_layout(
             title_fontsize=8,
         )
 
-    fig.savefig(str(out_path))
+    fig.savefig(str(out_path), dpi=EXPORT_DPI)
+    plt.close(fig)
+    print(f"[ok] wrote {out_path}")
+
+
+def _plot_bar_one(
+    rows: list[dict[str, str]],
+    *,
+    op: str,
+    dim: int,
+    title_prefix: str,
+    title_postfix: str,
+    sizes: list[int],
+    out_path: Path,
+) -> None:
+
+    fig, ax_left = plt.subplots(figsize=_single_panel_figsize())
+    ok = _draw_bar_panel(
+        ax_left,
+        rows=rows,
+        op=op,
+        dim=dim,
+        title_prefix=title_prefix,
+        title_postfix=title_postfix,
+        sizes=sizes,
+        show_legend=True,
+    )
+    if not ok:
+        plt.close(fig)
+        print(f"[warn] no rows for op={op} dim={dim}; skipping {out_path.name}")
+        return
+
+    fig.tight_layout()
+    fig.savefig(str(out_path), dpi=EXPORT_DPI)
     plt.close(fig)
     print(f"[ok] wrote {out_path}")
 
@@ -740,7 +848,7 @@ def _plot_line_one(
         return
 
     fig.tight_layout()
-    fig.savefig(str(out_path), dpi=180)
+    fig.savefig(str(out_path), dpi=EXPORT_DPI)
     plt.close(fig)
     print(f"[ok] wrote {out_path}")
 
@@ -763,7 +871,7 @@ def main() -> int:
     p = argparse.ArgumentParser(
         description=(
             "Create line/bar benchmark charts from unified bench_results.csv. "
-            "Supports 2x2 and 2x1 layouts."
+            "Supports comma-separated 2x2, 2x1, and individual layouts."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -783,9 +891,10 @@ def main() -> int:
     p.add_argument(
         "--layout",
         type=str,
-        choices=sorted(LAYOUT_SPECS.keys()),
-        default="2x2",
-        help="Panel layout for combined line/bar figures.",
+        default=DEFAULT_LAYOUTS,
+        help=(
+            f"Comma-separated layouts to render. Choices: {', '.join(LAYOUT_CHOICES)}."
+        ),
     )
     p.add_argument(
         "--bar-sizes",
@@ -830,52 +939,76 @@ def main() -> int:
         raise FileNotFoundError(f"Missing results CSV: {csv_path}")
 
     rows = _load_rows(csv_path)
-    selected_bar_sizes = _parse_bar_sizes(args.bar_sizes)
+    try:
+        selected_bar_sizes = _parse_bar_sizes(args.bar_sizes)
+        layouts = _parse_layouts(args.layout)
+    except ValueError as exc:
+        p.error(str(exc))
     title_prefix = args.title_prefix
     title_postfix = args.title_postfix
+    individual_plots = [
+        ("encode", 2),
+        ("encode", 3),
+        ("decode", 2),
+        ("decode", 3),
+    ]
 
     if args.plot_mode in {"line", "both"}:
-        plots = [
-            ("encode", 2),
-            ("encode", 3),
-            ("decode", 2),
-            ("decode", 3),
-        ]
-        for op, dim in plots:
-            out_path = results_dir / f"lines_{op}_{dim}d.png"
-            _plot_line_one(
-                rows,
-                op=op,
-                dim=dim,
-                title_prefix=title_prefix,
-                title_postfix=title_postfix,
-                out_path=out_path,
-            )
+        if "individual" in layouts:
+            for op, dim in individual_plots:
+                out_path = results_dir / f"lines_{op}_{dim}d.png"
+                _plot_line_one(
+                    rows,
+                    op=op,
+                    dim=dim,
+                    title_prefix=title_prefix,
+                    title_postfix=title_postfix,
+                    out_path=out_path,
+                )
 
-        _plot_line_layout(
-            rows,
-            layout=args.layout,
-            title_prefix=title_prefix,
-            title_postfix=title_postfix,
-            out_path=results_dir / f"lines_{args.layout}.png",
-        )
-        if args.layout == "2x2":
-            _plot_line_combined(
+        for layout in layouts:
+            if layout == "individual":
+                continue
+            _plot_line_layout(
                 rows,
+                layout=layout,
                 title_prefix=title_prefix,
                 title_postfix=title_postfix,
-                out_path=results_dir / "lines_2x2_all.png",
+                out_path=results_dir / f"lines_{layout}.png",
             )
+            if layout == "2x2":
+                _plot_line_combined(
+                    rows,
+                    title_prefix=title_prefix,
+                    title_postfix=title_postfix,
+                    out_path=results_dir / "lines_2x2_all.png",
+                )
 
     if args.plot_mode in {"bar", "both"}:
-        _plot_bar_layout(
-            rows,
-            layout=args.layout,
-            title_prefix=title_prefix,
-            title_postfix=title_postfix,
-            sizes=selected_bar_sizes,
-            out_path=results_dir / f"bars_{args.layout}.png",
-        )
+        if "individual" in layouts:
+            for op, dim in individual_plots:
+                out_path = results_dir / f"bars_{op}_{dim}d.png"
+                _plot_bar_one(
+                    rows,
+                    op=op,
+                    dim=dim,
+                    title_prefix=title_prefix,
+                    title_postfix=title_postfix,
+                    sizes=selected_bar_sizes,
+                    out_path=out_path,
+                )
+
+        for layout in layouts:
+            if layout == "individual":
+                continue
+            _plot_bar_layout(
+                rows,
+                layout=layout,
+                title_prefix=title_prefix,
+                title_postfix=title_postfix,
+                sizes=selected_bar_sizes,
+                out_path=results_dir / f"bars_{layout}.png",
+            )
 
     return 0
 

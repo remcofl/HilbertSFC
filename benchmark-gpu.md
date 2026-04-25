@@ -60,9 +60,9 @@ Size used for summary table: `64Mi = 67,108,864`
 | Skilling (Ours) | triton | 51734 | 60910 | 51634 | 54523 |
 | Skilling (Pointcept) | eager | 37.4 | 60.0 | 39.4 | 65.2 |
 
-![MI300X 2D encode/decode bar plots](docs/img/bench_gpu/mi300x_bars_2x1_2d.png)
+![MI300X 2D encode/decode bar plots](docs/img/bench_gpu/mi300x_bars_2x1-2d.png)
 
-![MI300X 3D encode/decode bar plots](docs/img/bench_gpu/mi300x_bars_2x1_3d.png)
+![MI300X 3D encode/decode bar plots](docs/img/bench_gpu/mi300x_bars_2x1-3d.png)
 
 ## Blackwell B200
 
@@ -76,9 +76,9 @@ Size used for summary table: `64Mi = 67,108,864`
 | Skilling (Ours) | triton | 37581 | 43230 | 36008 | 37622 |
 | Skilling (Pointcept) | eager | 37.9 | 48.4 | 46.4 | 63.1 |
 
-![B200 2D encode/decode bar plots](docs/img/bench_gpu/b200_bars_2x1_2d.png)
+![B200 2D encode/decode bar plots](docs/img/bench_gpu/b200_bars_2x1-2d.png)
 
-![B200 3D encode/decode bar plots](docs/img/bench_gpu/b200_bars_2x1_3d.png)
+![B200 3D encode/decode bar plots](docs/img/bench_gpu/b200_bars_2x1-3d.png)
 
 ## Blackwell RTX 5090
 
@@ -92,9 +92,9 @@ Size used for summary table: `32Mi = 33,554,432`
 | Skilling (Ours) | triton | 59578 | 70017 | 56889 | 61138 |
 | Skilling (Pointcept) | eager | OOM | OOM | OOM | OOM |
 
-![RTX 5090 2D encode/decode bar plots](docs/img/bench_gpu/rtx5090_bars_2x1_2d.png)
+![RTX 5090 2D encode/decode bar plots](docs/img/bench_gpu/rtx5090_bars_2x1-2d.png)
 
-![RTX 5090 3D encode/decode bar plots](docs/img/bench_gpu/rtx5090_bars_2x1_3d.png)
+![RTX 5090 3D encode/decode bar plots](docs/img/bench_gpu/rtx5090_bars_2x1-3d.png)
 
 ## Reproducing benchmark runs
 
