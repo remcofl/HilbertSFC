@@ -74,6 +74,46 @@ def test_2d_batch_roundtrip_and_parallel(rng: np.random.Generator) -> None:
     np.testing.assert_array_equal(y2, ys.astype(y2.dtype, copy=False))
 
 
+def test_2d_batch_max_nbits_roundtrip() -> None:
+    nbits = 32
+    xs = np.array(
+        [0, 1, 0xFFFF, 0x1_0000, 0x8000_0000, 0xFFFF_FFFF],
+        dtype=np.uint64,
+    )
+    ys = np.array(
+        [0, 2, 0x1_0000, 0xFFFF, 0x7FFF_FFFF, 0xFFFF_FFFE],
+        dtype=np.uint64,
+    )
+
+    idx = hilbert_encode_2d(xs, ys, nbits=nbits)
+    assert idx.dtype == np.dtype(np.uint64)
+
+    x2, y2 = hilbert_decode_2d(idx, nbits=nbits)
+    np.testing.assert_array_equal(x2, xs)
+    np.testing.assert_array_equal(y2, ys)
+
+
+def test_2d_kernel_tile_variants_agree_at_high_nbits() -> None:
+    nbits = 17
+    points = [
+        (0, 0),
+        (1, 2),
+        ((1 << 16) + 3, (1 << 16) + 5),
+        ((1 << nbits) - 1, (1 << nbits) - 2),
+    ]
+    enc_4 = get_hilbert_encode_2d_kernel(nbits, tile_nbits=4)
+    dec_4 = get_hilbert_decode_2d_kernel(nbits, tile_nbits=4)
+    enc_7 = get_hilbert_encode_2d_kernel(nbits, tile_nbits=7)
+    dec_7 = get_hilbert_decode_2d_kernel(nbits, tile_nbits=7)
+
+    for x, y in points:
+        idx_4 = int(enc_4(x, y))
+        idx_7 = int(enc_7(x, y))
+        assert idx_4 == idx_7
+        assert tuple(map(int, dec_4(idx_4))) == (x, y)
+        assert tuple(map(int, dec_7(idx_7))) == (x, y)
+
+
 def test_2d_batch_shape_validation(rng: np.random.Generator) -> None:
     xs = rng.integers(0, 16, size=10, dtype=np.uint8)
     ys = rng.integers(0, 16, size=11, dtype=np.uint8)

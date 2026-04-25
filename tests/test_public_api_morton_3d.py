@@ -10,6 +10,15 @@ from hilbertsfc.morton3d import (
 )
 
 
+def _reference_morton_encode_3d(x: int, y: int, z: int, nbits: int) -> int:
+    index = 0
+    for bit in range(nbits):
+        index |= ((x >> bit) & 1) << (3 * bit)
+        index |= ((y >> bit) & 1) << (3 * bit + 1)
+        index |= ((z >> bit) & 1) << (3 * bit + 2)
+    return index
+
+
 def test_package_exports_smoke() -> None:
     assert hasattr(hilbertsfc, "morton_encode_3d")
     assert hasattr(hilbertsfc, "morton_decode_3d")
@@ -34,6 +43,21 @@ def test_3d_scalar_nbits_1_layout() -> None:
     assert morton_encode_3d(1, 0, 0, nbits=1) == 1
     assert morton_encode_3d(0, 1, 0, nbits=1) == 2
     assert morton_encode_3d(0, 0, 1, nbits=1) == 4
+
+
+def test_3d_scalar_roundtrip_crosses_u64_kernel_boundary() -> None:
+    nbits = 11
+    points = [
+        (0, 0, 0),
+        (1, 2, 4),
+        ((1 << 10) + 1, (1 << 10) + 2, (1 << 10) + 3),
+        ((1 << nbits) - 1, (1 << nbits) - 2, (1 << nbits) - 3),
+    ]
+
+    for x, y, z in points:
+        idx = morton_encode_3d(x, y, z, nbits=nbits)
+        assert idx == _reference_morton_encode_3d(x, y, z, nbits)
+        assert morton_decode_3d(idx, nbits=nbits) == (x, y, z)
 
 
 def test_3d_scalar_invalid_nbits_raises() -> None:
@@ -83,6 +107,29 @@ def test_3d_batch_roundtrip_and_parallel(rng: np.random.Generator) -> None:
     np.testing.assert_array_equal(x2, x.astype(x2.dtype, copy=False))
     np.testing.assert_array_equal(y2, y.astype(y2.dtype, copy=False))
     np.testing.assert_array_equal(z2, z.astype(z2.dtype, copy=False))
+
+
+def test_3d_batch_max_nbits_matches_reference_and_roundtrips() -> None:
+    nbits = 21
+    x = np.array([0, 1, 0x3FF, 0x400, 0x1_00000, 0x1F_FFFF], dtype=np.uint64)
+    y = np.array([0, 2, 0x400, 0x3FF, 0x0F_FFFF, 0x1F_FFFE], dtype=np.uint64)
+    z = np.array([0, 4, 0x555, 0xAAA, 0x10_0000, 0x1F_FFFD], dtype=np.uint64)
+    expected = np.array(
+        [
+            _reference_morton_encode_3d(int(xi), int(yi), int(zi), nbits)
+            for xi, yi, zi in zip(x, y, z, strict=True)
+        ],
+        dtype=np.uint64,
+    )
+
+    idx = morton_encode_3d(x, y, z, nbits=nbits)
+    assert idx.dtype == np.dtype(np.uint64)
+    np.testing.assert_array_equal(idx, expected)
+
+    x2, y2, z2 = morton_decode_3d(idx, nbits=nbits)
+    np.testing.assert_array_equal(x2, x)
+    np.testing.assert_array_equal(y2, y)
+    np.testing.assert_array_equal(z2, z)
 
 
 def test_3d_decode_batch_out_triple_rule(rng: np.random.Generator) -> None:

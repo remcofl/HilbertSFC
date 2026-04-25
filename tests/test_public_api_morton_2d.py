@@ -10,6 +10,14 @@ from hilbertsfc.morton2d import (
 )
 
 
+def _reference_morton_encode_2d(x: int, y: int, nbits: int) -> int:
+    index = 0
+    for bit in range(nbits):
+        index |= ((x >> bit) & 1) << (2 * bit)
+        index |= ((y >> bit) & 1) << (2 * bit + 1)
+    return index
+
+
 def test_package_exports_smoke() -> None:
     assert hasattr(hilbertsfc, "morton_encode_2d")
     assert hasattr(hilbertsfc, "morton_decode_2d")
@@ -33,6 +41,21 @@ def test_2d_scalar_nbits_1_layout() -> None:
     assert morton_encode_2d(1, 0, nbits=1) == 1
     assert morton_encode_2d(0, 1, nbits=1) == 2
     assert morton_encode_2d(1, 1, nbits=1) == 3
+
+
+def test_2d_scalar_roundtrip_crosses_u64_kernel_boundary() -> None:
+    nbits = 17
+    points = [
+        (0, 0),
+        (1, 2),
+        ((1 << 16) + 3, (1 << 16) + 5),
+        ((1 << nbits) - 1, (1 << nbits) - 2),
+    ]
+
+    for x, y in points:
+        idx = morton_encode_2d(x, y, nbits=nbits)
+        assert idx == _reference_morton_encode_2d(x, y, nbits)
+        assert morton_decode_2d(idx, nbits=nbits) == (x, y)
 
 
 def test_2d_scalar_invalid_nbits_raises() -> None:
@@ -78,6 +101,33 @@ def test_2d_batch_roundtrip_and_parallel(rng: np.random.Generator) -> None:
     x2, y2 = morton_decode_2d(idx, nbits=nbits, parallel=True)
     np.testing.assert_array_equal(x2, xs.astype(x2.dtype, copy=False))
     np.testing.assert_array_equal(y2, ys.astype(y2.dtype, copy=False))
+
+
+def test_2d_batch_max_nbits_matches_reference_and_roundtrips() -> None:
+    nbits = 32
+    xs = np.array(
+        [0, 1, 0xFFFF, 0x1_0000, 0x8000_0000, 0xFFFF_FFFF],
+        dtype=np.uint64,
+    )
+    ys = np.array(
+        [0, 2, 0x1_0000, 0xFFFF, 0x7FFF_FFFF, 0xFFFF_FFFE],
+        dtype=np.uint64,
+    )
+    expected = np.array(
+        [
+            _reference_morton_encode_2d(int(x), int(y), nbits)
+            for x, y in zip(xs, ys, strict=True)
+        ],
+        dtype=np.uint64,
+    )
+
+    idx = morton_encode_2d(xs, ys, nbits=nbits)
+    assert idx.dtype == np.dtype(np.uint64)
+    np.testing.assert_array_equal(idx, expected)
+
+    x2, y2 = morton_decode_2d(idx, nbits=nbits)
+    np.testing.assert_array_equal(x2, xs)
+    np.testing.assert_array_equal(y2, ys)
 
 
 def test_2d_batch_shape_validation(rng: np.random.Generator) -> None:

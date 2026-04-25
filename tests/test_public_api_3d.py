@@ -75,6 +75,42 @@ def test_3d_batch_roundtrip_with_lut_dtype_and_parallel(
     np.testing.assert_array_equal(z2, z.astype(z2.dtype, copy=False))
 
 
+def test_3d_batch_max_nbits_roundtrip() -> None:
+    nbits = 21
+    x = np.array([0, 1, 0x3FF, 0x400, 0x1_00000, 0x1F_FFFF], dtype=np.uint64)
+    y = np.array([0, 2, 0x400, 0x3FF, 0x0F_FFFF, 0x1F_FFFE], dtype=np.uint64)
+    z = np.array([0, 4, 0x555, 0xAAA, 0x10_0000, 0x1F_FFFD], dtype=np.uint64)
+
+    idx = hilbert_encode_3d(x, y, z, nbits=nbits)
+    assert idx.dtype == np.dtype(np.uint64)
+
+    x2, y2, z2 = hilbert_decode_3d(idx, nbits=nbits)
+    np.testing.assert_array_equal(x2, x)
+    np.testing.assert_array_equal(y2, y)
+    np.testing.assert_array_equal(z2, z)
+
+
+def test_3d_kernel_lut_dtypes_agree_at_high_nbits() -> None:
+    nbits = 21
+    points = [
+        (0, 0, 0),
+        (1, 2, 4),
+        (0x3FF, 0x400, 0x555),
+        (0x1F_FFFF, 0x1F_FFFE, 0x1F_FFFD),
+    ]
+    enc_u16 = get_hilbert_encode_3d_kernel(nbits, lut_dtype=np.uint16)
+    dec_u16 = get_hilbert_decode_3d_kernel(nbits, lut_dtype=np.uint16)
+    enc_u64 = get_hilbert_encode_3d_kernel(nbits, lut_dtype=np.uint64)
+    dec_u64 = get_hilbert_decode_3d_kernel(nbits, lut_dtype=np.uint64)
+
+    for x, y, z in points:
+        idx_u16 = int(enc_u16(x, y, z))
+        idx_u64 = int(enc_u64(x, y, z))
+        assert idx_u16 == idx_u64
+        assert tuple(map(int, dec_u16(idx_u16))) == (x, y, z)
+        assert tuple(map(int, dec_u64(idx_u64))) == (x, y, z)
+
+
 def test_3d_decode_batch_out_triple_rule(rng: np.random.Generator) -> None:
     nbits = 3
     n = 10
