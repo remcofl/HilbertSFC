@@ -81,7 +81,7 @@ scripts = [
     "pillow>=12.1.0",
     "rich>=14.3.2",
 ]
-runtime-min = ["numpy==1.26.0", "numba==0.59.0"]
+runtime-min = ["numpy==1.26.0", "numba==0.65.0"]
 test = ["pytest>=9.0.2", "pytest-cov>=7.1.0", "pytest-xdist>=3.8.0"]
 torch-cpu = ["torch>=2.11.0"]
 torch-cpu-min = ["torch==2.5.0"]
