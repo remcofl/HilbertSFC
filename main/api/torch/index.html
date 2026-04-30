@@ -1238,17 +1238,17 @@ integer <code>torch.Tensor</code> inputs.</p>
 
 <a href="#hilbertsfc.torch.hilbert_encode_2d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_encode_2d</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">lut_cache</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TorchCacheMode (hilbertsfc.torch._luts.TorchCacheMode)" href="../types/torch-types/#hilbertsfc.torch.types.TorchCacheMode">TorchCacheMode</a></span> <span class="o">=</span> <span class="s2">&quot;device&quot;</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="torch.Tensor">Tensor</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1276,7 +1276,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>x</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1293,7 +1293,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>y</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1339,7 +1339,7 @@ that covers the input coordinate range.</p>
                 <code>out</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1481,7 +1481,7 @@ exact input size.</li>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1573,17 +1573,17 @@ with <code>fullgraph=True</code>.</p>
 
 <a href="#hilbertsfc.torch.hilbert_decode_2d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_decode_2d</span><span class="p">(</span>
-    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">lut_cache</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TorchCacheMode (hilbertsfc.torch._luts.TorchCacheMode)" href="../types/torch-types/#hilbertsfc.torch.types.TorchCacheMode">TorchCacheMode</a></span> <span class="o">=</span> <span class="s2">&quot;device&quot;</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1611,7 +1611,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>index</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1656,7 +1656,7 @@ that covers the input index range.</p>
                 <code>out_x</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1674,7 +1674,7 @@ dtype wide enough to hold <code>nbits</code> bits.</p>
                 <code>out_y</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1815,7 +1815,7 @@ exact input size.</li>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a>, <a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="torch.Tensor">Tensor</span>, <span title="torch.Tensor">Tensor</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1907,18 +1907,18 @@ with <code>fullgraph=True</code>.</p>
 
 <a href="#hilbertsfc.torch.hilbert_encode_3d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_encode_3d</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
-    <span class="n">z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">lut_cache</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TorchCacheMode (hilbertsfc.torch._luts.TorchCacheMode)" href="../types/torch-types/#hilbertsfc.torch.types.TorchCacheMode">TorchCacheMode</a></span> <span class="o">=</span> <span class="s2">&quot;device&quot;</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="torch.Tensor">Tensor</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1946,7 +1946,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>x</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1963,7 +1963,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>y</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -1980,7 +1980,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>z</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2026,7 +2026,7 @@ that covers the input coordinate range.</p>
                 <code>out</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2167,7 +2167,7 @@ exact input size.</li>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2259,18 +2259,18 @@ with <code>fullgraph=True</code>.</p>
 
 <a href="#hilbertsfc.torch.hilbert_decode_3d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">hilbert_decode_3d</span><span class="p">(</span>
-    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_z</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">lut_cache</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TorchCacheMode (hilbertsfc.torch._luts.TorchCacheMode)" href="../types/torch-types/#hilbertsfc.torch.types.TorchCacheMode">TorchCacheMode</a></span> <span class="o">=</span> <span class="s2">&quot;device&quot;</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2298,7 +2298,7 @@ to backend-specific implementations depending on device and backend settings.</p
                 <code>index</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></code>
+                  <code><span title="torch.Tensor">Tensor</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2343,7 +2343,7 @@ that covers the input index range.</p>
                 <code>out_x</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2361,7 +2361,7 @@ dtype wide enough to hold <code>nbits</code> bits.</p>
                 <code>out_y</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2379,7 +2379,7 @@ dtype wide enough to hold <code>nbits</code> bits.</p>
                 <code>out_z</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a> | None</code>
+                  <code><span title="torch.Tensor">Tensor</span> | None</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2520,7 +2520,7 @@ exact input size.</li>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a>, <a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a>, <a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<span title="torch.Tensor">Tensor</span>, <span title="torch.Tensor">Tensor</span>, <span title="torch.Tensor">Tensor</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2613,16 +2613,16 @@ with <code>fullgraph=True</code>.</p>
 
 <a href="#hilbertsfc.torch.morton_encode_2d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_encode_2d</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="torch.Tensor">Tensor</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2652,16 +2652,16 @@ accept <code>lut_cache</code>.</p>
 
 <a href="#hilbertsfc.torch.morton_decode_2d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_decode_2d</span><span class="p">(</span>
-    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2691,17 +2691,17 @@ accept <code>lut_cache</code>.</p>
 
 <a href="#hilbertsfc.torch.morton_encode_3d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_encode_3d</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
-    <span class="n">y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
-    <span class="n">z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
+    <span class="n">y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
+    <span class="n">z</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="torch.Tensor">Tensor</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2731,17 +2731,17 @@ accept <code>lut_cache</code>.</p>
 
 <a href="#hilbertsfc.torch.morton_decode_3d" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">morton_decode_3d</span><span class="p">(</span>
-    <span class="n">index</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_x</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_y</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">out_z</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_x</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_y</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">out_z</span><span class="p">:</span> <span class="n"><span title="torch.Tensor">Tensor</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_parallel</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="CPUBackend (hilbertsfc.torch._dispatch_common.CPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.CPUBackend">CPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">gpu_backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="GPUBackend (hilbertsfc.torch._dispatch_common.GPUBackend)" href="../types/torch-types/#hilbertsfc.torch.types.GPUBackend">GPUBackend</a></span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">triton_tuning</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TritonTuningMode (hilbertsfc.torch._tuning_mode.TritonTuningMode)" href="../types/torch-types/#hilbertsfc.torch.types.TritonTuningMode">TritonTuningMode</a></span> <span class="o">=</span> <span class="s2">&quot;heuristic&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="torch.Tensor" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor">Tensor</a></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">,</span> <span class="n"><span title="torch.Tensor">Tensor</span></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
