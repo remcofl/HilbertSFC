@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
   workflow_dispatch:
 
@@ -48,6 +48,26 @@ jobs:
 
       - name: Run Nox sessions
         run: uvx nox -s lint typecheck test test_min
+
+      - name: Build docs
+        run: uvx nox -s docs
+
+      - name: Build package
+        run: uv build
+
+      - name: Smoke test wheel
+        run: >
+          uv run --isolated --no-project --with dist/*.whl python -c "from
+          hilbertsfc import hilbert_decode_2d, hilbert_encode_2d; i =
+          hilbert_encode_2d(1, 2, nbits=2); assert hilbert_decode_2d(i, nbits=2)
+          == (1, 2)"
+
+      - name: Smoke test source distribution
+        run: >
+          uv run --isolated --no-project --with dist/*.tar.gz python -c "from
+          hilbertsfc import hilbert_decode_3d, hilbert_encode_3d; i =
+          hilbert_encode_3d(1, 2, 3, nbits=2); assert hilbert_decode_3d(i,
+          nbits=2) == (1, 2, 3)"
 
       - name: Run Torch Nox sessions
         if: steps.changes.outputs.torch == 'true'
