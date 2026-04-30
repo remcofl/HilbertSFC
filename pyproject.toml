@@ -44,7 +44,7 @@ Issues = "https://github.com/remcofl/HilbertSFC/issues"
 torch = ["torch>=2.5.0"]
 
 [build-system]
-requires = ["uv_build>=0.10.9,<0.11.0"]
+requires = ["uv_build>=0.10.9,<0.12.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
