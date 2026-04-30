@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use HilbertSFC in your research or software, please cite it
+  using this metadata."
+type: software
+title: "HilbertSFC"
+abstract: "Ultra-fast 2D and 3D Hilbert space-filling curve kernels for Python,
+  with NumPy and PyTorch APIs backed by Numba, Torch, and Triton kernels."
+authors:
+  - family-names: "Leijenaar"
+    given-names: "Remco"
+repository-code: "https://github.com/remcofl/HilbertSFC"
+url: "https://remcofl.github.io/HilbertSFC/"
+license: "MIT"
+version: "0.4.0"
+keywords:
+  - "Hilbert curve"
+  - "space-filling curve"
+  - "Morton order"
+  - "NumPy"
+  - "Numba"
+  - "PyTorch"
+  - "Triton"
