@@ -13,7 +13,8 @@ repos:
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.1
     hooks:
-    - id: markdownlint-cli2
+      - id: markdownlint-cli2
+        language_version: 24.15.0
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.11.7 # uv version.
     hooks:
