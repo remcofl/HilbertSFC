@@ -8,7 +8,6 @@ While the main API is designed for ease of use, the package also provides *kerne
 
 This is useful for fusing surrounding numerical operations such as quantization, tiling, or other pre- and post-processing steps into a single compiled loop. This can improve performance by keeping intermediate data in registers, reducing memory movement, avoiding temporary arrays, and reducing Python call overhead.
 
-
 ### Example: tiling / quantization inside a fused Numba loop
 
 A common use case is to quantize (floating-point) coordinates into a fixed tile grid. With kernel accessors, you can perform the quantization and Hilbert encoding inside one compiled loop.

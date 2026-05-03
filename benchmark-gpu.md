@@ -30,7 +30,9 @@ Unless otherwise noted, all GPU benchmarks use:
   - Index type: `uint64`
 
 ### Implementations
+
 The benchmark compare five implementations:
+
 - **Skilling (Pointcept)**: A Skilling algorithm implementation included in the Pointcept library and used by the PTv3 point cloud model, implemented in eager PyTorch. Source: [pointcept/models/utils/serialization/hilbert.py](https://github.com/Pointcept/Pointcept/blob/d74c646db6abec569d0f23e0c34e7ddfce142789/pointcept/models/utils/serialization/hilbert.py)
 - **Skilling (Ours)**: A Triton implementation of the Skilling algorithm. It is included to isolate the algorithmic differences between Skilling and HilbertSFC.
 - **HilbertSFC (eager)**: The HilbertSFC algorithm implemented in pure PyTorch (ATen ops) and executed eagerly.
@@ -44,7 +46,6 @@ The benchmark driver uses Triton's built-in benchmarking utility (`triton.testin
 Inside Triton's benchmark utility, a warmup phase is executed before collecting timing samples, the L2 cache is cleared before each measured iteration, and device timing events are synchronized before summary statistics are returned (including median).
 
 Each `(operation, dimension, size, implementation)` benchmark case runs in an isolated subprocess. This avoids carry-over effects between runs, such as compiled state and allocator/cache state.
-
 
 ## MI300X
 

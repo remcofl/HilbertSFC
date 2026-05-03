@@ -3,12 +3,14 @@
 ### Core APIs
 
 #### Hilbert
+
 - [`hilbert_encode_2d`][hilbertsfc.torch.hilbert_encode_2d]
 - [`hilbert_decode_2d`][hilbertsfc.torch.hilbert_decode_2d]
 - [`hilbert_encode_3d`][hilbertsfc.torch.hilbert_encode_3d]
 - [`hilbert_decode_3d`][hilbertsfc.torch.hilbert_decode_3d]
 
 #### Morton
+
 - [`morton_encode_2d`][hilbertsfc.torch.morton_encode_2d]
 - [`morton_decode_2d`][hilbertsfc.torch.morton_decode_2d]
 - [`morton_encode_3d`][hilbertsfc.torch.morton_encode_3d]

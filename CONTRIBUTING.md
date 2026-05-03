@@ -137,6 +137,7 @@ git push origin "v${NEW_VERSION}"
 ```
 
 ### Optional TestPyPI publish
+
 If you want a TestPyPI publish before the real release, push a `test-*` tag from
 the same commit instead of the `v*` tag first:
 

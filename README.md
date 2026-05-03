@@ -56,6 +56,7 @@ The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for
 ## Performance
 
 ### CPU - Numba
+
 HilbertSFC is orders of magnitude faster than existing Python implementations. It also outperforms the [*Fast Hilbert*](https://crates.io/crates/fast_hilbert) Rust crate by a factor of ~8x. In fact, HilbertSFC takes only ~6 CPU cycles per point for 2D encode/decode of 32-bit coordinates.
 
 #### 2D Points - Random, `nbits=32`, `size=5,000,000`
@@ -77,6 +78,7 @@ Additional benchmarks and details are available in the [benchmark-cpu.md](https:
 For a deep dive into how the HilbertSFC kernels are derived and why the implementation maps well to modern CPUs (FSM/LUT formulation, dependency chains, ILP/MLP, unrolling, constant folding, vectorization, gathers), see the [performance deep dive notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_performance_deep_dive.ipynb).
 
 ### GPU (CUDA/ROCm) - Torch/Triton
+
 HilbertSFC achieves very high throughput on modern GPUs, reaching up to ~143 billion points per second for 3D encode of 32-bit coordinates (`nbits=21`) on an NVIDIA Blackwell B200. At `size=64Mi`, compared to an eager PyTorch implementation of the Skilling algorithm, it is roughly 3100× faster for 3D encode and 2300× faster for 3D decode.
 
 #### 2D and 3D Points - Random, `nbits=32` (2D), `nbits=21` (3D), `size=64Mi (2^26)`, throughput in `Mpts/s`
@@ -102,13 +104,13 @@ See [benchmark-gpu.md](https://github.com/remcofl/HilbertSFC/blob/main/benchmark
 
 Install the base package with either `pip` or `uv`:
 
-####  With pip:
+#### With pip
 
 ```bash
 pip install hilbertsfc
 ```
 
-#### Or with uv:
+#### Or with uv
 
 ```bash
 uv add hilbertsfc
@@ -121,6 +123,7 @@ To enable the optional PyTorch extension, install with the `torch` extra:
 ```bash
 pip install hilbertsfc[torch]
 ```
+
 > [!NOTE]
 >
 > By default, installing `hilbertsfc[torch]` pulls in a platform-default PyTorch build:
@@ -130,7 +133,6 @@ pip install hilbertsfc[torch]
 >
 > If you need a specific PyTorch, CUDA, or ROCm version, follow the official
 > [PyTorch installation instructions](https://pytorch.org/get-started/locally/). Then install `hilbertsfc[torch]` as shown above.
-
 
 ### Usage
 
@@ -164,6 +166,7 @@ ys = np.array([3, 2, 1, 0], dtype=np.uint32)
 
 indices = hilbert_encode_2d(xs, ys, nbits=2)
 ```
+
 This is the preferred use for high-throughput workloads on CPU. It can be further accelerated with `parallel=True`.
 
 #### PyTorch tensors
@@ -187,7 +190,9 @@ xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)
 HilbertSFC also supports `torch.compile`. Before entering a compiled region, call `precache_compile_luts(...)` so LUT materialization happens outside the compiled graph.
 
 ## Learn more
+
 For more details and advanced usage, see:
+
 - [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart)
 - [Advanced usage guide](https://remcofl.github.io/HilbertSFC/latest/advanced-usage)
 - [API reference](https://remcofl.github.io/HilbertSFC/latest/api/index)

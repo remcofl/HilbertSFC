@@ -40,7 +40,6 @@ The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for
 If you have 2D or 3D coordinates and need a 1D ordering that preserves spatial locality, the Hilbert space-filling curve is a strong choice: points that are close in Euclidean space tend to remain close after mapping to a Hilbert index. HilbertSFC
 is designed for high-throughput workloads, such as spatial indexing (GIS/databases), scientific computing, and machine/deep learning, where Hilbert curve mapping performance matters.
 
-
 ## Quick start
 
 Start here: [Quick start](quickstart.md)

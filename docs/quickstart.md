@@ -69,7 +69,6 @@ uv add "hilbertsfc[torch]" --index https://download.pytorch.org/whl/cu130 --inde
 ///
 ///
 
-
 ## First steps
 
 ### Python scalars
@@ -85,7 +84,6 @@ x, y = hilbert_decode_2d(index, nbits=10)     # x = 17, y = 23
 
 `nbits` controls the coordinate domain `[0, 2**nbits)` on each axis. For best performance, pass the smallest value that covers your input range.
 
-
 The 3D API follows the same pattern via [`hilbert_encode_3d`][hilbertsfc.hilbert_encode_3d] and [`hilbert_decode_3d`][hilbertsfc.hilbert_decode_3d]. Morton/z-order functions mirror these names with [`morton_encode_2d`][hilbertsfc.morton_encode_2d], [`morton_decode_2d`][hilbertsfc.morton_decode_2d], [`morton_encode_3d`][hilbertsfc.morton_encode_3d], and [`morton_decode_3d`][hilbertsfc.morton_decode_3d].
 
 /// admonition | `nbits` compatibility
@@ -93,7 +91,6 @@ The 3D API follows the same pattern via [`hilbert_encode_3d`][hilbertsfc.hilbert
 
 Hilbert indices obtained with a certain `nbits` are compatible with those from another `nbits`, given that the coordinates are within the valid range. This is because the kernels resolve the starting state parity to ensure compatibility.
 ///
-
 
 ### NumPy arrays
 
@@ -122,8 +119,6 @@ Arbitrary shapes are supported with *zero-copy* access. Strided views also work 
 Use `parallel=True` to dispatch the parallel kernel. The number of threads can be controlled with the environment variable `NUMBA_NUM_THREADS` or at runtime via `numba.set_num_threads()`.
 ///
 
-
-
 ### PyTorch tensors
 
 Use the torch frontend API [`hilbertsfc.torch`][hilbertsfc.torch] for PyTorch tensors on CPU and accelerator devices. By default on CUDA, contiguous tensors take the Triton path when available; otherwise the implementation falls back to the Torch backend.
@@ -144,6 +139,7 @@ xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)
 ```
 
 #### Use with `torch.compile`
+
 If you plan to use [`torch.compile`](https://pytorch.org/docs/stable/generated/torch.compile.html), call [`precache_compile_luts`][hilbertsfc.torch.precache_compile_luts] first so LUT materialization happens outside the compiled region. This avoids graph breaks and extra overhead, and is required for `fullgraph=True`.
 
 ```python
