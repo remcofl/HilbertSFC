@@ -84,18 +84,24 @@ def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
 
     if tile_nbits == 7:
         lut = lut_2d7b_q_bs_u64()
-        kernel = _hilbert_decode_2d_7bit_compacted_bs
+
+        @nb.njit(inline="always", cache=True)
+        def decode_2d_7bit(index: IntScalar) -> tuple[int, int]:
+            return _hilbert_decode_2d_7bit_compacted_bs(index, nbits, lut)
+
+        return decode_2d_7bit
+
     elif tile_nbits == 4:
         lut = lut_2d4b_q_bs_u64()
-        kernel = _hilbert_decode_2d_4bit_compacted_bs
+
+        @nb.njit(inline="always", cache=True)
+        def decode_2d_4bit(index: IntScalar) -> tuple[int, int]:
+            return _hilbert_decode_2d_4bit_compacted_bs(index, nbits, lut)
+
+        return decode_2d_4bit
+
     else:
         raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")
-
-    @nb.njit(inline="always", cache=False)
-    def decode_2d(index: IntScalar) -> tuple[int, int]:
-        return kernel(index, nbits, lut)
-
-    return decode_2d
 
 
 @kernel_cache
@@ -106,12 +112,63 @@ def build_hilbert_decode_2d_batch_impl(
 
     validate_nbits_2d(nbits)
 
-    decode_scalar = build_hilbert_decode_2d_impl(nbits, tile_nbits=tile_nbits)
+    if tile_nbits is None:
+        tile_nbits = _auto_tile_nbits_2d(nbits)
 
-    @nb.njit(parallel=parallel, cache=False)
-    def decode_2d_batch(indices: UIntArray, xs: UIntArray, ys: UIntArray) -> None:
-        n = indices.size
-        for i in nb.prange(n):  # type: ignore[not-iterable]
-            xs.flat[i], ys.flat[i] = decode_scalar(indices.flat[i])
+    if tile_nbits == 7:
+        lut = lut_2d7b_q_bs_u64()
+        if parallel:
 
-    return decode_2d_batch
+            @nb.njit(parallel=True, cache=True)
+            def decode_2d_batch_7bit_parallel(
+                indices: UIntArray, xs: UIntArray, ys: UIntArray
+            ) -> None:
+                n = indices.size
+                for i in nb.prange(n):  # type: ignore[not-iterable]
+                    xs.flat[i], ys.flat[i] = _hilbert_decode_2d_7bit_compacted_bs(
+                        indices.flat[i], nbits, lut
+                    )
+
+            return decode_2d_batch_7bit_parallel
+
+        @nb.njit(parallel=False, cache=True)
+        def decode_2d_batch_7bit_serial(
+            indices: UIntArray, xs: UIntArray, ys: UIntArray
+        ) -> None:
+            n = indices.size
+            for i in range(n):
+                xs.flat[i], ys.flat[i] = _hilbert_decode_2d_7bit_compacted_bs(
+                    indices.flat[i], nbits, lut
+                )
+
+        return decode_2d_batch_7bit_serial
+
+    if tile_nbits == 4:
+        lut = lut_2d4b_q_bs_u64()
+        if parallel:
+
+            @nb.njit(parallel=True, cache=True)
+            def decode_2d_batch_4bit_parallel(
+                indices: UIntArray, xs: UIntArray, ys: UIntArray
+            ) -> None:
+                n = indices.size
+                for i in nb.prange(n):  # type: ignore[not-iterable]
+                    xs.flat[i], ys.flat[i] = _hilbert_decode_2d_4bit_compacted_bs(
+                        indices.flat[i], nbits, lut
+                    )
+
+            return decode_2d_batch_4bit_parallel
+
+        @nb.njit(parallel=False, cache=True)
+        def decode_2d_batch_4bit_serial(
+            indices: UIntArray, xs: UIntArray, ys: UIntArray
+        ) -> None:
+            n = indices.size
+            for i in range(n):
+                xs.flat[i], ys.flat[i] = _hilbert_decode_2d_4bit_compacted_bs(
+                    indices.flat[i], nbits, lut
+                )
+
+        return decode_2d_batch_4bit_serial
+
+    raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")

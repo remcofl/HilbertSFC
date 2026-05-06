@@ -62,7 +62,7 @@ def build_morton_encode_2d_impl(nbits: int):
 
     validate_nbits_2d(nbits)
 
-    @nb.njit(inline="always", cache=False)
+    @nb.njit(inline="always", cache=True)
     def encode_2d(x: IntScalar, y: IntScalar) -> int:
         return _morton_encode_2d(x, y, nbits)  # type: ignore[reportReturnType]
 
@@ -75,12 +75,22 @@ def build_morton_encode_2d_batch_impl(nbits: int, *, parallel: bool = False):
 
     validate_nbits_2d(nbits)
 
-    encode_scalar = build_morton_encode_2d_impl(nbits)
+    if parallel:
 
-    @nb.njit(parallel=parallel, cache=False)
-    def encode_2d_batch(xs: UIntArray, ys: UIntArray, out: UIntArray) -> None:
+        @nb.njit(parallel=True, cache=True)
+        def encode_2d_batch_parallel(
+            xs: UIntArray, ys: UIntArray, out: UIntArray
+        ) -> None:
+            n = xs.size
+            for i in nb.prange(n):  # type: ignore[not-iterable]
+                out.flat[i] = _morton_encode_2d(xs.flat[i], ys.flat[i], nbits)
+
+        return encode_2d_batch_parallel
+
+    @nb.njit(parallel=False, cache=True)
+    def encode_2d_batch_serial(xs: UIntArray, ys: UIntArray, out: UIntArray) -> None:
         n = xs.size
-        for i in nb.prange(n):  # type: ignore[not-iterable]
-            out.flat[i] = encode_scalar(xs.flat[i], ys.flat[i])
+        for i in range(n):
+            out.flat[i] = _morton_encode_2d(xs.flat[i], ys.flat[i], nbits)
 
-    return encode_2d_batch
+    return encode_2d_batch_serial

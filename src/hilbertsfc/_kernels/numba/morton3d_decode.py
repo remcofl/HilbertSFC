@@ -69,7 +69,7 @@ def build_morton_decode_3d_impl(nbits: int):
 
     validate_nbits_3d(nbits)
 
-    @nb.njit(inline="always", cache=False)
+    @nb.njit(inline="always", cache=True)
     def decode_3d(index: IntScalar) -> tuple[int, int, int]:
         return _morton_decode_3d(index, nbits)  # type: ignore[reportReturnType]
 
@@ -82,14 +82,28 @@ def build_morton_decode_3d_batch_impl(nbits: int, *, parallel: bool = False):
 
     validate_nbits_3d(nbits)
 
-    decode_scalar = build_morton_decode_3d_impl(nbits)
+    if parallel:
 
-    @nb.njit(parallel=parallel, cache=False)
-    def decode_3d_batch(
+        @nb.njit(parallel=True, cache=True)
+        def decode_3d_batch_parallel(
+            indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
+        ) -> None:
+            n = indices.size
+            for i in nb.prange(n):  # type: ignore[not-iterable]
+                xs.flat[i], ys.flat[i], zs.flat[i] = _morton_decode_3d(
+                    indices.flat[i], nbits
+                )
+
+        return decode_3d_batch_parallel
+
+    @nb.njit(parallel=False, cache=True)
+    def decode_3d_batch_serial(
         indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
     ) -> None:
         n = indices.size
-        for i in nb.prange(n):  # type: ignore[not-iterable]
-            xs.flat[i], ys.flat[i], zs.flat[i] = decode_scalar(indices.flat[i])
+        for i in range(n):
+            xs.flat[i], ys.flat[i], zs.flat[i] = _morton_decode_3d(
+                indices.flat[i], nbits
+            )
 
-    return decode_3d_batch
+    return decode_3d_batch_serial

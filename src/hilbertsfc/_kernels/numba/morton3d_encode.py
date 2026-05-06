@@ -70,7 +70,7 @@ def build_morton_encode_3d_impl(nbits: int):
 
     validate_nbits_3d(nbits)
 
-    @nb.njit(inline="always", cache=False)
+    @nb.njit(inline="always", cache=True)
     def encode_3d(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
         return _morton_encode_3d(x, y, z, nbits)  # type: ignore[reportReturnType]
 
@@ -83,14 +83,26 @@ def build_morton_encode_3d_batch_impl(nbits: int, *, parallel: bool = False):
 
     validate_nbits_3d(nbits)
 
-    encode_scalar = build_morton_encode_3d_impl(nbits)
+    if parallel:
 
-    @nb.njit(parallel=parallel, cache=False)
-    def encode_3d_batch(
+        @nb.njit(parallel=True, cache=True)
+        def encode_3d_batch_parallel(
+            xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
+        ) -> None:
+            n = xs.size
+            for i in nb.prange(n):  # type: ignore[not-iterable]
+                out.flat[i] = _morton_encode_3d(
+                    xs.flat[i], ys.flat[i], zs.flat[i], nbits
+                )
+
+        return encode_3d_batch_parallel
+
+    @nb.njit(parallel=False, cache=True)
+    def encode_3d_batch_serial(
         xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
     ) -> None:
         n = xs.size
-        for i in nb.prange(n):  # type: ignore[not-iterable]
-            out.flat[i] = encode_scalar(xs.flat[i], ys.flat[i], zs.flat[i])
+        for i in range(n):
+            out.flat[i] = _morton_encode_3d(xs.flat[i], ys.flat[i], zs.flat[i], nbits)
 
-    return encode_3d_batch
+    return encode_3d_batch_serial
