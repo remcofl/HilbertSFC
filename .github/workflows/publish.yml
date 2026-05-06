@@ -29,10 +29,10 @@ jobs:
         run: uv build
 
       - name: Smoke test (wheel)
-        run: uv run --isolated --no-project --with dist/*.whl --with pytest pytest -q
+        run: uv run --no-cache --isolated --no-project --with dist/*.whl --with pytest pytest -q
 
       - name: Smoke test (source distribution)
-        run: uv run --isolated --no-project --with dist/*.tar.gz --with pytest pytest -q
+        run: uv run --no-cache --isolated --no-project --with dist/*.tar.gz --with pytest pytest -q
 
       - name: Publish
         run: |
