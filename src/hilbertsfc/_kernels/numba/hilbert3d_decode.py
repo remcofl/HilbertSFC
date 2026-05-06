@@ -46,7 +46,7 @@ def build_hilbert_decode_3d_impl(
 
     lut = lut_3d2b_so_sb(lut_dtype)
 
-    @nb.njit(inline="always", cache=False)
+    @nb.njit(inline="always", cache=True)
     def decode_3d(index: IntScalar) -> tuple[int, int, int]:
         return _hilbert_decode_3d_2bit_sb(index, nbits, lut)
 
@@ -61,14 +61,30 @@ def build_hilbert_decode_3d_batch_impl(
 
     validate_nbits_3d(nbits)
 
-    decode_scalar = build_hilbert_decode_3d_impl(nbits, lut_dtype=lut_dtype)
+    lut = lut_3d2b_so_sb(lut_dtype)
 
-    @nb.njit(parallel=parallel, cache=False)
-    def decode_3d_batch(
+    if parallel:
+
+        @nb.njit(parallel=True, cache=True)
+        def decode_3d_batch_parallel(
+            indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
+        ) -> None:
+            n = indices.size
+            for i in nb.prange(n):  # type: ignore[not-iterable]
+                xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_2bit_sb(
+                    indices.flat[i], nbits, lut
+                )
+
+        return decode_3d_batch_parallel
+
+    @nb.njit(parallel=False, cache=True)
+    def decode_3d_batch_serial(
         indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
     ) -> None:
         n = indices.size
-        for i in nb.prange(n):  # type: ignore[not-iterable]
-            xs.flat[i], ys.flat[i], zs.flat[i] = decode_scalar(indices.flat[i])
+        for i in range(n):
+            xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_2bit_sb(
+                indices.flat[i], nbits, lut
+            )
 
-    return decode_3d_batch
+    return decode_3d_batch_serial

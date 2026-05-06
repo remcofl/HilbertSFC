@@ -48,7 +48,7 @@ def build_hilbert_encode_3d_impl(
 
     lut = lut_3d2b_sb_so(lut_dtype)
 
-    @nb.njit(inline="always", cache=False)
+    @nb.njit(inline="always", cache=True)
     def encode_3d(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
         return _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut)  # type: ignore[reportReturnType]
 
@@ -63,14 +63,30 @@ def build_hilbert_encode_3d_batch_impl(
 
     validate_nbits_3d(nbits)
 
-    encode_scalar = build_hilbert_encode_3d_impl(nbits, lut_dtype=lut_dtype)
+    lut = lut_3d2b_sb_so(lut_dtype)
 
-    @nb.njit(parallel=parallel, cache=False)
-    def encode_3d_batch(
+    if parallel:
+
+        @nb.njit(parallel=True, cache=True)
+        def encode_3d_batch_parallel(
+            xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
+        ) -> None:
+            n = xs.size
+            for i in nb.prange(n):  # type: ignore[not-iterable]
+                out.flat[i] = _hilbert_encode_3d_2bit_so(
+                    xs.flat[i], ys.flat[i], zs.flat[i], nbits, lut
+                )
+
+        return encode_3d_batch_parallel
+
+    @nb.njit(parallel=False, cache=True)
+    def encode_3d_batch_serial(
         xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
     ) -> None:
         n = xs.size
-        for i in nb.prange(n):  # type: ignore[not-iterable]
-            out.flat[i] = encode_scalar(xs.flat[i], ys.flat[i], zs.flat[i])
+        for i in range(n):
+            out.flat[i] = _hilbert_encode_3d_2bit_so(
+                xs.flat[i], ys.flat[i], zs.flat[i], nbits, lut
+            )
 
-    return encode_3d_batch
+    return encode_3d_batch_serial
