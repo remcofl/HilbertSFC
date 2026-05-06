@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/advanced-usage/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/advanced-usage/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/quickstart/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/quickstart/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/api/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/api/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/api/hilbertsfc/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/api/hilbertsfc/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/api/torch/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/api/torch/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/api/types/torch-types/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/api/types/torch-types/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
     <url>
-         <loc>https://remcofl.github.io/HilbertSFC/0.4.0/api/types/types/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <loc>https://remcofl.github.io/HilbertSFC/0.4.1/api/types/types/</loc>
+         <lastmod>2026-05-06</lastmod>
     </url>
 </urlset>
