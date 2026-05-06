@@ -57,14 +57,14 @@ jobs:
 
       - name: Smoke test wheel
         run: >
-          uv run --isolated --no-project --with dist/*.whl python -c "from
+          uv run --no-cache --isolated --no-project --with dist/*.whl python -c "from
           hilbertsfc import hilbert_decode_2d, hilbert_encode_2d; i =
           hilbert_encode_2d(1, 2, nbits=2); assert hilbert_decode_2d(i, nbits=2)
           == (1, 2)"
 
       - name: Smoke test source distribution
         run: >
-          uv run --isolated --no-project --with dist/*.tar.gz python -c "from
+          uv run --no-cache --isolated --no-project --with dist/*.tar.gz python -c "from
           hilbertsfc import hilbert_decode_3d, hilbert_encode_3d; i =
           hilbert_encode_3d(1, 2, 3, nbits=2); assert hilbert_decode_3d(i,
           nbits=2) == (1, 2, 3)"
