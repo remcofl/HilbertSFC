@@ -11,7 +11,7 @@ authors:
 repository-code: "https://github.com/remcofl/HilbertSFC"
 url: "https://remcofl.github.io/HilbertSFC/"
 license: "MIT"
-version: "0.4.0"
+version: "0.4.1"
 keywords:
   - "Hilbert curve"
   - "space-filling curve"
