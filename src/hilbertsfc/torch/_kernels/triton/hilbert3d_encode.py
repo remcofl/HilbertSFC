@@ -116,7 +116,6 @@ def hilbert_encode_3d_triton(
     nbits: int,
     out: torch.Tensor | None = None,
     lut_cache: TorchCacheMode = "device",
-    load_lut_into_shared_memory: bool = True,
     triton_tuning: TritonTuningMode = "heuristic",
 ) -> torch.Tensor:
     """Encode (x, y, z) to Hilbert indices using Triton."""
@@ -136,12 +135,9 @@ def hilbert_encode_3d_triton(
 
     # Triton < 3.3.0 does not have tl.gather, fall back to LUT in global memory.
     # This is still performant due to caching.
-    load_lut_into_shared_memory = True if hasattr(tl, "gather") else False
+    shmem_lut = hasattr(tl, "gather")
     if triton_tuning == "heuristic":
-        block_size, num_warps = _choose_launch_config(
-            n_elements,
-            shmem_lut=load_lut_into_shared_memory,
-        )
+        block_size, num_warps = _choose_launch_config(n_elements, shmem_lut)
         hilbert_encode_3d_2bit_so[grid](  # type: ignore[reportIndexIssue]
             x,
             y,
@@ -152,7 +148,7 @@ def hilbert_encode_3d_triton(
             lut_ptr=lut,
             BLOCK_SIZE=block_size,
             NBITS=nbits,
-            SHMEM_LUT=load_lut_into_shared_memory,
+            SHMEM_LUT=shmem_lut,
             num_warps=num_warps,  # type: ignore[reportCallIssue]
         )
         return out
@@ -167,7 +163,7 @@ def hilbert_encode_3d_triton(
         AUTOTUNE_KEY=autotune_key,
         lut_ptr=lut,
         NBITS=nbits,
-        SHMEM_LUT=load_lut_into_shared_memory,
+        SHMEM_LUT=shmem_lut,
     )
 
     return out
