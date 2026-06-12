@@ -504,3 +504,25 @@ def test_torch_compile_fullgraph_cuda_torch_backend_2d_decode_small_dtypes_and_n
 
     np.testing.assert_array_equal(out_x.detach().cpu().numpy(), x_np)
     np.testing.assert_array_equal(out_y.detach().cpu().numpy(), y_np)
+
+
+@pytest.mark.torch
+@pytest.mark.compile
+@pytest.mark.no_graph_break
+def test_torch_compile_fullgraph_allows_explicit_out_buffer() -> None:
+    torch, htorch = _torch_pair()
+
+    x = torch.arange(4, dtype=torch.int16)
+    y = torch.arange(4, dtype=torch.int16)
+    out = torch.empty(4, dtype=torch.int16)
+    htorch.precache_compile_luts(device=x.device, op="hilbert_encode_2d")
+
+    def fn(a, b, result):
+        return htorch.hilbert_encode_2d(
+            a, b, nbits=4, out=result, cpu_backend="torch", gpu_backend="torch"
+        )
+
+    compiled_fn = torch.compile(fn, fullgraph=True)
+    result = compiled_fn(x, y, out)
+
+    assert result is out

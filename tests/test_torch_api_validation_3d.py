@@ -274,3 +274,30 @@ def test_decode_3d_auto_backend_while_compiling_avoids_numba(
     assert out_x.shape == index.shape
     assert out_y.shape == index.shape
     assert out_z.shape == index.shape
+
+
+@pytest.mark.torch
+def test_3d_rejects_overlapping_out_tensors() -> None:
+    torch, htorch, _ = _torch_pair()
+
+    storage = torch.arange(5, dtype=torch.int16)
+    x = storage[:4]
+    y = torch.arange(4, dtype=torch.int16)
+    z = torch.arange(4, dtype=torch.int16)
+    out = storage[1:]
+    with pytest.raises(ValueError, match="out must not overlap x"):
+        htorch.hilbert_encode_3d(
+            x, y, z, nbits=4, out=out, cpu_backend="torch", gpu_backend="torch"
+        )
+
+    index = torch.arange(4, dtype=torch.int16)
+    with pytest.raises(ValueError, match="out_x must not overlap out_y"):
+        htorch.hilbert_decode_3d(
+            index,
+            nbits=4,
+            out_x=storage[:4],
+            out_y=storage[1:],
+            out_z=torch.empty(4, dtype=torch.int16),
+            cpu_backend="torch",
+            gpu_backend="torch",
+        )

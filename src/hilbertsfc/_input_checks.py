@@ -34,3 +34,29 @@ def require_int_array(x: object, name: str) -> np.ndarray:
     if not np.issubdtype(x.dtype, np.integer):
         raise TypeError(f"{name} must have an integer dtype; got {x.dtype!r}")
     return x
+
+
+def reject_obvious_array_memory_overlap(
+    output: np.ndarray,
+    output_name: str,
+    *others: tuple[np.ndarray, str],
+) -> None:
+    """Reject output arrays when memory overlap is cheaply and definitely detected.
+
+    This is intentionally conservative: it first uses a cheap bounds check to
+    rule out impossible overlap, then asks NumPy for a bounded exact overlap
+    check. If NumPy cannot decide within the work limit, overlap is treated as
+    unproven and not rejected.
+    """
+
+    for other, other_name in others:
+        if not np.may_share_memory(output, other):
+            continue
+
+        try:
+            overlaps = np.shares_memory(output, other, max_work=1000)  # type: ignore[reportArgumentType]
+        except np.exceptions.TooHardError:
+            overlaps = False
+
+        if overlaps:
+            raise ValueError(f"{output_name} must not overlap {other_name}")

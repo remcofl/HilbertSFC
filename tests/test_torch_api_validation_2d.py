@@ -233,3 +233,58 @@ def test_decode_2d_auto_backend_while_compiling_avoids_numba(
     )
     assert out_x.shape == index.shape
     assert out_y.shape == index.shape
+
+
+@pytest.mark.torch
+def test_2d_rejects_overlapping_out_tensors() -> None:
+    torch, htorch, _ = _torch_pair()
+
+    storage = torch.arange(5, dtype=torch.int16)
+    x = storage[:4]
+    y = torch.arange(4, dtype=torch.int16)
+    out = storage[1:]
+    with pytest.raises(ValueError, match="out must not overlap x"):
+        htorch.hilbert_encode_2d(
+            x, y, nbits=4, out=out, cpu_backend="torch", gpu_backend="torch"
+        )
+
+    index = torch.arange(4, dtype=torch.int16)
+    with pytest.raises(ValueError, match="out_x must not overlap out_y"):
+        htorch.hilbert_decode_2d(
+            index,
+            nbits=4,
+            out_x=storage[:4],
+            out_y=storage[1:],
+            cpu_backend="torch",
+            gpu_backend="torch",
+        )
+
+
+@pytest.mark.torch
+def test_2d_allows_disjoint_contiguous_out_tensor_from_same_storage() -> None:
+    torch, htorch, _ = _torch_pair()
+
+    storage = torch.arange(8, dtype=torch.int16)
+    x = storage[:4]
+    y = torch.arange(4, dtype=torch.int16)
+    out = storage[4:]
+
+    result = htorch.hilbert_encode_2d(
+        x, y, nbits=4, out=out, cpu_backend="torch", gpu_backend="torch"
+    )
+    assert result is out
+
+
+@pytest.mark.torch
+def test_2d_allows_ambiguous_noncontiguous_out_tensor() -> None:
+    torch, htorch, _ = _torch_pair()
+
+    storage = torch.arange(16, dtype=torch.int16)
+    x = storage[::4]
+    y = torch.arange(4, dtype=torch.int16)
+    out = storage[1::4]
+
+    result = htorch.hilbert_encode_2d(
+        x, y, nbits=4, out=out, cpu_backend="torch", gpu_backend="torch"
+    )
+    assert result is out
