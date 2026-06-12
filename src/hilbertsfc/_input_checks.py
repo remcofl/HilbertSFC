@@ -24,3 +24,13 @@ def is_0d_int_array(x: object) -> bool:
 
 def is_int_scalar_or_0d_array(x: object) -> bool:
     return is_scalar_int(x) or is_0d_int_array(x)
+
+
+def require_int_array(x: object, name: str) -> np.ndarray:
+    """Return an integer NumPy array or raise a public-API-friendly error."""
+
+    if not isinstance(x, np.ndarray):
+        raise TypeError(f"{name} must be a NumPy integer array")
+    if not np.issubdtype(x.dtype, np.integer):
+        raise TypeError(f"{name} must have an integer dtype; got {x.dtype!r}")
+    return x

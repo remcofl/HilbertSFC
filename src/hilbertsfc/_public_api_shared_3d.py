@@ -13,7 +13,7 @@ from ._dtype import (
     unsigned_view,
 )
 from ._flatten import flatten_nocopy as _flatten_nocopy
-from ._input_checks import is_int_scalar_or_0d_array
+from ._input_checks import is_int_scalar_or_0d_array, require_int_array
 from ._nbits import MAX_NBITS_3D, validate_nbits_3d
 from ._public_api_types import (
     BuildDecode3DBatch,
@@ -158,6 +158,12 @@ def _encode_3d_batch(
     parallel: bool,
     build_batch: BuildEncode3DBatch,
 ) -> IntArray:
+    x = require_int_array(x, "x")
+    y = require_int_array(y, "y")
+    z = require_int_array(z, "z")
+    if out is not None:
+        out = require_int_array(out, "out")
+
     if x.shape != y.shape or x.shape != z.shape:
         raise ValueError(
             f"x, y, z must have the same shape; got {x.shape=}, {y.shape=}, {z.shape=}"
@@ -233,6 +239,14 @@ def _decode_3d_batch(
     parallel: bool,
     build_batch: BuildDecode3DBatch,
 ) -> tuple[IntArray, IntArray, IntArray]:
+    index = require_int_array(index, "index")
+    if out_x is not None:
+        out_x = require_int_array(out_x, "out_x")
+    if out_y is not None:
+        out_y = require_int_array(out_y, "out_y")
+    if out_z is not None:
+        out_z = require_int_array(out_z, "out_z")
+
     max_index_nbits = max_nbits_for_index_dtype(index.dtype, dims=3)
     if nbits is None:
         nbits = max_index_nbits

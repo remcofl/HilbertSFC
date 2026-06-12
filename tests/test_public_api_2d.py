@@ -121,6 +121,17 @@ def test_2d_batch_shape_validation(rng: np.random.Generator) -> None:
         hilbert_encode_2d(xs, ys, nbits=4)
 
 
+def test_2d_batch_requires_numpy_integer_arrays() -> None:
+    ints = np.ones(2, dtype=np.uint8)
+
+    with pytest.raises(TypeError, match="x must be a NumPy integer array"):
+        hilbert_encode_2d([1, 2], [2, 1], nbits=2)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="integer dtype"):
+        hilbert_decode_2d(np.ones(2), nbits=2)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="out must be a NumPy integer array"):
+        hilbert_encode_2d(ints, ints, nbits=2, out=[0, 0])  # type: ignore[arg-type]
+
+
 def test_2d_batch_out_dtype_validation(rng: np.random.Generator) -> None:
     nbits = 9  # requires uint32 for index in 2D
     n = 10

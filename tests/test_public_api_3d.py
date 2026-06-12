@@ -127,6 +127,23 @@ def test_3d_decode_batch_out_triple_rule(rng: np.random.Generator) -> None:
         hilbert_decode_3d(idx, nbits=nbits, out_x=out_x, out_y=out_y)  # type: ignore
 
 
+def test_3d_batch_requires_numpy_integer_arrays() -> None:
+    ints = np.ones(2, dtype=np.uint8)
+
+    with pytest.raises(TypeError, match="z must be a NumPy integer array"):
+        hilbert_encode_3d(ints, ints, [1, 2], nbits=2)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="integer dtype"):
+        hilbert_encode_3d(ints, ints, np.ones(2), nbits=2)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="out_z must be a NumPy integer array"):
+        hilbert_decode_3d(
+            ints,
+            nbits=2,
+            out_x=ints.copy(),
+            out_y=ints.copy(),
+            out_z=[0, 0],  # type: ignore[arg-type]
+        )
+
+
 def test_3d_batch_coord_dtype_validation() -> None:
     x = np.zeros(4, dtype=np.uint8)
     y = np.zeros(4, dtype=np.uint8)
