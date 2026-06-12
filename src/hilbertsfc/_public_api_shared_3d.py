@@ -13,7 +13,11 @@ from ._dtype import (
     unsigned_view,
 )
 from ._flatten import flatten_nocopy as _flatten_nocopy
-from ._input_checks import is_int_scalar_or_0d_array, require_int_array
+from ._input_checks import (
+    is_int_scalar_or_0d_array,
+    reject_obvious_array_memory_overlap,
+    require_int_array,
+)
 from ._nbits import MAX_NBITS_3D, validate_nbits_3d
 from ._public_api_types import (
     BuildDecode3DBatch,
@@ -213,6 +217,7 @@ def _encode_3d_batch(
                 f"which supports up to nbits={max_index_nbits}; "
                 f"consider using {viable_dtype} out dtype, or reduce nbits to fit the out dtype."
             )
+        reject_obvious_array_memory_overlap(out, "out", (x, "x"), (y, "y"), (z, "z"))
         out_u = unsigned_view(out)
 
     x_u = unsigned_view(x)
@@ -292,6 +297,20 @@ def _decode_3d_batch(
                 f"max nbits is {max_coord_nbits}"
             )
 
+        reject_obvious_array_memory_overlap(
+            out_x,
+            "out_x",
+            (index, "index"),
+            (out_y, "out_y"),
+            (out_z, "out_z"),
+        )
+        reject_obvious_array_memory_overlap(
+            out_y,
+            "out_y",
+            (index, "index"),
+            (out_z, "out_z"),
+        )
+        reject_obvious_array_memory_overlap(out_z, "out_z", (index, "index"))
         out_x_u = unsigned_view(out_x)
         out_y_u = unsigned_view(out_y)
         out_z_u = unsigned_view(out_z)

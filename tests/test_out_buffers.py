@@ -109,3 +109,42 @@ def test_decode_out_shape_mismatch_raises(rng: np.random.Generator) -> None:
     out_z3 = np.empty((32,), dtype=np.uint8)
     with pytest.raises(ValueError, match="same shape"):
         hilbert_decode_3d(idx3d, nbits=nbits, out_x=out_x3, out_y=out_y3, out_z=out_z3)
+
+
+@pytest.mark.parametrize("dims", [2, 3])
+def test_encode_rejects_overlapping_out_buffer(dims: int) -> None:
+    storage = np.arange(5, dtype=np.uint16)
+    x = storage[:4]
+    y = np.arange(4, dtype=np.uint16)
+    out = storage[1:]
+
+    with pytest.raises(ValueError, match="out must not overlap x"):
+        if dims == 2:
+            hilbert_encode_2d(x, y, nbits=4, out=out)
+        else:
+            z = np.arange(4, dtype=np.uint16)
+            hilbert_encode_3d(x, y, z, nbits=4, out=out)
+
+
+@pytest.mark.parametrize("dims", [2, 3])
+def test_decode_rejects_overlapping_out_buffers(dims: int) -> None:
+    index = np.arange(4, dtype=np.uint16)
+    storage = np.empty(5, dtype=np.uint16)
+    out_x = storage[:4]
+    out_y = storage[1:]
+
+    with pytest.raises(ValueError, match="out_x must not overlap out_y"):
+        if dims == 2:
+            hilbert_decode_2d(index, nbits=4, out_x=out_x, out_y=out_y)
+        else:
+            out_z = np.empty(4, dtype=np.uint16)
+            hilbert_decode_3d(index, nbits=4, out_x=out_x, out_y=out_y, out_z=out_z)
+
+
+def test_encode_allows_disjoint_out_buffer_from_same_storage() -> None:
+    storage = np.arange(8, dtype=np.uint16)
+    x = storage[:4]
+    y = np.arange(4, dtype=np.uint16)
+    out = storage[4:]
+
+    assert hilbert_encode_2d(x, y, nbits=4, out=out) is out

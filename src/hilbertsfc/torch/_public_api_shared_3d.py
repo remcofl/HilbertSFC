@@ -23,6 +23,7 @@ from ._numpy_interop import int_tensor_to_numpy_view
 from ._tensor_int import (
     int_tensor_to_signed_view,
     is_uint_torch_dtype,
+    reject_obvious_tensor_memory_overlap,
     require_int_tensor,
 )
 from ._tuning_mode import TritonTuningMode, validate_triton_tuning_mode
@@ -116,6 +117,9 @@ def encode_3d_api(
                 f"{nbits=} does not fit in out dtype; got {out.dtype=} "
                 f"which supports up to nbits={max_index_nbits}."
             )
+
+    if out_provided:
+        reject_obvious_tensor_memory_overlap(out, "out", (x, "x"), (y, "y"), (z, "z"))
 
     is_cpu = x.device.type == "cpu"
     is_cuda = x.device.type == "cuda"
@@ -270,6 +274,22 @@ def decode_3d_api(
                 f"{out_z.dtype=} with {effective_bits_torch_dtype(out_z.dtype)} effective bits; "
                 f"max nbits is {max_coord_nbits}"
             )
+
+    if out_provided:
+        reject_obvious_tensor_memory_overlap(
+            out_x,
+            "out_x",
+            (index, "index"),
+            (out_y, "out_y"),
+            (out_z, "out_z"),
+        )
+        reject_obvious_tensor_memory_overlap(
+            out_y,
+            "out_y",
+            (index, "index"),
+            (out_z, "out_z"),
+        )
+        reject_obvious_tensor_memory_overlap(out_z, "out_z", (index, "index"))
 
     is_cpu = index.device.type == "cpu"
     is_cuda = index.device.type == "cuda"
