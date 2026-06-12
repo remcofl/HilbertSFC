@@ -222,6 +222,8 @@ _CUDA_TRITON_2D_DTYPE_SWEEP_CASES = [
 
 
 _CUDA_TRITON_2D_DECODE_INDEX_DTYPE_SWEEP_CASES = [
+    pytest.param(np.int8, 1, id="triton-compile-2d-decode-i8-n1"),
+    pytest.param(np.int8, 3, id="triton-compile-2d-decode-i8-n3"),
     pytest.param(np.uint8, 1, id="triton-compile-2d-decode-u8-n1"),
     pytest.param(np.uint8, 4, id="triton-compile-2d-decode-u8-n4"),
     pytest.param(np.uint16, 5, id="triton-compile-2d-decode-u16-n5"),

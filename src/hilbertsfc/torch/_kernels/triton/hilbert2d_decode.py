@@ -46,10 +46,9 @@ def hilbert_decode_2d_4bit_sb(
 
     idx = tl.load(idx_ptr + offsets, mask=mask, other=0)
 
-    if not SHMEM_LUT:
-        # 8 bit q extraction can be negative for int8 index inputs; reinterpret as uint8.
-        if idx.dtype == tl.int8:
-            idx = idx.to(tl.uint8)
+    # 8 bit q extraction can be negative for int8 index inputs; reinterpret as uint8.
+    if idx.dtype == tl.int8:
+        idx = idx.to(tl.uint8)
 
     if DROP_BITS > 0:
         idx = idx & IDX_MASK
