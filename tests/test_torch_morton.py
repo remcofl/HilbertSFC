@@ -217,10 +217,10 @@ def test_torch_compile_fullgraph_cpu_torch_morton(
 
     if dim == 2 and op == "encode":
 
-        def fn(a, b):
+        def encode_2d(a, b):
             return htorch.morton_encode_2d(a, b, nbits=nbits, cpu_backend="torch")
 
-        out = torch.compile(fn, fullgraph=True)(x, y)
+        out = torch.compile(encode_2d, fullgraph=True)(x, y)
         ref = np_morton_encode_2d(x_np, y_np, nbits=nbits)
         np.testing.assert_array_equal(out.detach().cpu().numpy(), ref)
         return
@@ -229,10 +229,10 @@ def test_torch_compile_fullgraph_cpu_torch_morton(
         idx_np = np_morton_encode_2d(x_np, y_np, nbits=nbits)
         idx = torch.from_numpy(idx_np)
 
-        def fn(index):
+        def decode_2d(index):
             return htorch.morton_decode_2d(index, nbits=nbits, cpu_backend="torch")
 
-        out_x, out_y = torch.compile(fn, fullgraph=True)(idx)
+        out_x, out_y = torch.compile(decode_2d, fullgraph=True)(idx)
         np.testing.assert_array_equal(out_x.detach().cpu().numpy(), x_np)
         np.testing.assert_array_equal(out_y.detach().cpu().numpy(), y_np)
         return
@@ -242,10 +242,10 @@ def test_torch_compile_fullgraph_cpu_torch_morton(
 
     if dim == 3 and op == "encode":
 
-        def fn(a, b, c):
+        def encode_3d(a, b, c):
             return htorch.morton_encode_3d(a, b, c, nbits=nbits, cpu_backend="torch")
 
-        out = torch.compile(fn, fullgraph=True)(x, y, z)
+        out = torch.compile(encode_3d, fullgraph=True)(x, y, z)
         ref = np_morton_encode_3d(x_np, y_np, z_np, nbits=nbits)
         np.testing.assert_array_equal(out.detach().cpu().numpy(), ref)
         return
@@ -253,10 +253,10 @@ def test_torch_compile_fullgraph_cpu_torch_morton(
     idx_np = np_morton_encode_3d(x_np, y_np, z_np, nbits=nbits)
     idx = torch.from_numpy(idx_np)
 
-    def fn(index):
+    def decode_3d(index):
         return htorch.morton_decode_3d(index, nbits=nbits, cpu_backend="torch")
 
-    out_x, out_y, out_z = torch.compile(fn, fullgraph=True)(idx)
+    out_x, out_y, out_z = torch.compile(decode_3d, fullgraph=True)(idx)
     np.testing.assert_array_equal(out_x.detach().cpu().numpy(), x_np)
     np.testing.assert_array_equal(out_y.detach().cpu().numpy(), y_np)
     np.testing.assert_array_equal(out_z.detach().cpu().numpy(), z_np)
