@@ -3,7 +3,6 @@ import shutil
 from collections.abc import Callable
 
 import nox
-import nox.command
 
 # Keep CI output readable.
 nox.options.reuse_existing_virtualenvs = False
@@ -69,11 +68,8 @@ def lint(session: nox.Session) -> None:
 @nox.session(python=PYTHON_VERSIONS)
 def typecheck(session: nox.Session) -> None:
     """Run type check."""
-    try:
-        _install(session, groups=["typecheck", "torch-cpu"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install runtime dependencies for this Python")
+    _install(session, groups=["typecheck", "torch-cpu"])
+    _install_project(session)
     session.run("pyright", "src")
     # Faster alternatives, but still gaps in type resolution:
     # session.run("pyrefly", "check", "src")
@@ -83,11 +79,8 @@ def typecheck(session: nox.Session) -> None:
 @nox.session(python=PYTHON_VERSIONS)
 def test(session: nox.Session) -> None:
     """Run the core unit tests against the default dependency resolver result."""
-    try:
-        _install(session, groups=["test"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install runtime dependencies for this Python")
+    _install(session, groups=["test"])
+    _install_project(session)
     _show_versions(session)
     session.run("pytest", "-q", "-n", "auto", "-m", "not torch")
 
@@ -96,11 +89,8 @@ def test(session: nox.Session) -> None:
 def test_min(session: nox.Session) -> None:
     """Run core unit tests with minimum supported numpy/numba (Python 3.12 only)."""
     # Project declares: numpy>=1.26, numba>=0.59
-    try:
-        _install(session, groups=["test", "runtime-min"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with minimum dependencies")
+    _install(session, groups=["test", "runtime-min"])
+    _install_project(session)
     _show_versions(session)
     session.run("pytest", "-q", "-n", "auto", "-m", "not torch")
 
@@ -109,11 +99,8 @@ def test_min(session: nox.Session) -> None:
 def test_torch_cpu(session: nox.Session) -> None:
     """Run CPU-only torch frontend tests for regular CI."""
 
-    try:
-        _install(session, groups=["test", "torch-cpu"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cpu-* dependencies")
+    _install(session, groups=["test", "torch-cpu"])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "torch and not compile and not gpu")
 
@@ -122,11 +109,8 @@ def test_torch_cpu(session: nox.Session) -> None:
 def test_torch_cpu_min(session: nox.Session) -> None:
     """Run CPU-only torch frontend tests with minimum deps (Python 3.12 only)."""
 
-    try:
-        _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cpu-* dependencies")
+    _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "torch and not compile and not gpu")
 
@@ -138,11 +122,8 @@ def test_torch_gpu(session: nox.Session, backend: str, torch_group: str) -> None
 
     _skip_if_backend_unavailable(session, backend)
 
-    try:
-        _install(session, groups=["test", torch_group])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip(f"Could not install project with {torch_group} dependencies")
+    _install(session, groups=["test", torch_group])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "torch and gpu and not compile")
 
@@ -153,11 +134,8 @@ def test_torch_cu118_min(session: nox.Session) -> None:
 
     _skip_if_backend_unavailable(session, "cuda")
 
-    try:
-        _install(session, groups=["test", "torch-cu118-min"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cu118-min dependencies")
+    _install(session, groups=["test", "torch-cu118-min"])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "torch and gpu and not compile")
 
@@ -166,11 +144,8 @@ def test_torch_cu118_min(session: nox.Session) -> None:
 def test_torch_compile_cpu(session: nox.Session) -> None:
     """Run CPU-only torch.compile tests (opt-in)."""
 
-    try:
-        _install(session, groups=["test", "torch-cpu"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cpu-* dependencies")
+    _install(session, groups=["test", "torch-cpu"])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "compile and not gpu")
 
@@ -179,11 +154,8 @@ def test_torch_compile_cpu(session: nox.Session) -> None:
 def test_torch_compile_cpu_min(session: nox.Session) -> None:
     """Run CPU-only torch.compile tests with minimum deps (Python 3.12 only, opt-in)."""
 
-    try:
-        _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cpu-* dependencies")
+    _install(session, groups=["test", "runtime-min", "torch-cpu-min"])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "compile and not gpu")
 
@@ -197,11 +169,8 @@ def test_torch_compile_gpu(
 
     _skip_if_backend_unavailable(session, backend)
 
-    try:
-        _install(session, groups=["test", torch_group])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip(f"Could not install project with {torch_group} dependencies")
+    _install(session, groups=["test", torch_group])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "compile and gpu")
 
@@ -212,11 +181,8 @@ def test_torch_compile_cu118_min(session: nox.Session) -> None:
 
     _skip_if_backend_unavailable(session, "cuda")
 
-    try:
-        _install(session, groups=["test", "runtime-min", "torch-cu118-min"])
-        _install_project(session)
-    except nox.command.CommandFailed:
-        session.skip("Could not install project with torch-cu118-min dependencies")
+    _install(session, groups=["test", "runtime-min", "torch-cu118-min"])
+    _install_project(session)
 
     session.run("pytest", "-q", "-m", "compile and gpu")
 
