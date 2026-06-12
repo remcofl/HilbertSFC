@@ -25,6 +25,16 @@ jobs:
       - name: Set up Python
         run: uv python install
 
+      - name: Verify release tag matches package version
+        if: startsWith(github.ref_name, 'v')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(uv version --short)"
+          if [[ "${TAG_VERSION}" != "${PACKAGE_VERSION}" ]]; then
+            echo "::error::Release tag version ${TAG_VERSION} does not match package version ${PACKAGE_VERSION}"
+            exit 1
+          fi
+
       - name: Build
         run: uv build
 
