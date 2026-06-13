@@ -728,7 +728,7 @@ wheels = [
 
 [[package]]
 name = "hilbertsfc"
-version = "0.4.1"
+version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "numba", version = "0.59.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-10-hilbertsfc-runtime-min' or (extra == 'group-10-hilbertsfc-torch-cpu' and extra == 'group-10-hilbertsfc-torch-cpu-min') or (extra == 'group-10-hilbertsfc-torch-cpu' and extra == 'group-10-hilbertsfc-torch-cu118-min') or (extra == 'group-10-hilbertsfc-torch-cpu' and extra == 'group-10-hilbertsfc-torch-cu130') or (extra == 'group-10-hilbertsfc-torch-cpu' and extra == 'group-10-hilbertsfc-torch-rocm') or (extra == 'group-10-hilbertsfc-torch-cpu-min' and extra == 'group-10-hilbertsfc-torch-cu118-min') or (extra == 'group-10-hilbertsfc-torch-cpu-min' and extra == 'group-10-hilbertsfc-torch-cu130') or (extra == 'group-10-hilbertsfc-torch-cpu-min' and extra == 'group-10-hilbertsfc-torch-rocm') or (extra == 'group-10-hilbertsfc-torch-cu118-min' and extra == 'group-10-hilbertsfc-torch-cu130') or (extra == 'group-10-hilbertsfc-torch-cu118-min' and extra == 'group-10-hilbertsfc-torch-rocm') or (extra == 'group-10-hilbertsfc-torch-cu130' and extra == 'group-10-hilbertsfc-torch-rocm')" },
