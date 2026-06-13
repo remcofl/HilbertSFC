@@ -81,14 +81,14 @@ scripts = [
     "pillow>=12.1.0",
     "rich>=14.3.2",
 ]
-runtime-min = ["numpy==1.26.0", "numba==0.59.0"]
+runtime-min = ["numpy==2.4.6", "numba==0.65.1"]
 test = ["pytest>=9.0.2", "pytest-cov>=7.1.0", "pytest-xdist>=3.8.0"]
 torch-cpu = ["torch>=2.11.0"]
 torch-cpu-min = ["torch==2.5.0"]
 torch-cu118-min = ["torch==2.5.0"]
 torch-cu130 = ["torch>=2.11.0"]
 torch-rocm = ["torch>=2.11.0", "triton-rocm==3.6.0"]
-typecheck = ["pyright==1.1.408", "pyrefly>=0.51.0", "ty>=0.0.15"]
+typecheck = ["pyright==1.1.409", "pyrefly>=0.51.0", "ty>=0.0.15"]
 
 [tool.ruff]
 line-length = 88
