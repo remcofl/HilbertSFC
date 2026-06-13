@@ -5,7 +5,8 @@ This page provides additional benchmark results for Hilbert curve encoding and d
 
 ## Changelog
 
-- **2026-03-18 (v0.2):** Updated **hilbertsfc** benchmark results.
+- **2026-06-13 (v0.5):** Updated 3D **hilbertsfc** results for the new 3-bit LUT kernel.
+- **2026-03-18 (v0.2):** Updated 2D **hilbertsfc** results for the new 7-bit kernels and automatic tile-width selection.
 
 ## Test Methodology
 
@@ -109,9 +110,9 @@ HilbertSFC can encode around **2 billion** `uint8` points (x, y) per second, and
 
 ### 3D Coordinates
 
-The rust implementations do not support 3D coordinates, so only Python implementations are benchmarked here. Again, we see that HilbertSFC is 3-4 orders of magnitude faster than existing Python implementations, with a throughput around **700 million** `uint8` points (x, y, z) per second, and around **150 million** `uint32` points per second, on a single thread.
+The rust implementations do not support 3D coordinates, so only Python implementations are benchmarked here. Again, we see that HilbertSFC is 3-4 orders of magnitude faster than existing Python implementations, with throughput around **740 million** `uint8` points (x, y, z) per second and around **225 million** `uint32` points per second on a single thread.
 
-For the case of `nbits=21` (the maximum for 3D), we also included results on multi-threading (8 threads), to show that it can further boost throughput by around 4x, reaching around **500 million** `uint32` points per second.
+For `nbits=21` (the maximum for 3D), we also include a multi-threaded results (4 threads). It reaches around **700 million** encoded and **600 million** decoded `uint32` points per second, which is around 3x faster than the single-threaded version.
 
 #### `nbits=8`
 
@@ -120,7 +121,7 @@ For the case of `nbits=21` (the maximum for 3D), we also included results on mul
 
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc** | **Python (+ Numba)** | **1.43** | **1.86** | **697.146** | **537.403** |
+| 🔥**hilbertsfc** | **Python (+ Numba)** | **1.35** | **1.29** | **743.07** | **775.61** |
 | hilbert-bytes | Python (+ Numba) | 913.51 | 755.23 | 1.095 | 1.324 |
 | numpy-hilbert-curve | Python (+ NumPy) | 1957.92 | 1013.06 | 0.511 | 0.987 |
 | hilbertcurve | Python | 5523.18 | 3048.29 | 0.181 | 0.328 |
@@ -132,8 +133,8 @@ For the case of `nbits=21` (the maximum for 3D), we also included results on mul
 
 | Implementation | Language | ns/pt (enc) | ns/pt (dec) | Mpts/s (enc) | Mpts/s (dec) |
 | --- | --- | ---: | ---: | ---: | ---: |
-| 🔥**hilbertsfc (multi-threaded)** | **Python (+ Numba)** | **1.73** | **1.99** | **576.921** | **502.588** |
-| 🔥**hilbertsfc** | Python (+ Numba) | 6.64 | 8.23 | 150.548 | 121.501 |
+| 🔥**hilbertsfc (4 threads)** | **Python (+ Numba)** | **1.44** | **1.65** | **696.23** | **607.26** |
+| 🔥**hilbertsfc** | Python (+ Numba) | **4.42** | **5.09** | **226.09** | **196.41** |
 | hilbert-bytes | Python (+ Numba) | 3271.85 | 2799.62 | 0.306 | 0.357 |
 | numpy-hilbert-curve | Python (+ NumPy) | 6928.09 | 4049.03 | 0.144 | 0.247 |
 | hilbertcurve | Python | 11399.89 | 7926.70 | 0.088 | 0.126 |
