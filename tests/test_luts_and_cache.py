@@ -6,6 +6,8 @@ from hilbertsfc._luts import (
     lut_2d4b_q_bs_u64,
     lut_3d2b_sb_so,
     lut_3d2b_so_sb,
+    lut_3d3b_sb_so,
+    lut_3d3b_so_sb,
 )
 
 
@@ -49,3 +51,12 @@ def test_lut_3d2b_pair_shapes_match() -> None:
     so_sb = lut_3d2b_so_sb(np.uint16)
 
     assert sb_so.shape == so_sb.shape
+
+
+def test_lut_3d3b_pair_shape_and_storage_size() -> None:
+    sb_so = lut_3d3b_sb_so()
+    so_sb = lut_3d3b_so_sb()
+
+    assert sb_so.shape == so_sb.shape == (24 * 2**9,)
+    assert sb_so.dtype == so_sb.dtype == np.dtype(np.uint16)
+    assert sb_so.nbytes == so_sb.nbytes == 24 * 1024

@@ -33,11 +33,18 @@ from ._public_api_shared_3d import decode_3d_api, encode_3d_api
 from .types import IntArray, IntScalar, LutUIntDTypeLike
 
 
+def _choose_hilbert_3d_lut_dtype(nbits: int, index_dtype: np.dtype) -> LutUIntDTypeLike:
+    # Widening the 24 KiB 3-bit LUT erases much of its measured speedup.
+    if nbits not in (1, 2, 4):
+        return np.uint16
+    return choose_lut_dtype_for_index_dtype(index_dtype)
+
+
 def _build_hilbert_encode_3d_batch(nbits, *, parallel=False, index_dtype):
     return get_encode_3d_batch_builder()(
         nbits,
         parallel=parallel,
-        lut_dtype=choose_lut_dtype_for_index_dtype(index_dtype),
+        lut_dtype=_choose_hilbert_3d_lut_dtype(nbits, index_dtype),
     )
 
 
@@ -45,7 +52,7 @@ def _build_hilbert_decode_3d_batch(nbits, *, parallel=False, index_dtype):
     return get_decode_3d_batch_builder()(
         nbits,
         parallel=parallel,
-        lut_dtype=choose_lut_dtype_for_index_dtype(index_dtype),
+        lut_dtype=_choose_hilbert_3d_lut_dtype(nbits, index_dtype),
     )
 
 

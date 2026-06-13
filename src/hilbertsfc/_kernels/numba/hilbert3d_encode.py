@@ -4,7 +4,7 @@ import numba as nb
 import numpy as np
 
 from ..._cache import kernel_cache
-from ..._luts import lut_3d2b_sb_so
+from ..._luts import lut_3d2b_sb_so, lut_3d3b_sb_so
 from ..._nbits import validate_nbits_3d
 from ...types import IntScalar, LutUIntDTypeLike, UIntArray
 
@@ -38,6 +38,32 @@ def _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut):
     return np.uint64(idx)
 
 
+@nb.njit(inline="always")
+def _hilbert_encode_3d_3bit_so(x, y, z, nbits, lut):
+    idx = 0
+    start_bit = (nbits - 1) // 3 * 3
+    state = (5 << 9) if (start_bit + 3) & 0x1 else 0
+
+    drop_bits = start_bit - nbits + 3
+    if drop_bits > 0:
+        mask = np.uint64((1 << nbits) - 1)
+        x &= mask
+        y &= mask
+        z &= mask
+
+    for bit in range(start_bit, -1, -3):
+        b_x = (x >> bit) & 0x7
+        b_y = (y >> bit) & 0x7
+        b_z = (z >> bit) & 0x7
+        b = (b_x << 6) | (b_y << 3) | b_z
+
+        so = lut[state | b]
+        idx |= (so & 0x1FF) << (3 * bit)
+        state = so & 0x3E00
+
+    return np.uint64(idx)
+
+
 @kernel_cache
 def build_hilbert_encode_3d_impl(
     nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
@@ -45,6 +71,14 @@ def build_hilbert_encode_3d_impl(
     """Return a specialized scalar encoder: (x, y, z) -> index."""
 
     validate_nbits_3d(nbits)
+    if False:
+        lut = lut_3d3b_sb_so(lut_dtype)
+
+        @nb.njit(inline="always", cache=True)
+        def encode_3d_3bit(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
+            return _hilbert_encode_3d_3bit_so(x, y, z, nbits, lut)  # type: ignore[reportReturnType]
+
+        return encode_3d_3bit
 
     lut = lut_3d2b_sb_so(lut_dtype)
 
@@ -62,6 +96,32 @@ def build_hilbert_encode_3d_batch_impl(
     """Return a specialized batch encoder: (xs, ys, zs, out) -> out."""
 
     validate_nbits_3d(nbits)
+
+    if False:
+        lut = lut_3d3b_sb_so(lut_dtype)
+        if parallel:
+
+            @nb.njit(parallel=True, cache=True)
+            def encode_3d_batch_3bit_parallel(
+                xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
+            ) -> None:
+                for i in nb.prange(xs.size):  # type: ignore[not-iterable]
+                    out.flat[i] = _hilbert_encode_3d_3bit_so(
+                        xs.flat[i], ys.flat[i], zs.flat[i], nbits, lut
+                    )
+
+            return encode_3d_batch_3bit_parallel
+
+        @nb.njit(parallel=False, cache=True)
+        def encode_3d_batch_3bit_serial(
+            xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
+        ) -> None:
+            for i in range(xs.size):
+                out.flat[i] = _hilbert_encode_3d_3bit_so(
+                    xs.flat[i], ys.flat[i], zs.flat[i], nbits, lut
+                )
+
+        return encode_3d_batch_3bit_serial
 
     lut = lut_3d2b_sb_so(lut_dtype)
 
