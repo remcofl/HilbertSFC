@@ -2866,7 +2866,10 @@ cache-intensive kernels.</p>
 
 <a href="#hilbertsfc.get_hilbert_encode_3d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_encode_3d_kernel</span><span class="p">(</span>
-    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lut_dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">tile_nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TileNBits3D (hilbertsfc.types.TileNBits3D)" href="../types/types/#hilbertsfc.types.TileNBits3D">TileNBits3D</a></span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">lut_dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">]</span>
 </code></pre></div>
 
@@ -2906,6 +2909,23 @@ and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
+                <code>tile_nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TileNBits3D (hilbertsfc.types.TileNBits3D)" href="../types/types/#hilbertsfc.types.TileNBits3D">TileNBits3D</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Select the 2-bit (3 KiB) or 3-bit (24 KiB) LUT/kernel variant.
+Defaults to the generally faster 3-bit variant.</p>
+              </div>
+            </td>
+            <td>
+                  <code>3</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                 <code>lut_dtype</code>
             </td>
             <td>
@@ -2914,11 +2934,10 @@ and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
             <td>
               <div class="doc-md-description">
                 <p>Element dtype used for the internal lookup tables.</p>
-<p>Default is <code>uint16</code> (smallest; 3 KiB LUT footprint). When fusing into
+<p>Default is <code>uint16</code>. The footprint depends on <code>tile_nbits</code>. When fusing into
 a cache-intensive kernel, keeping the LUT small can help.</p>
 <p>For best throughput, it is usually better to match <code>lut_dtype</code>
-to your index dtype (<code>uint16</code>/<code>uint32</code>/<code>uint64</code>), which increases LUT
-size (6 KiB for <code>uint32</code>, 12 KiB for <code>uint64</code>) but reduces widening.
+to your index dtype (<code>uint16</code>/<code>uint32</code>/<code>uint64</code>), which increases the selected LUT size by 2x or 4x but reduces widening.
 In isolation, even the larger LUTs typically fit comfortably within the
 per-core L1 data cache of modern CPUs.</p>
               </div>
@@ -2967,7 +2986,10 @@ per-core L1 data cache of modern CPUs.</p>
 
 <a href="#hilbertsfc.get_hilbert_decode_3d_kernel" class="headerlink" title="Permanent link">&para;</a></h4>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_hilbert_decode_3d_kernel</span><span class="p">(</span>
-    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lut_dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></span>
+    <span class="n">nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">tile_nbits</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="TileNBits3D (hilbertsfc.types.TileNBits3D)" href="../types/types/#hilbertsfc.types.TileNBits3D">TileNBits3D</a></span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">lut_dtype</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="LutUIntDTypeLike (hilbertsfc.types.LutUIntDTypeLike)" href="../types/types/#hilbertsfc.types.LutUIntDTypeLike">LutUIntDTypeLike</a></span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-external" title="numpy.uint16" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.uint16">uint16</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="IntScalar (hilbertsfc.types.IntScalar)" href="../types/types/#hilbertsfc.types.IntScalar">IntScalar</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span><span class="p">]]</span>
 </code></pre></div>
 
@@ -3003,6 +3025,23 @@ and is intended for fusing into your own <code>@numba.njit</code> loops.</p>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tile_nbits</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TileNBits3D (hilbertsfc.types.TileNBits3D)" href="../types/types/#hilbertsfc.types.TileNBits3D">TileNBits3D</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Select the 2-bit (3 KiB) or 3-bit (24 KiB) LUT/kernel variant.
+Defaults to the generally faster 3-bit variant.</p>
+              </div>
+            </td>
+            <td>
+                  <code>3</code>
             </td>
           </tr>
           <tr class="doc-section-item">
