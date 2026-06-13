@@ -58,52 +58,37 @@ LUT3D_SB_TO_NEXT = np.array([    # (state, b) -> next_state
 # fmt: on
 
 N_STATES = 24
-NBITS_CHUNK = 2
-BB_ENTRIES = 1 << (3 * NBITS_CHUNK)  # 6-bit bb (xxyyzz)
-TABLE_SIZE = N_STATES * BB_ENTRIES
+DEFAULT_TILE_NBITS = 2
 
 
-def generate_luts_3d2b() -> tuple[np.ndarray, np.ndarray]:
-    """Generate 3D 2-bit flat (state-dependent) Hilbert lookup tables.
+def generate_luts_3dnb_flat(tile_nbits: int) -> tuple[np.ndarray, np.ndarray]:
+    """Generate flat 3D Hilbert LUTs for a configurable tile width.
 
-    This produces two 1D LUTs for 3D Hilbert traversal with 2 bits per coordinate.
-    Tables are indexed by `(state, symbol)`.
-
-    Each table is a `uint16` array of length `24 * 64`.
-
-    Layouts
-    -------
-    Each entry packs the next FSM state and output symbol:
-
-    Encoding (b -> o):
-        lut_3d2b_sb_so[(state << 6) | b] = (next_state << 6) | o
-
-    Decoding (o -> b):
-        lut_3d2b_so_sb[(state << 6) | o] = (next_state << 6) | b
-
-    Symbol format
-    -------------
-    b : 6-bit input symbol (b = xyz; 2 bits per coordinate)
-    o : 6-bit output symbol (two 3D octants)
-
-    Returns
-    -------
-    tuple of np.ndarray
-        (lut_3d2b_sb_so, lut_3d2b_so_sb)
+    Each table has ``24 * 2 ** (3 * tile_nbits)`` entries indexed by
+    ``(state << symbol_bits) | symbol``. Entries pack the next 5-bit state
+    above the transformed symbol. Tile widths up to 3 fit in ``uint16``;
+    tile width 4 requires ``uint32``.
     """
 
-    lut_sb_so = np.zeros(TABLE_SIZE, dtype=np.uint16)
-    lut_so_sb = np.zeros(TABLE_SIZE, dtype=np.uint16)
+    if tile_nbits < 1 or tile_nbits > 4:
+        raise ValueError("tile_nbits must be in [1, 4]")
+
+    symbol_bits = 3 * tile_nbits
+    symbol_entries = 1 << symbol_bits
+    table_size = N_STATES * symbol_entries
+    dtype = np.uint16 if (5 + symbol_bits) <= 16 else np.uint32
+    lut_sb_so = np.zeros(table_size, dtype=dtype)
+    lut_so_sb = np.zeros(table_size, dtype=dtype)
 
     for state in range(N_STATES):
-        for b_packed in range(BB_ENTRIES):
+        for b_packed in range(symbol_entries):
             o_packed = 0
             s_next = state
 
-            for bit in range(NBITS_CHUNK - 1, -1, -1):
-                b_x = (b_packed >> (2 * NBITS_CHUNK + bit)) & 0x1
-                b_y = (b_packed >> (1 * NBITS_CHUNK + bit)) & 0x1
-                b_z = (b_packed >> (0 * NBITS_CHUNK + bit)) & 0x1
+            for bit in range(tile_nbits - 1, -1, -1):
+                b_x = (b_packed >> (2 * tile_nbits + bit)) & 0x1
+                b_y = (b_packed >> (1 * tile_nbits + bit)) & 0x1
+                b_z = (b_packed >> (0 * tile_nbits + bit)) & 0x1
                 b = (b_x << 2) | (b_y << 1) | b_z
 
                 sb = (s_next << 3) | b
@@ -111,10 +96,10 @@ def generate_luts_3d2b() -> tuple[np.ndarray, np.ndarray]:
                 o_packed = (o_packed << 3) | o
                 s_next = int(LUT3D_SB_TO_NEXT[sb])
 
-            packed_so = np.uint16((s_next << 6) | o_packed)
-            lut_sb_so[(state << 6) | b_packed] = packed_so
+            packed_so = dtype((s_next << symbol_bits) | o_packed)
+            lut_sb_so[(state << symbol_bits) | b_packed] = packed_so
 
-            packed_sb = np.uint16((s_next << 6) | b_packed)
-            lut_so_sb[(state << 6) | o_packed] = packed_sb
+            packed_sb = dtype((s_next << symbol_bits) | b_packed)
+            lut_so_sb[(state << symbol_bits) | o_packed] = packed_sb
 
     return lut_sb_so, lut_so_sb

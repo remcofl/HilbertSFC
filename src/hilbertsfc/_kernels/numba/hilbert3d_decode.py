@@ -4,7 +4,7 @@ import numba as nb
 import numpy as np
 
 from ..._cache import kernel_cache
-from ..._luts import lut_3d2b_so_sb
+from ..._luts import lut_3d2b_so_sb, lut_3d3b_so_sb
 from ..._nbits import validate_nbits_3d
 from ...types import IntScalar, LutUIntDTypeLike, UIntArray
 
@@ -36,6 +36,28 @@ def _hilbert_decode_3d_2bit_sb(idx, nbits, lut):
     return x, y, z
 
 
+@nb.njit(inline="always")
+def _hilbert_decode_3d_3bit_sb(idx, nbits, lut):
+    x = y = z = 0
+    start_bit = (nbits - 1) // 3 * 3
+    state = (5 << 9) if (start_bit + 3) & 0x1 else 0
+
+    drop_bits = start_bit - nbits + 3
+    if drop_bits > 0:
+        idx &= np.uint64((1 << (3 * nbits)) - 1)
+
+    for bit in range(start_bit, -1, -3):
+        o = (idx >> (3 * bit)) & 0x1FF
+        sb = lut[state | o]
+
+        x |= ((sb & 0x1C0) >> 6) << bit
+        y |= ((sb & 0x038) >> 3) << bit
+        z |= (sb & 0x007) << bit
+        state = sb & 0x3E00
+
+    return x, y, z
+
+
 @kernel_cache
 def build_hilbert_decode_3d_impl(
     nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
@@ -43,6 +65,14 @@ def build_hilbert_decode_3d_impl(
     """Return a specialized scalar decoder: index -> (x, y, z)."""
 
     validate_nbits_3d(nbits)
+    if nbits not in (1, 2, 4):
+        lut = lut_3d3b_so_sb(lut_dtype)
+
+        @nb.njit(inline="always", cache=True)
+        def decode_3d_3bit(index: IntScalar) -> tuple[int, int, int]:
+            return _hilbert_decode_3d_3bit_sb(index, nbits, lut)
+
+        return decode_3d_3bit
 
     lut = lut_3d2b_so_sb(lut_dtype)
 
@@ -60,6 +90,32 @@ def build_hilbert_decode_3d_batch_impl(
     """Return a specialized batch decoder: (indices, xs, ys, zs) -> (xs, ys, zs)."""
 
     validate_nbits_3d(nbits)
+
+    if nbits not in (1, 2, 4):
+        lut = lut_3d3b_so_sb(lut_dtype)
+        if parallel:
+
+            @nb.njit(parallel=True, cache=True)
+            def decode_3d_batch_3bit_parallel(
+                indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
+            ) -> None:
+                for i in nb.prange(indices.size):  # type: ignore[not-iterable]
+                    xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_3bit_sb(
+                        indices.flat[i], nbits, lut
+                    )
+
+            return decode_3d_batch_3bit_parallel
+
+        @nb.njit(parallel=False, cache=True)
+        def decode_3d_batch_3bit_serial(
+            indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
+        ) -> None:
+            for i in range(indices.size):
+                xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_3bit_sb(
+                    indices.flat[i], nbits, lut
+                )
+
+        return decode_3d_batch_3bit_serial
 
     lut = lut_3d2b_so_sb(lut_dtype)
 

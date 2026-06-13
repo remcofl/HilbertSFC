@@ -15,7 +15,7 @@ from ._cache import lut_cache
 from .types import LutUIntDTypeLike, UIntArray
 
 
-def _validate_lut_3d2b_uint_dtype(
+def _validate_lut_3d_uint_dtype(
     dtype: LutUIntDTypeLike,
 ) -> np.dtype[np.unsignedinteger]:
     req = np.dtype(dtype)
@@ -94,7 +94,7 @@ def lut_3d2b_sb_so(dtype: LutUIntDTypeLike = np.uint16) -> UIntArray:
         fused-kernel scenarios).
     """
 
-    req = _validate_lut_3d2b_uint_dtype(dtype)
+    req = _validate_lut_3d_uint_dtype(dtype)
     base = _lut_3d2b_sb_so_u16_base()
     return base.astype(req, copy=False)  # dtype change will allocate; cached per dtype
 
@@ -106,6 +106,32 @@ def lut_3d2b_so_sb(dtype: LutUIntDTypeLike = np.uint16) -> UIntArray:
     See ``lut_3d2b_sb_so`` for dtype behavior.
     """
 
-    req = _validate_lut_3d2b_uint_dtype(dtype)
+    req = _validate_lut_3d_uint_dtype(dtype)
     base = _lut_3d2b_so_sb_u16_base()
     return base.astype(req, copy=False)
+
+
+@lut_cache
+def _lut_3d3b_sb_so_u16_base() -> NDArray[np.uint16]:
+    return _load_npy("lut_3d3b_sb_so_u16.npy").astype(np.uint16, copy=False)
+
+
+@lut_cache
+def _lut_3d3b_so_sb_u16_base() -> NDArray[np.uint16]:
+    return _load_npy("lut_3d3b_so_sb_u16.npy").astype(np.uint16, copy=False)
+
+
+@lut_cache
+def lut_3d3b_sb_so(dtype: LutUIntDTypeLike = np.uint16) -> UIntArray:
+    """3D 3-bit LUT: (state, bbb) -> packed (next_state, ooo)."""
+
+    req = _validate_lut_3d_uint_dtype(dtype)
+    return _lut_3d3b_sb_so_u16_base().astype(req, copy=False)
+
+
+@lut_cache
+def lut_3d3b_so_sb(dtype: LutUIntDTypeLike = np.uint16) -> UIntArray:
+    """3D 3-bit LUT: (state, ooo) -> packed (next_state, bbb)."""
+
+    req = _validate_lut_3d_uint_dtype(dtype)
+    return _lut_3d3b_so_sb_u16_base().astype(req, copy=False)

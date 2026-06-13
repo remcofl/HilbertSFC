@@ -20,8 +20,11 @@ Run with defaults (recommended):
 Optionally choose a different output directory:
     uv run scripts/gen_hilbertsfc_luts.py --out path/to/dir
 
-For a specifc set of 2D tile sizes (in bits) between 1 and 7:
+For a specific set of 2D tile sizes (in bits) between 1 and 7:
     uv run scripts/gen_hilbertsfc_luts.py --2d-nbits 4 6
+
+For a specific set of 3D tile sizes (in bits) between 1 and 4:
+    uv run scripts/gen_hilbertsfc_luts.py --3d-nbits 2 3
 
 Choose which 2D LUT encoding to generate:
     uv run scripts/gen_hilbertsfc_luts.py --2d-kind all
@@ -36,10 +39,7 @@ from hilbertsfc_gen.lut_2dnb import (
     generate_luts_2dnb_compacted,
     generate_luts_2dnb_flat,
 )
-from hilbertsfc_gen.lut_3d2b import generate_luts_3d2b
-
-LUT_3D2B_SB_SO_U16_NPY = "lut_3d2b_sb_so_u16.npy"
-LUT_3D2B_SO_SB_U16_NPY = "lut_3d2b_so_sb_u16.npy"
+from hilbertsfc_gen.lut_3dnb import generate_luts_3dnb_flat
 
 
 def _default_out_dir() -> Path:
@@ -61,6 +61,15 @@ def _main() -> int:
         type=int,
         default=[4, 7],
         help="2D tile sizes in bits (iterations per lookup). Default: 4 7",
+    )
+    parser.add_argument(
+        "--3d-n",
+        "--3d-nbits",
+        dest="tile_nbits_3d",
+        nargs="+",
+        type=int,
+        default=[2, 3],
+        help="3D tile sizes in bits (iterations per lookup). Default: 2 3",
     )
     parser.add_argument(
         "--2d-kind",
@@ -89,9 +98,13 @@ def _main() -> int:
     # 2D LUTs
     kind_2d = args.kind_2d
     nbits_2d = list(dict.fromkeys(args.tile_nbits_2d))  # stable unique
+    nbits_3d = list(dict.fromkeys(args.tile_nbits_3d))  # stable unique
     for n in nbits_2d:
         if n < 1 or n > 7:
             raise SystemExit(f"--2d-n values must be in [1, 7]; got {n}")
+    for n in nbits_3d:
+        if n < 1 or n > 4:
+            raise SystemExit(f"--3d-n values must be in [1, 4]; got {n}")
 
     written: list[Path] = []
     for n in nbits_2d:
@@ -114,13 +127,14 @@ def _main() -> int:
             written.extend([p_sb_sq, p_sq_sb])
 
     # 3D LUTs
-    lut_3d2b_sb_so_u16, lut_3d2b_so_sb_u16 = generate_luts_3d2b()
-
-    p3 = out_dir / LUT_3D2B_SB_SO_U16_NPY
-    p4 = out_dir / LUT_3D2B_SO_SB_U16_NPY
-    np.save(p3, lut_3d2b_sb_so_u16, allow_pickle=False)
-    np.save(p4, lut_3d2b_so_sb_u16, allow_pickle=False)
-    written.extend([p3, p4])
+    for n in nbits_3d:
+        lut_sb_so, lut_so_sb = generate_luts_3dnb_flat(n)
+        dtype_name = f"u{lut_sb_so.dtype.itemsize * 8}"
+        p_sb_so = out_dir / f"lut_3d{n}b_sb_so_{dtype_name}.npy"
+        p_so_sb = out_dir / f"lut_3d{n}b_so_sb_{dtype_name}.npy"
+        np.save(p_sb_so, lut_sb_so, allow_pickle=False)
+        np.save(p_so_sb, lut_so_sb, allow_pickle=False)
+        written.extend([p_sb_so, p_so_sb])
 
     for p in written:
         print(f"Wrote {p}")
