@@ -1,9 +1,7 @@
 """Type aliases for shared public API wrappers."""
 
 from collections.abc import Callable
-from typing import Any, Protocol
-
-import numpy as np
+from typing import Protocol
 
 from .types import IntScalar, UIntArray
 
@@ -51,19 +49,11 @@ class BuildDecode2DBatch(Protocol):
 
 class BuildEncode3DBatch(Protocol):
     def __call__(
-        self,
-        nbits: int,
-        *,
-        parallel: bool = False,
-        index_dtype: np.dtype[Any],
+        self, nbits: int, *, parallel: bool = False
     ) -> Encode3DBatchKernel: ...
 
 
 class BuildDecode3DBatch(Protocol):
     def __call__(
-        self,
-        nbits: int,
-        *,
-        parallel: bool = False,
-        index_dtype: np.dtype[Any],
+        self, nbits: int, *, parallel: bool = False
     ) -> Decode3DBatchKernel: ...

@@ -74,16 +74,16 @@ def build_hilbert_decode_3d_impl(
 
         return decode_3d_3bit
 
-    if tile_nbits != 2:
-        raise ValueError("tile_nbits must be 2 or 3")
+    if tile_nbits == 2:
+        lut = lut_3d2b_so_sb(lut_dtype)
 
-    lut = lut_3d2b_so_sb(lut_dtype)
+        @nb.njit(inline="always", cache=True)
+        def decode_3d(index: IntScalar) -> tuple[int, int, int]:
+            return _hilbert_decode_3d_2bit_sb(index, nbits, lut)
 
-    @nb.njit(inline="always", cache=True)
-    def decode_3d(index: IntScalar) -> tuple[int, int, int]:
-        return _hilbert_decode_3d_2bit_sb(index, nbits, lut)
+        return decode_3d
 
-    return decode_3d
+    raise ValueError("tile_nbits must be 2 or 3")
 
 
 @kernel_cache
@@ -124,33 +124,33 @@ def build_hilbert_decode_3d_batch_impl(
 
         return decode_3d_batch_3bit_serial
 
-    if tile_nbits != 2:
-        raise ValueError("tile_nbits must be 2 or 3")
+    if tile_nbits == 2:
+        lut = lut_3d2b_so_sb(lut_dtype)
 
-    lut = lut_3d2b_so_sb(lut_dtype)
+        if parallel:
 
-    if parallel:
+            @nb.njit(parallel=True, cache=True)
+            def decode_3d_batch_parallel(
+                indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
+            ) -> None:
+                n = indices.size
+                for i in nb.prange(n):  # type: ignore[not-iterable]
+                    xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_2bit_sb(
+                        indices.flat[i], nbits, lut
+                    )
 
-        @nb.njit(parallel=True, cache=True)
-        def decode_3d_batch_parallel(
+            return decode_3d_batch_parallel
+
+        @nb.njit(parallel=False, cache=True)
+        def decode_3d_batch_serial(
             indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
         ) -> None:
             n = indices.size
-            for i in nb.prange(n):  # type: ignore[not-iterable]
+            for i in range(n):
                 xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_2bit_sb(
                     indices.flat[i], nbits, lut
                 )
 
-        return decode_3d_batch_parallel
+        return decode_3d_batch_serial
 
-    @nb.njit(parallel=False, cache=True)
-    def decode_3d_batch_serial(
-        indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
-    ) -> None:
-        n = indices.size
-        for i in range(n):
-            xs.flat[i], ys.flat[i], zs.flat[i] = _hilbert_decode_3d_2bit_sb(
-                indices.flat[i], nbits, lut
-            )
-
-    return decode_3d_batch_serial
+    raise ValueError("tile_nbits must be 2 or 3")

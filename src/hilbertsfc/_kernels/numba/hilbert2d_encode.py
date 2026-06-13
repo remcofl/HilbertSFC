@@ -90,7 +90,7 @@ def build_hilbert_encode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
 
         return encode_2d_7bit
 
-    elif tile_nbits == 4:
+    if tile_nbits == 4:
         lut = lut_2d4b_b_qs_u64()
 
         @nb.njit(inline="always", cache=True)
@@ -101,8 +101,7 @@ def build_hilbert_encode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
 
         return encode_2d_4bit
 
-    else:
-        raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")
+    raise ValueError("tile_nbits must be 4 or 7 (or None for auto)")
 
 
 @kernel_cache

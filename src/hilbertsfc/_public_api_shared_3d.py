@@ -229,7 +229,7 @@ def _encode_3d_batch(
     z_1d = _flatten_nocopy(z_u, "z", order="C", strict=False)
     out_1d = _flatten_nocopy(out_u, "out", order="C", strict=False)
 
-    impl = build_batch(nbits, parallel=parallel, index_dtype=out.dtype)
+    impl = build_batch(nbits, parallel=parallel)
     impl(x_1d, y_1d, z_1d, out_1d)
     return out
 
@@ -322,6 +322,6 @@ def _decode_3d_batch(
     out_y_1d = _flatten_nocopy(out_y_u, "out_y", order="C", strict=False)
     out_z_1d = _flatten_nocopy(out_z_u, "out_z", order="C", strict=False)
 
-    impl = build_batch(nbits, parallel=parallel, index_dtype=index.dtype)
+    impl = build_batch(nbits, parallel=parallel)
     impl(index_1d, out_x_1d, out_y_1d, out_z_1d)
     return out_x, out_y, out_z

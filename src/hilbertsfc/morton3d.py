@@ -28,14 +28,6 @@ from ._public_api_shared_3d import decode_3d_api, encode_3d_api
 from .types import IntArray, IntScalar
 
 
-def _build_morton_encode_3d_batch(nbits, *, parallel=False, index_dtype):
-    return get_morton_encode_3d_batch_builder()(nbits, parallel=parallel)
-
-
-def _build_morton_decode_3d_batch(nbits, *, parallel=False, index_dtype):
-    return get_morton_decode_3d_batch_builder()(nbits, parallel=parallel)
-
-
 def morton_encode_3d(
     x: IntScalar | IntArray,
     y: IntScalar | IntArray,
@@ -66,7 +58,7 @@ def morton_encode_3d(
         out=out,
         parallel=parallel,
         build_scalar=get_morton_encode_3d_scalar_builder(),
-        build_batch=_build_morton_encode_3d_batch,
+        build_batch=get_morton_encode_3d_batch_builder(),
     )
 
 
@@ -101,7 +93,7 @@ def morton_decode_3d(
         out_z=out_z,
         parallel=parallel,
         build_scalar=get_morton_decode_3d_scalar_builder(),
-        build_batch=_build_morton_decode_3d_batch,
+        build_batch=get_morton_decode_3d_batch_builder(),
     )
 
 
