@@ -6,7 +6,7 @@ import numpy as np
 from ..._cache import kernel_cache
 from ..._luts import lut_3d2b_so_sb, lut_3d3b_so_sb
 from ..._nbits import validate_nbits_3d
-from ...types import IntScalar, LutUIntDTypeLike, UIntArray
+from ...types import IntScalar, LutUIntDTypeLike, TileNBits3D, UIntArray
 
 
 @nb.njit(inline="always")
@@ -60,12 +60,12 @@ def _hilbert_decode_3d_3bit_sb(idx, nbits, lut):
 
 @kernel_cache
 def build_hilbert_decode_3d_impl(
-    nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
+    nbits: int, *, tile_nbits: TileNBits3D = 3, lut_dtype: LutUIntDTypeLike = np.uint16
 ):
     """Return a specialized scalar decoder: index -> (x, y, z)."""
 
     validate_nbits_3d(nbits)
-    if nbits not in (1, 2, 4):
+    if tile_nbits == 3:
         lut = lut_3d3b_so_sb(lut_dtype)
 
         @nb.njit(inline="always", cache=True)
@@ -73,6 +73,9 @@ def build_hilbert_decode_3d_impl(
             return _hilbert_decode_3d_3bit_sb(index, nbits, lut)
 
         return decode_3d_3bit
+
+    if tile_nbits != 2:
+        raise ValueError("tile_nbits must be 2 or 3")
 
     lut = lut_3d2b_so_sb(lut_dtype)
 
@@ -85,13 +88,17 @@ def build_hilbert_decode_3d_impl(
 
 @kernel_cache
 def build_hilbert_decode_3d_batch_impl(
-    nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16, parallel: bool = False
+    nbits: int,
+    *,
+    parallel: bool = False,
+    tile_nbits: TileNBits3D = 3,
+    lut_dtype: LutUIntDTypeLike = np.uint16,
 ):
     """Return a specialized batch decoder: (indices, xs, ys, zs) -> (xs, ys, zs)."""
 
     validate_nbits_3d(nbits)
 
-    if nbits not in (1, 2, 4):
+    if tile_nbits == 3:
         lut = lut_3d3b_so_sb(lut_dtype)
         if parallel:
 
@@ -116,6 +123,9 @@ def build_hilbert_decode_3d_batch_impl(
                 )
 
         return decode_3d_batch_3bit_serial
+
+    if tile_nbits != 2:
+        raise ValueError("tile_nbits must be 2 or 3")
 
     lut = lut_3d2b_so_sb(lut_dtype)
 

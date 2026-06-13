@@ -87,12 +87,21 @@ def test_kernel_builder_cache_clear_refreshes_function_object() -> None:
     assert f3 is not f1
 
 
-def test_3d_builder_accepts_lut_dtype() -> None:
-    enc16 = build_hilbert_encode_3d_impl(2, lut_dtype=np.uint16)
-    enc32 = build_hilbert_encode_3d_impl(2, lut_dtype=np.uint32)
+def test_3d_builder_accepts_tile_nbits_and_lut_dtype() -> None:
+    enc_2b_u16 = build_hilbert_encode_3d_impl(2, tile_nbits=2, lut_dtype=np.uint16)
+    enc_2b_u32 = build_hilbert_encode_3d_impl(2, tile_nbits=2, lut_dtype=np.uint32)
+    enc_3b_u16 = build_hilbert_encode_3d_impl(2, tile_nbits=3, lut_dtype=np.uint16)
 
-    # The returned Python objects should differ due to different cache keys.
-    assert enc16 is not enc32
+    # Each configuration has its own cached specialized kernel.
+    assert enc_2b_u16 is not enc_2b_u32
+    assert enc_2b_u16 is not enc_3b_u16
+
+
+def test_3d_builder_rejects_invalid_tile_nbits() -> None:
+    with np.testing.assert_raises_regex(ValueError, "tile_nbits must be 2 or 3"):
+        build_hilbert_encode_3d_impl(3, tile_nbits=4)  # type: ignore[arg-type]
+    with np.testing.assert_raises_regex(ValueError, "tile_nbits must be 2 or 3"):
+        build_hilbert_decode_3d_impl(3, tile_nbits=4)  # type: ignore[arg-type]
 
 
 def test_clear_all_caches_clears_luts_and_kernels() -> None:

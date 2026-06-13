@@ -12,6 +12,7 @@ from .types import (
     IntArray,
     IntScalar,
     LutUIntDTypeLike,
+    TileNBits3D,
     UInt8Array,
     UInt16Array,
     UInt32Array,
@@ -238,8 +239,14 @@ def hilbert_decode_3d(
 
 # --- Kernel accessors:
 def get_hilbert_encode_3d_kernel(
-    nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
+    nbits: int,
+    *,
+    tile_nbits: TileNBits3D = 3,
+    lut_dtype: LutUIntDTypeLike = np.uint16,
 ) -> Callable[[IntScalar, IntScalar, IntScalar], IntScalar]: ...
 def get_hilbert_decode_3d_kernel(
-    nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
+    nbits: int,
+    *,
+    tile_nbits: TileNBits3D = 3,
+    lut_dtype: LutUIntDTypeLike = np.uint16,
 ) -> Callable[[IntScalar], tuple[int, int, int]]: ...

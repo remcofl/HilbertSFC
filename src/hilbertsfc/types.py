@@ -66,3 +66,9 @@ type TileNBits2D = Literal[4, 7]
 
 Allowed values are 4 and 7, corresponding to the supported LUT/kernel variants.
 """
+
+type TileNBits3D = Literal[2, 3]
+"""3D tile size in bits.
+
+Allowed values are 2 and 3, corresponding to the supported LUT/kernel variants.
+"""

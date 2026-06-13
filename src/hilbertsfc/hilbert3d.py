@@ -26,34 +26,16 @@ from ._dispatch import (
     get_encode_3d_batch_builder,
     get_encode_3d_scalar_builder,
 )
-from ._dtype import (
-    choose_lut_dtype_for_index_dtype,
-)
 from ._public_api_shared_3d import decode_3d_api, encode_3d_api
-from .types import IntArray, IntScalar, LutUIntDTypeLike
-
-
-def _choose_hilbert_3d_lut_dtype(nbits: int, index_dtype: np.dtype) -> LutUIntDTypeLike:
-    # Widening the 24 KiB 3-bit LUT erases much of its measured speedup.
-    if nbits not in (1, 2, 4):
-        return np.uint16
-    return choose_lut_dtype_for_index_dtype(index_dtype)
+from .types import IntArray, IntScalar, LutUIntDTypeLike, TileNBits3D
 
 
 def _build_hilbert_encode_3d_batch(nbits, *, parallel=False, index_dtype):
-    return get_encode_3d_batch_builder()(
-        nbits,
-        parallel=parallel,
-        lut_dtype=_choose_hilbert_3d_lut_dtype(nbits, index_dtype),
-    )
+    return get_encode_3d_batch_builder()(nbits, parallel=parallel)
 
 
 def _build_hilbert_decode_3d_batch(nbits, *, parallel=False, index_dtype):
-    return get_decode_3d_batch_builder()(
-        nbits,
-        parallel=parallel,
-        lut_dtype=_choose_hilbert_3d_lut_dtype(nbits, index_dtype),
-    )
+    return get_decode_3d_batch_builder()(nbits, parallel=parallel)
 
 
 def hilbert_encode_3d(
@@ -242,7 +224,10 @@ def hilbert_decode_3d(
 
 
 def get_hilbert_encode_3d_kernel(
-    nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
+    nbits: int,
+    *,
+    tile_nbits: TileNBits3D = 3,
+    lut_dtype: LutUIntDTypeLike = np.uint16,
 ) -> Callable[[IntScalar, IntScalar, IntScalar], IntScalar]:
     """Return a Numba-compiled *scalar* 3D Hilbert encoder.
 
@@ -253,15 +238,17 @@ def get_hilbert_encode_3d_kernel(
     ----------
     nbits
         Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+    tile_nbits
+        Select the 2-bit (3 KiB) or 3-bit (24 KiB) LUT/kernel variant.
+        Defaults to the generally faster 3-bit variant.
     lut_dtype
         Element dtype used for the internal lookup tables.
 
-        Default is ``uint16`` (smallest; 3 KiB LUT footprint). When fusing into
+        Default is ``uint16``. The footprint depends on ``tile_nbits``. When fusing into
         a cache-intensive kernel, keeping the LUT small can help.
 
         For best throughput, it is usually better to match ``lut_dtype``
-        to your index dtype (``uint16``/``uint32``/``uint64``), which increases LUT
-        size (6 KiB for ``uint32``, 12 KiB for ``uint64``) but reduces widening.
+        to your index dtype (``uint16``/``uint32``/``uint64``), which increases the selected LUT size by 2x or 4x but reduces widening.
         In isolation, even the larger LUTs typically fit comfortably within the
         per-core L1 data cache of modern CPUs.
 
@@ -272,11 +259,14 @@ def get_hilbert_encode_3d_kernel(
     """
 
     builder = get_encode_3d_scalar_builder()
-    return builder(nbits, lut_dtype=lut_dtype)
+    return builder(nbits, tile_nbits=tile_nbits, lut_dtype=lut_dtype)
 
 
 def get_hilbert_decode_3d_kernel(
-    nbits: int, *, lut_dtype: LutUIntDTypeLike = np.uint16
+    nbits: int,
+    *,
+    tile_nbits: TileNBits3D = 3,
+    lut_dtype: LutUIntDTypeLike = np.uint16,
 ) -> Callable[[IntScalar], tuple[int, int, int]]:
     """Return a Numba-compiled *scalar* 3D Hilbert decoder.
 
@@ -287,6 +277,9 @@ def get_hilbert_decode_3d_kernel(
     ----------
     nbits
         Number of coordinate bits (grid domain is ``[0, 2**nbits)`` per axis).
+    tile_nbits
+        Select the 2-bit (3 KiB) or 3-bit (24 KiB) LUT/kernel variant.
+        Defaults to the generally faster 3-bit variant.
     lut_dtype
         Element dtype used for the internal lookup tables.
 
@@ -298,4 +291,4 @@ def get_hilbert_decode_3d_kernel(
         A Numba-compiled function with signature ``(index: int) -> (x: int, y: int, z: int)``.
     """
     builder = get_decode_3d_scalar_builder()
-    return builder(nbits, lut_dtype=lut_dtype)
+    return builder(nbits, tile_nbits=tile_nbits, lut_dtype=lut_dtype)
