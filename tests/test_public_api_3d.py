@@ -98,17 +98,19 @@ def test_3d_kernel_lut_dtypes_agree_at_high_nbits() -> None:
         (0x3FF, 0x400, 0x555),
         (0x1F_FFFF, 0x1F_FFFE, 0x1F_FFFD),
     ]
-    enc_u16 = get_hilbert_encode_3d_kernel(nbits, lut_dtype=np.uint16)
-    dec_u16 = get_hilbert_decode_3d_kernel(nbits, lut_dtype=np.uint16)
-    enc_u64 = get_hilbert_encode_3d_kernel(nbits, lut_dtype=np.uint64)
-    dec_u64 = get_hilbert_decode_3d_kernel(nbits, lut_dtype=np.uint64)
+    enc_2b_u16 = get_hilbert_encode_3d_kernel(nbits, tile_nbits=2, lut_dtype=np.uint16)
+    dec_2b_u16 = get_hilbert_decode_3d_kernel(nbits, tile_nbits=2, lut_dtype=np.uint16)
+    enc_2b_u64 = get_hilbert_encode_3d_kernel(nbits, tile_nbits=2, lut_dtype=np.uint64)
+    dec_2b_u64 = get_hilbert_decode_3d_kernel(nbits, tile_nbits=2, lut_dtype=np.uint64)
+    enc_3b_u16 = get_hilbert_encode_3d_kernel(nbits, tile_nbits=3, lut_dtype=np.uint16)
+    dec_3b_u16 = get_hilbert_decode_3d_kernel(nbits, tile_nbits=3, lut_dtype=np.uint16)
 
     for x, y, z in points:
-        idx_u16 = int(enc_u16(x, y, z))
-        idx_u64 = int(enc_u64(x, y, z))
-        assert idx_u16 == idx_u64
-        assert tuple(map(int, dec_u16(idx_u16))) == (x, y, z)
-        assert tuple(map(int, dec_u64(idx_u64))) == (x, y, z)
+        indices = [int(enc(x, y, z)) for enc in (enc_2b_u16, enc_2b_u64, enc_3b_u16)]
+        assert indices[0] == indices[1] == indices[2]
+        assert tuple(map(int, dec_2b_u16(indices[0]))) == (x, y, z)
+        assert tuple(map(int, dec_2b_u64(indices[1]))) == (x, y, z)
+        assert tuple(map(int, dec_3b_u16(indices[2]))) == (x, y, z)
 
 
 def test_3d_decode_batch_out_triple_rule(rng: np.random.Generator) -> None:
