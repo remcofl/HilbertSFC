@@ -18,7 +18,7 @@ HilbertSFC
 </p>
 
 <p align="center">
-<strong>✨ New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
+<strong>New in v0.3.0</strong>: PyTorch API + GPU-accelerated kernels with Triton!</br>
 <strong>New in v0.4.0</strong>: Morton/z-order curves</br>
 </p>
 
