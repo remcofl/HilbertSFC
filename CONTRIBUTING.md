@@ -106,7 +106,8 @@ wheel and source distribution, publishes to PyPI, creates a GitHub Release, and
 deploys versioned documentation with `mike`.
 
 For a normal release, choose the appropriate bump kind (`patch`, `minor`, or
-`major`) and let `uv` update both `pyproject.toml` and `uv.lock`:
+`major`) and let `uv` update `pyproject.toml` and `uv.lock`, then update
+`CITATION.cff` to match the new version:
 
 ```bash
 OLD_VERSION="$(uv version --short)"
@@ -123,8 +124,8 @@ uvx nox
 Review the version bump, then commit and tag it:
 
 ```bash
-git diff -- pyproject.toml
-git add pyproject.toml uv.lock
+git diff -- pyproject.toml CITATION.cff
+git add pyproject.toml uv.lock CITATION.cff
 git commit -m "bump: hilbertsfc (${OLD_VERSION} => ${NEW_VERSION})"
 git tag -a "v${NEW_VERSION}" -m "hilbertsfc ${NEW_VERSION}"
 ```
