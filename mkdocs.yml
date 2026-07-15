@@ -3,8 +3,17 @@ site_description: Ultra-fast 2D & 3D Hilbert space-filling curve encode/decode k
 repo_url: https://github.com/remcofl/HilbertSFC
 repo_name: remcofl/HilbertSFC
 site_url: https://remcofl.github.io/HilbertSFC/
+copyright: 'HilbertSFC &middot; <a href="https://github.com/remcofl/HilbertSFC/blob/main/LICENSE">MIT License</a>'
 
 extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/remcofl/HilbertSFC
+      name: HilbertSFC on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/hilbertsfc/
+      name: HilbertSFC on PyPI
   version:
     provider: mike
     default: latest
@@ -12,16 +21,25 @@ extra:
 
 docs_dir: docs
 
+extra_css:
+  - stylesheets/extra.css
+
 theme:
   name: material
+  variant: modern
   custom_dir: docs/overrides
   logo: img/logo.png
   favicon: img/favicon.png
+  icon:
+    repo: fontawesome/brands/github
   features:
     - navigation.instant
     - navigation.tracking
     - navigation.indexes
+    - navigation.footer
+    - navigation.top
     - content.code.copy
+    - content.tabs.link
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -53,9 +71,6 @@ nav:
   - Home: index.md
   - Quick start: quickstart.md
   - Advanced usage: advanced-usage.md
-  - Benchmarks:
-      - CPU ↗: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-cpu.md
-      - GPU ↗: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-gpu.md
   - API Reference:
       - api/index.md
       - hilbertsfc: api/hilbertsfc.md
@@ -66,7 +81,6 @@ nav:
 
 plugins:
   - search
-  - autorefs
   - mkdocstrings:
       handlers:
         python:

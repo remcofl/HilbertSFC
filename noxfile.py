@@ -189,9 +189,6 @@ def test_torch_compile_cu118_min(session: nox.Session) -> None:
 
 @nox.session(python="3.12")
 def docs(session: nox.Session) -> None:
-    """Build documentation with MkDocs."""
-    # Material for MkDocs prints a warning about MkDocs 2.0; we intentionally
-    # stay on MkDocs 1.x for now.
-    session.env["NO_MKDOCS_2_WARNING"] = "1"
+    """Build documentation with Zensical."""
     _install(session, groups=["docs"])
-    session.run("mkdocs", "build", "--strict")
+    session.run("zensical", "build", "--strict", "--clean")

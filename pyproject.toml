@@ -61,12 +61,9 @@ dev = [
     "nox>=2025.11.12",
 ]
 docs = [
-    "mkdocs>=1.6.1,<2",
-    "mkdocs-material>=9.6.0",
-    "mkdocstrings[python]>=0.30.0",
-    "mike>=2.1.4",
-    "pymdown-extensions>=10.14.0",
-    "ruff>=0.15.0",
+    "mike>=2.2.0",
+    "mkdocstrings-python>=2.0.0",
+    "zensical>=0.0.46",
 ]
 notebooks = [
     "ipykernel>=7.2.0",
@@ -173,6 +170,7 @@ torch = [
     { index = "pytorch-rocm", group = "torch-rocm" },
 ]
 triton-rocm = [{ index = "pytorch-rocm", group = "torch-rocm" }]
+mike = { git = "https://github.com/squidfunk/mike.git", rev = "2.2.0+zensical-0.1.0" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

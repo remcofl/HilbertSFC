@@ -93,7 +93,7 @@ The performance benefit depends on how well the surrounding code can be optimize
 
 HilbertSFC's PyTorch API is designed to integrate naturally with PyTorch and its [compiler stack](https://docs.pytorch.org/tutorials/intermediate/torch_compile_tutorial.html). Unlike the Numba backend, which exposes scalar kernels via *kernel accessors* for manual embedding into `@numba.njit` code, the PyTorch API lets you compose tensor operations normally and wrap the code with a [`torch.compile`](https://pytorch.org/docs/stable/generated/torch.compile.html) to optimize the surrounding tensor computation graph.
 
-HilbertSFC is designed to work cleanly with this model. The main requirement for a graph-break-free capture is that [`precache_compile_luts`][hilbertsfc.torch.precache_compile_luts] must be called before entering the compiled region. This ensures the kernel lookup tables are loaded and cached outside the compiled region. This avoids graph breaks and extra overhead, and is required for `fullgraph=True`. See the [`torch.compile` example in the Quick start](quickstart.md/#use-with-torchcompile).
+HilbertSFC is designed to work cleanly with this model. The main requirement for a graph-break-free capture is that [`precache_compile_luts`][hilbertsfc.torch.precache_compile_luts] must be called before entering the compiled region. This ensures the kernel lookup tables are loaded and cached outside the compiled region. This avoids graph breaks and extra overhead, and is required for `fullgraph=True`. See the [`torch.compile` example in the Quick start](quickstart.md#use-with-torchcompile).
 
 ### Automatic backend selection
 
