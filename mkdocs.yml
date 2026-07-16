@@ -23,6 +23,8 @@ docs_dir: docs
 
 extra_css:
   - stylesheets/extra.css
+extra_javascript:
+  - javascripts/external-links.js
 
 theme:
   name: material
@@ -36,6 +38,7 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.indexes
+    - navigation.tabs
     - navigation.footer
     - navigation.top
     - content.code.copy
@@ -71,9 +74,7 @@ nav:
   - Home: index.md
   - Quick start: quickstart.md
   - Advanced usage: advanced-usage.md
-  - Benchmarks:
-      - CPU ↗: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-cpu.md
-      - GPU ↗: https://github.com/remcofl/HilbertSFC/blob/main/benchmark-gpu.md
+  - Benchmarks: benchmarks.md
   - API Reference:
       - api/index.md
       - hilbertsfc: api/hilbertsfc.md

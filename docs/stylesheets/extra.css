@@ -1,8 +1,93 @@
+:root {
+  --hsfc-spectrum: linear-gradient(
+    90deg,
+    #ff5c35 0%,
+    #ffb224 22%,
+    #58d68d 48%,
+    #26c6da 70%,
+    #7c6cff 100%
+  );
+}
+
+/* Keep the white logo for dark mode and render its black counterpart in light mode. */
+[data-md-color-scheme="default"] .md-header__button.md-logo img {
+  filter: brightness(0);
+}
+
+/* Frame the documentation with a restrained spectrum accent. */
+.md-tabs,
+.md-footer {
+  position: relative;
+}
+
+.md-header {
+  box-shadow: none;
+}
+
+.md-header::after,
+.md-footer::before {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: var(--hsfc-spectrum);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.md-header::after {
+  bottom: 0;
+}
+
+.md-footer::before {
+  top: 0;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-header::after {
+    display: none;
+  }
+
+  .md-header--shadow::after {
+    display: block;
+  }
+
+  .md-tabs::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    content: "";
+    background: var(--hsfc-spectrum);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+.md-footer {
+  border-top-color: transparent;
+}
+
 /* Link color is sufficient emphasis in documentation prose. */
 .md-typeset a,
 .md-typeset a:hover,
 .md-typeset a:focus-visible {
   text-decoration: none;
+}
+
+/* Mark ordinary outbound documentation links without affecting API symbols. */
+.md-content .md-typeset a.external-link::after {
+  display: inline-block;
+  width: 0.78em;
+  height: 0.78em;
+  margin-left: 0.18em;
+  vertical-align: 0.04em;
+  content: "";
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 /* A quiet hand-off from the homepage to the two primary documentation paths. */
