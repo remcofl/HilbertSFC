@@ -43,8 +43,6 @@ jobs:
           git fetch origin gh-pages --depth=1 || true
 
       - name: Deploy versioned docs with mike
-        env:
-          NO_MKDOCS_2_WARNING: "1"
         run: |
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             VERSION="${GITHUB_REF_NAME#v}"

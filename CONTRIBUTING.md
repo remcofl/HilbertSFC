@@ -53,7 +53,7 @@ If you're working on notebooks, docs, benches, or scripts, you can include optio
 
 - Notebook dependencies (Jupyter, matplotlib, etc.):
   - `uv sync --group notebooks`
-- Documentation dependencies (MkDocs, mkdocstrings, etc.):
+- Documentation dependencies (Zensical, mkdocstrings, etc.):
   - `uv sync --group docs`
 
 ### CI tasks with nox
@@ -68,7 +68,7 @@ If you're working on notebooks, docs, benches, or scripts, you can include optio
   - `uvx nox -s test_min`
 - Unit tests for torch submodule (CPU PyTorch only):
   - `uvx nox -s test_torch_cpu`
-- Docs build (MkDocs strict build):
+- Docs build (Zensical strict build):
   - `uvx nox -s docs`
 
 For a list of all sessions, run `uvx nox --list`.
@@ -90,13 +90,13 @@ The same applies to `morton2d.py` and `morton3d.py` and their stubs.
 To serve the docs locally:
 
 ```bash
-uv run --no-dev --group docs mkdocs serve
+uv run --no-dev --group docs zensical serve
 ```
 
 Build a static site into `site/`:
 
 ```bash
-uv run --no-dev --group docs mkdocs build
+uv run --no-dev --group docs zensical build --strict --clean
 ```
 
 ## Release workflow

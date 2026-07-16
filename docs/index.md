@@ -40,13 +40,13 @@ The hot kernels are JIT-compiled with Numba (CPU) and Triton (GPU) and tuned for
 If you have 2D or 3D coordinates and need a 1D ordering that preserves spatial locality, the Hilbert space-filling curve is a strong choice: points that are close in Euclidean space tend to remain close after mapping to a Hilbert index. HilbertSFC
 is designed for high-throughput workloads, such as spatial indexing (GIS/databases), scientific computing, and machine/deep learning, where Hilbert curve mapping performance matters.
 
-## Quick start
-
-Start here: [Quick start](quickstart.md)
-
-## API reference
-
-Browse the full [API reference](api/index.md), or jump directly to:
-
-- [`hilbertsfc`][hilbertsfc]
-- [`hilbertsfc.torch`][hilbertsfc.torch]
+<nav class="home-nav" aria-label="Documentation">
+  <a href="quickstart/">
+    <span class="home-nav__label">Quick start <span aria-hidden="true">→</span></span>
+    <span class="home-nav__description">Install HilbertSFC and encode your first coordinates.</span>
+  </a>
+  <a href="api/">
+    <span class="home-nav__label">API reference <span aria-hidden="true">→</span></span>
+    <span class="home-nav__description">Browse modules, functions, and types.</span>
+  </a>
+</nav>
