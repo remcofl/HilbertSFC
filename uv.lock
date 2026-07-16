@@ -734,7 +734,7 @@ dev = [
     { name = "nox", specifier = ">=2025.11.12" },
     { name = "prek", specifier = ">=0.3.1" },
     { name = "pyrefly", specifier = ">=0.51.0" },
-    { name = "pyright", specifier = "==1.1.408" },
+    { name = "pyright", specifier = ">=1.1.41" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
@@ -778,7 +778,7 @@ torch-rocm = [
 ]
 typecheck = [
     { name = "pyrefly", specifier = ">=0.51.0" },
-    { name = "pyright", specifier = "==1.1.408" },
+    { name = "pyright", specifier = ">=1.1.41" },
     { name = "ty", specifier = ">=0.0.15" },
 ]
 

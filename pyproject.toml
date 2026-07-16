@@ -85,7 +85,7 @@ torch-cpu-min = ["torch==2.5.0"]
 torch-cu118-min = ["torch==2.5.0"]
 torch-cu130 = ["torch>=2.11.0"]
 torch-rocm = ["torch>=2.11.0", "triton-rocm==3.6.0"]
-typecheck = ["pyright==1.1.408", "pyrefly>=0.51.0", "ty>=0.0.15"]
+typecheck = ["pyright>=1.1.41", "pyrefly>=0.51.0", "ty>=0.0.15"]
 
 [tool.ruff]
 line-length = 88
