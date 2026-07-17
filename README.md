@@ -98,102 +98,35 @@ HilbertSFC achieves very high throughput on modern GPUs, reaching up to ~143 bil
 
 See [benchmark-gpu.md](https://github.com/remcofl/HilbertSFC/blob/main/benchmark-gpu.md) for more details and additional GPU benchmarks.
 
-## Quickstart
+## Get started
 
 ### Installation
 
-Install the base package with either `pip` or `uv`:
-
-#### With pip
+Install the base package from PyPI:
 
 ```bash
 pip install hilbertsfc
 ```
 
-#### Or with uv
+For PyTorch support, alternative installers, and CUDA or ROCm options, see the [installation guide](https://remcofl.github.io/HilbertSFC/latest/quickstart/#installation).
 
-```bash
-uv add hilbertsfc
-```
+### Minimal example
 
-### PyTorch support
-
-To enable the optional PyTorch extension, install with the `torch` extra:
-
-```bash
-pip install hilbertsfc[torch]
-```
-
-> [!NOTE]
->
-> By default, installing `hilbertsfc[torch]` pulls in a platform-default PyTorch build:
->
-> - **Windows:** CPU-only
-> - **Linux:** CUDA-enabled
->
-> If you need a specific PyTorch, CUDA, or ROCm version, follow the official
-> [PyTorch installation instructions](https://pytorch.org/get-started/locally/). Then install `hilbertsfc[torch]` as shown above.
-
-### Usage
-
-Space-filling curves such as Hilbert and Morton map multi-dimensional integer coordinates onto a single scalar index while preserving spatial locality. `hilbertsfc` provides simple encode/decode APIs for Python scalars, NumPy arrays, and PyTorch tensors.
-
-#### Python scalars
-
-Use `hilbert_encode_2d` and `hilbert_decode_2d` directly on Python integers:
+Encode and decode a 2D coordinate with the scalar API:
 
 ```python
 from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
 
-index = hilbert_encode_2d(17, 23, nbits=10)
-x, y = hilbert_decode_2d(index, nbits=10)
+index = hilbert_encode_2d(17, 23, nbits=10)  # 534
+x, y = hilbert_decode_2d(index, nbits=10)    # (17, 23)
 ```
 
-`nbits` controls the coordinate domain `[0, 2**nbits)` on each axis. It is optional, but when you know the coordinate range ahead of time, passing a tighter value can improve performance and reduce output dtypes.
-
-The 3D API follows the same pattern via `hilbert_encode_3d` and `hilbert_decode_3d`. The Morton/z-order functions mirror these names with `morton_encode_2d`, `morton_decode_2d`, `morton_encode_3d`, and `morton_decode_3d`.
-
-#### NumPy arrays
-
-The same functions also accept NumPy integer arrays, preserving shape and supporting batch encode/decode efficiently.
-
-```python
-import numpy as np
-from hilbertsfc import hilbert_encode_2d
-
-xs = np.array([0, 1, 2, 3], dtype=np.uint32)
-ys = np.array([3, 2, 1, 0], dtype=np.uint32)
-
-indices = hilbert_encode_2d(xs, ys, nbits=2)
-```
-
-This is the preferred use for high-throughput workloads on CPU. It can be further accelerated with `parallel=True`.
-
-#### PyTorch tensors
-
-The `hilbertsfc.torch` frontend works with PyTorch tensors on CPU and accelerator devices. On CUDA/ROCm, contiguous tensors take the Triton path when available; otherwise execution falls back to the Torch backend.
-
-```python
-import torch
-from hilbertsfc.torch import hilbert_decode_2d, hilbert_encode_2d
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-nbits = 10
-
-xs = torch.randint(0, 2**nbits, (4096,), dtype=torch.int32, device=device)
-ys = torch.randint(0, 2**nbits, (4096,), dtype=torch.int32, device=device)
-
-indices = hilbert_encode_2d(xs, ys, nbits=nbits)
-xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)
-```
-
-HilbertSFC also supports `torch.compile`. Before entering a compiled region, call `precache_compile_luts(...)` so LUT materialization happens outside the compiled graph.
+For NumPy arrays, PyTorch tensors, 3D curves, and Morton/z-order examples, continue with the [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart/#first-steps).
 
 ## Learn more
 
-For more details and advanced usage, see:
-
-- [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart)
-- [Advanced usage guide](https://remcofl.github.io/HilbertSFC/latest/advanced-usage)
-- [API reference](https://remcofl.github.io/HilbertSFC/latest/api/index)
+- [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart/)
+- [Advanced usage guide](https://remcofl.github.io/HilbertSFC/latest/advanced-usage/)
+- [API reference](https://remcofl.github.io/HilbertSFC/latest/api/)
+- [Benchmarks](https://remcofl.github.io/HilbertSFC/latest/benchmarks/)
 - [Demo notebook](https://github.com/remcofl/HilbertSFC/blob/main/notebooks/hilbertsfc_demo.ipynb)
