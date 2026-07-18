@@ -108,11 +108,11 @@ Install the base package from PyPI:
 pip install hilbertsfc
 ```
 
-For PyTorch support, alternative installers, and CUDA or ROCm options, see the [installation guide](https://remcofl.github.io/HilbertSFC/latest/quickstart/#installation).
+For PyTorch support, and CUDA or ROCm options, see the [installation guide](https://remcofl.github.io/HilbertSFC/latest/quickstart/#installation).
 
 ### Minimal example
 
-Encode and decode a 2D coordinate with the scalar API:
+Encode and decode a 2D coordinate:
 
 ```python
 from hilbertsfc import hilbert_decode_2d, hilbert_encode_2d
