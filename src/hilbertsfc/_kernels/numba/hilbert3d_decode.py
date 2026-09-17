@@ -68,7 +68,7 @@ def build_hilbert_decode_3d_impl(
     if tile_nbits == 3:
         lut = lut_3d3b_so_sb(lut_dtype)
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def decode_3d_3bit(index: IntScalar) -> tuple[int, int, int]:
             return _hilbert_decode_3d_3bit_sb(index, nbits, lut)
 
@@ -77,7 +77,7 @@ def build_hilbert_decode_3d_impl(
     if tile_nbits == 2:
         lut = lut_3d2b_so_sb(lut_dtype)
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def decode_3d(index: IntScalar) -> tuple[int, int, int]:
             return _hilbert_decode_3d_2bit_sb(index, nbits, lut)
 
@@ -102,7 +102,7 @@ def build_hilbert_decode_3d_batch_impl(
         lut = lut_3d3b_so_sb(lut_dtype)
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def decode_3d_batch_3bit_parallel(
                 indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
             ) -> None:
@@ -113,7 +113,7 @@ def build_hilbert_decode_3d_batch_impl(
 
             return decode_3d_batch_3bit_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def decode_3d_batch_3bit_serial(
             indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
         ) -> None:
@@ -129,7 +129,7 @@ def build_hilbert_decode_3d_batch_impl(
 
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def decode_3d_batch_parallel(
                 indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
             ) -> None:
@@ -141,7 +141,7 @@ def build_hilbert_decode_3d_batch_impl(
 
             return decode_3d_batch_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def decode_3d_batch_serial(
             indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
         ) -> None:

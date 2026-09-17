@@ -69,7 +69,7 @@ def build_morton_decode_3d_impl(nbits: int):
 
     validate_nbits_3d(nbits)
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def decode_3d(index: IntScalar) -> tuple[int, int, int]:
         return _morton_decode_3d(index, nbits)  # type: ignore[reportReturnType]
 
@@ -84,7 +84,7 @@ def build_morton_decode_3d_batch_impl(nbits: int, *, parallel: bool = False):
 
     if parallel:
 
-        @nb.njit(parallel=True, cache=True)
+        @nb.njit(parallel=True, cache=False)
         def decode_3d_batch_parallel(
             indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
         ) -> None:
@@ -96,7 +96,7 @@ def build_morton_decode_3d_batch_impl(nbits: int, *, parallel: bool = False):
 
         return decode_3d_batch_parallel
 
-    @nb.njit(parallel=False, cache=True)
+    @nb.njit(parallel=False, cache=False)
     def decode_3d_batch_serial(
         indices: UIntArray, xs: UIntArray, ys: UIntArray, zs: UIntArray
     ) -> None:

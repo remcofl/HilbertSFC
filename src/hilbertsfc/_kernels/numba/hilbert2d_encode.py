@@ -82,7 +82,7 @@ def build_hilbert_encode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
     if tile_nbits == 7:
         lut = lut_2d7b_b_qs_u64()
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def encode_2d_7bit(x: IntScalar, y: IntScalar) -> int:
             return _hilbert_encode_2d_7bit_compacted_qs(  # type: ignore[reportReturnType]
                 x, y, nbits, lut
@@ -93,7 +93,7 @@ def build_hilbert_encode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
     if tile_nbits == 4:
         lut = lut_2d4b_b_qs_u64()
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def encode_2d_4bit(x: IntScalar, y: IntScalar) -> int:
             return _hilbert_encode_2d_4bit_compacted_qs(  # type: ignore[reportReturnType]
                 x, y, nbits, lut
@@ -119,7 +119,7 @@ def build_hilbert_encode_2d_batch_impl(
         lut = lut_2d7b_b_qs_u64()
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def encode_2d_batch_7bit_parallel(
                 xs: UIntArray, ys: UIntArray, out: UIntArray
             ) -> None:
@@ -131,7 +131,7 @@ def build_hilbert_encode_2d_batch_impl(
 
             return encode_2d_batch_7bit_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def encode_2d_batch_7bit_serial(
             xs: UIntArray, ys: UIntArray, out: UIntArray
         ) -> None:
@@ -147,7 +147,7 @@ def build_hilbert_encode_2d_batch_impl(
         lut = lut_2d4b_b_qs_u64()
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def encode_2d_batch_4bit_parallel(
                 xs: UIntArray, ys: UIntArray, out: UIntArray
             ) -> None:
@@ -159,7 +159,7 @@ def build_hilbert_encode_2d_batch_impl(
 
             return encode_2d_batch_4bit_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def encode_2d_batch_4bit_serial(
             xs: UIntArray, ys: UIntArray, out: UIntArray
         ) -> None:
