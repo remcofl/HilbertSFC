@@ -110,7 +110,9 @@ pip install hilbertsfc
 
 For PyTorch support, and CUDA or ROCm options, see the [installation guide](https://remcofl.github.io/HilbertSFC/latest/quickstart/#installation).
 
-### Minimal example
+### Minimal examples
+
+#### Python scalars
 
 Encode and decode a 2D coordinate:
 
@@ -121,7 +123,24 @@ index = hilbert_encode_2d(17, 23, nbits=10)  # 534
 x, y = hilbert_decode_2d(index, nbits=10)    # (17, 23)
 ```
 
-For NumPy arrays, PyTorch tensors, 3D curves, and Morton/z-order examples, continue with the [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart/#first-steps).
+#### PyTorch tensors
+
+Encode and decode a batch of PyTorch tensors on CPU or GPU (requires `hilbertsfc[torch]`):
+
+```python
+import torch
+from hilbertsfc.torch import hilbert_decode_2d, hilbert_encode_2d
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+nbits = 10
+xs = torch.randint(0, 2**nbits, (4096,), dtype=torch.int32, device=device)
+ys = torch.randint(0, 2**nbits, (4096,), dtype=torch.int32, device=device)
+
+indices = hilbert_encode_2d(xs, ys, nbits=nbits)
+xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)  # Recover xs and ys
+```
+
+For more examples, including NumPy arrays, 3D curves, and Morton/z-order, continue with the [Quick start](https://remcofl.github.io/HilbertSFC/latest/quickstart/#first-steps).
 
 ## Learn more
 
