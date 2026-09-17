@@ -140,7 +140,7 @@ xs2, ys2 = hilbert_decode_2d(indices, nbits=nbits)
 
 #### Use with `torch.compile`
 
-If you plan to use [`torch.compile`](https://pytorch.org/docs/stable/generated/torch.compile.html), call [`precache_compile_luts`][hilbertsfc.torch.precache_compile_luts] first so LUT materialization happens outside the compiled region. This avoids graph breaks and extra overhead, and is required for `fullgraph=True`.
+If you plan to use [`torch.compile`](https://pytorch.org/docs/stable/generated/torch.compile.html) with hilbert functions, call [`precache_compile_luts`][hilbertsfc.torch.precache_compile_luts] first so that lookup-table (LUT) materialization happens outside the compiled region. This avoids graph breaks and extra overhead, and is required for `fullgraph=True`.
 
 ```python
 import torch

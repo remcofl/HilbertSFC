@@ -189,12 +189,14 @@ def clear_torch_lut_caches(
 def precache_compile_luts(
     device: TorchDeviceLike = None, *, op: TorchHilbertOp = "all"
 ) -> None:
-    """Pre-cache Torch LUT tensors for use with ``torch.compile``.
+    """Pre-cache Hilbert Torch LUT tensors for use with ``torch.compile``.
 
-    When using HilbertSFC Torch functions with ``torch.compile``, call this before
+    When using Hilbert Torch functions with ``torch.compile``, call this before
     compilation to avoid materializing LUT tensors inside the compiled region,
     which can cause graph breaks, extra overhead, and failure with
     ``fullgraph=True``.
+
+    Morton functions do not use LUTs and do not require this setup.
 
     Parameters
     ----------
