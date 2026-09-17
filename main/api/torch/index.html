@@ -2694,11 +2694,12 @@ accept <code>lut_cache</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Pre-cache Torch LUT tensors for use with <code>torch.compile</code>.</p>
-<p>When using HilbertSFC Torch functions with <code>torch.compile</code>, call this before
+        <p>Pre-cache Hilbert Torch LUT tensors for use with <code>torch.compile</code>.</p>
+<p>When using Hilbert Torch functions with <code>torch.compile</code>, call this before
 compilation to avoid materializing LUT tensors inside the compiled region,
 which can cause graph breaks, extra overhead, and failure with
 <code>fullgraph=True</code>.</p>
+<p>Morton functions do not use LUTs and do not require this setup.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
