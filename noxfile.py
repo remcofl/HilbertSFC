@@ -10,6 +10,7 @@ nox.options.stop_on_first_error = False
 nox.options.default_venv_backend = "uv"
 
 PYTHON_VERSIONS: tuple[str, ...] = ("3.12", "3.13", "3.14")
+STRICT_OPTIONAL_TESTS = os.environ.get("HILBERTSFC_STRICT_OPTIONAL_TESTS") == "1"
 
 
 def _install(
@@ -54,11 +55,39 @@ GPU_BACKEND_VARIANTS = [
 ]
 
 
+def _skip_or_error(session: nox.Session, message: str) -> None:
+    if STRICT_OPTIONAL_TESTS:
+        session.error(message)
+    session.skip(message)
+
+
 def _skip_if_backend_unavailable(session: nox.Session, backend: str) -> None:
     if backend not in BACKENDS:
         raise ValueError(f"Unsupported GPU backend: {backend}")
     if not BACKENDS[backend]():
-        session.skip(f"Backend {backend} not available")
+        _skip_or_error(session, f"Backend {backend} not available")
+
+
+def _skip_if_torch_compile_cpu_unavailable(session: nox.Session) -> None:
+    compiler_names = (
+        ("cl.exe", "clang-cl.exe", "icx-cl.exe")
+        if os.name == "nt"
+        else ("c++", "g++", "clang++")
+    )
+    if any(shutil.which(compiler) is not None for compiler in compiler_names):
+        return
+
+    if os.name == "nt":
+        _skip_or_error(
+            session,
+            "torch.compile CPU tests require an active C++ compiler; "
+            "run Nox from a Visual Studio Developer shell",
+        )
+    _skip_or_error(
+        session,
+        "torch.compile CPU tests require a C++ compiler; "
+        f"install one of {', '.join(compiler_names)}",
+    )
 
 
 @nox.session(venv_backend="none")
@@ -151,7 +180,9 @@ def test_torch_cu118_min(session: nox.Session) -> None:
 
 @nox.session(python=PYTHON_VERSIONS)
 def test_torch_compile_cpu(session: nox.Session) -> None:
-    """Run CPU-only torch.compile tests (opt-in)."""
+    """Run CPU-only torch.compile tests."""
+
+    _skip_if_torch_compile_cpu_unavailable(session)
 
     _install(session, project=True, groups=["test", "torch-cpu"])
 
@@ -160,7 +191,9 @@ def test_torch_compile_cpu(session: nox.Session) -> None:
 
 @nox.session(python="3.12")
 def test_torch_compile_cpu_min(session: nox.Session) -> None:
-    """Run CPU-only torch.compile tests with minimum deps (Python 3.12 only, opt-in)."""
+    """Run CPU-only torch.compile tests with minimum deps (Python 3.12 only)."""
+
+    _skip_if_torch_compile_cpu_unavailable(session)
 
     _install(
         session,

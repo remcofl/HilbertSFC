@@ -1,8 +1,12 @@
 import importlib.util
+import os
+import shutil
 from functools import cache
 
 import numpy as np
 import pytest
+
+STRICT_OPTIONAL_TESTS = os.environ.get("HILBERTSFC_STRICT_OPTIONAL_TESTS") == "1"
 
 
 @cache
@@ -21,13 +25,13 @@ def has_triton() -> bool:
 
 
 @cache
-def has_torch_compile() -> bool:
-    if not has_torch():
-        return False
-
-    import torch
-
-    return hasattr(torch, "compile")
+def has_torch_compile_cpu_toolchain() -> bool:
+    compiler_names = (
+        ("cl.exe", "clang-cl.exe", "icx-cl.exe")
+        if os.name == "nt"
+        else ("c++", "g++", "clang++")
+    )
+    return any(shutil.which(compiler) is not None for compiler in compiler_names)
 
 
 @cache
@@ -56,18 +60,31 @@ def has_cuda() -> bool:
     return True
 
 
+def skip_or_fail(reason: str) -> None:
+    if STRICT_OPTIONAL_TESTS:
+        pytest.fail(reason)
+    pytest.skip(reason)
+
+
 def pytest_runtest_setup(item: pytest.Item) -> None:
     if "torch" in item.keywords and not has_torch():
-        pytest.skip("torch is not available")
+        skip_or_fail("torch is not available")
 
-    if "compile" in item.keywords and not has_torch_compile():
-        pytest.skip("torch.compile is unavailable in this torch build")
+    if (
+        "compile" in item.keywords
+        and "gpu" not in item.keywords
+        and not has_torch_compile_cpu_toolchain()
+    ):
+        reason = "torch.compile CPU tests require an active C++ compiler"
+        if os.name == "nt":
+            reason += "; run pytest from a Visual Studio Developer shell"
+        skip_or_fail(reason)
 
     if "gpu" in item.keywords and not has_cuda():
-        pytest.skip("CUDA is not available")
+        skip_or_fail("CUDA is not available")
 
     if "triton" in item.keywords and not (has_cuda() and has_triton()):
-        pytest.skip("Triton/CUDA is unavailable")
+        skip_or_fail("Triton/CUDA is unavailable")
 
 
 @pytest.fixture(scope="session")
