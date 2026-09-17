@@ -11,13 +11,6 @@ def _torch_pair():
     return torch, htorch
 
 
-def _require_torch_compile():
-    torch, htorch = _torch_pair()
-    if not hasattr(torch, "compile"):
-        pytest.skip("torch.compile is unavailable in this torch build")
-    return torch, htorch
-
-
 def _require_torch_cuda_triton():
     torch = pytest.importorskip("torch")
     pytest.importorskip("triton")
@@ -206,7 +199,7 @@ def test_torch_morton_validation_errors() -> None:
 def test_torch_compile_fullgraph_cpu_torch_morton(
     rng: np.random.Generator, dim: int, op: str, nbits: int
 ) -> None:
-    torch, htorch = _require_torch_compile()
+    torch, htorch = _torch_pair()
 
     n = 512
     hi = 1 << nbits

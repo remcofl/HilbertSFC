@@ -71,4 +71,6 @@ jobs:
 
       - name: Run Torch Nox sessions
         if: steps.changes.outputs.torch == 'true'
+        env:
+          HILBERTSFC_STRICT_OPTIONAL_TESTS: "1"
         run: uvx nox -s test_torch_cpu test_torch_cpu_min test_torch_compile_cpu-3.12

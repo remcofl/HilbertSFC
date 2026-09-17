@@ -8,8 +8,6 @@ from hilbertsfc import hilbert_encode_3d as np_hilbert_encode_3d
 def _torch_pair():
     torch = pytest.importorskip("torch")
     htorch = pytest.importorskip("hilbertsfc.torch")
-    if not hasattr(torch, "compile"):
-        pytest.skip("torch.compile is unavailable in this torch build")
     return torch, htorch
 
 

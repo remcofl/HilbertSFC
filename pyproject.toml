@@ -60,11 +60,7 @@ dev = [
     "ruff>=0.15.0",
     "nox>=2025.11.12",
 ]
-docs = [
-    "mike>=2.2.0",
-    "mkdocstrings-python>=2.0.0",
-    "zensical>=0.0.46",
-]
+docs = ["mike>=2.2.0", "mkdocstrings-python>=2.0.0", "zensical>=0.0.46"]
 notebooks = [
     "ipykernel>=7.2.0",
     "matplotlib>=3.10.8",
@@ -78,14 +74,16 @@ scripts = [
     "pillow>=12.1.0",
     "rich>=14.3.2",
 ]
-runtime-min = ["numpy==1.26.0", "numba==0.59.0"]
 test = ["pytest>=9.0.2", "pytest-cov>=7.1.0", "pytest-xdist>=3.8.0"]
-torch-cpu = ["torch>=2.11.0"]
-torch-cpu-min = ["torch==2.5.0"]
-torch-cu118-min = ["torch==2.5.0"]
-torch-cu130 = ["torch>=2.11.0"]
-torch-rocm = ["torch>=2.11.0", "triton-rocm==3.6.0"]
-typecheck = ["pyright>=1.1.41", "pyrefly>=0.51.0", "ty>=0.0.15"]
+# Backend groups define supported Torch versions and select the wheel index.
+torch-cpu = ["torch>=2.5.0"]
+torch-cu118 = ["torch>=2.5.0,<=2.7.1"]
+torch-cu130 = ["torch>=2.9.0"]
+torch-rocm = [
+    "torch>=2.11.0,<=2.14.0 ; sys_platform == 'linux'",
+    "triton-rocm>=3.6.0 ; sys_platform == 'linux'",
+]
+typecheck = ["pyright>=1.1.411", "pyrefly>=0.51.0", "ty>=0.0.15"]
 
 [tool.ruff]
 line-length = 88
@@ -143,33 +141,21 @@ exclude-newer-package = { "torch" = false, "triton-rocm" = false }
 conflicts = [
     [
         { group = "torch-cpu" },
-        { group = "torch-cpu-min" },
-        { group = "torch-cu118-min" },
+        { group = "torch-cu118" },
         { group = "torch-cu130" },
         { group = "torch-rocm" },
-    ],
-    [
-        { group = "runtime-min" },
-        { group = "notebooks" },
-    ],
-    [
-        { group = "runtime-min" },
-        { group = "scripts" },
-    ],
-    [
-        { group = "runtime-min" },
-        { group = "bench" },
     ],
 ]
 [tool.uv.sources]
 torch = [
     { index = "pytorch-cpu", group = "torch-cpu" },
-    { index = "pytorch-cpu", group = "torch-cpu-min" },
-    { index = "pytorch-cu118", group = "torch-cu118-min" },
+    { index = "pytorch-cu118", group = "torch-cu118" },
     { index = "pytorch-cu130", group = "torch-cu130" },
-    { index = "pytorch-rocm", group = "torch-rocm" },
+    { index = "pytorch-rocm", group = "torch-rocm", marker = "sys_platform == 'linux'" },
 ]
-triton-rocm = [{ index = "pytorch-rocm", group = "torch-rocm" }]
+triton-rocm = [
+    { index = "pytorch-rocm", group = "torch-rocm", marker = "sys_platform == 'linux'" },
+]
 mike = { git = "https://github.com/squidfunk/mike.git", rev = "2.2.0+zensical-0.1.0" }
 
 [[tool.uv.index]]
