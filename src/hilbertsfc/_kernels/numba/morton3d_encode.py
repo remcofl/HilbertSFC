@@ -70,7 +70,7 @@ def build_morton_encode_3d_impl(nbits: int):
 
     validate_nbits_3d(nbits)
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def encode_3d(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
         return _morton_encode_3d(x, y, z, nbits)  # type: ignore[reportReturnType]
 
@@ -85,7 +85,7 @@ def build_morton_encode_3d_batch_impl(nbits: int, *, parallel: bool = False):
 
     if parallel:
 
-        @nb.njit(parallel=True, cache=True)
+        @nb.njit(parallel=True, cache=False)
         def encode_3d_batch_parallel(
             xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
         ) -> None:
@@ -97,7 +97,7 @@ def build_morton_encode_3d_batch_impl(nbits: int, *, parallel: bool = False):
 
         return encode_3d_batch_parallel
 
-    @nb.njit(parallel=False, cache=True)
+    @nb.njit(parallel=False, cache=False)
     def encode_3d_batch_serial(
         xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
     ) -> None:

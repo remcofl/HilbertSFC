@@ -85,7 +85,7 @@ def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
     if tile_nbits == 7:
         lut = lut_2d7b_q_bs_u64()
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def decode_2d_7bit(index: IntScalar) -> tuple[int, int]:
             return _hilbert_decode_2d_7bit_compacted_bs(index, nbits, lut)
 
@@ -94,7 +94,7 @@ def build_hilbert_decode_2d_impl(nbits: int, *, tile_nbits: TileNBits2D | None =
     if tile_nbits == 4:
         lut = lut_2d4b_q_bs_u64()
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def decode_2d_4bit(index: IntScalar) -> tuple[int, int]:
             return _hilbert_decode_2d_4bit_compacted_bs(index, nbits, lut)
 
@@ -118,7 +118,7 @@ def build_hilbert_decode_2d_batch_impl(
         lut = lut_2d7b_q_bs_u64()
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def decode_2d_batch_7bit_parallel(
                 indices: UIntArray, xs: UIntArray, ys: UIntArray
             ) -> None:
@@ -130,7 +130,7 @@ def build_hilbert_decode_2d_batch_impl(
 
             return decode_2d_batch_7bit_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def decode_2d_batch_7bit_serial(
             indices: UIntArray, xs: UIntArray, ys: UIntArray
         ) -> None:
@@ -146,7 +146,7 @@ def build_hilbert_decode_2d_batch_impl(
         lut = lut_2d4b_q_bs_u64()
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def decode_2d_batch_4bit_parallel(
                 indices: UIntArray, xs: UIntArray, ys: UIntArray
             ) -> None:
@@ -158,7 +158,7 @@ def build_hilbert_decode_2d_batch_impl(
 
             return decode_2d_batch_4bit_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def decode_2d_batch_4bit_serial(
             indices: UIntArray, xs: UIntArray, ys: UIntArray
         ) -> None:

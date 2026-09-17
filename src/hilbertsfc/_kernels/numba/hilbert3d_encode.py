@@ -74,7 +74,7 @@ def build_hilbert_encode_3d_impl(
     if tile_nbits == 3:
         lut = lut_3d3b_sb_so(lut_dtype)
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def encode_3d_3bit(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
             return _hilbert_encode_3d_3bit_so(x, y, z, nbits, lut)  # type: ignore[reportReturnType]
 
@@ -83,7 +83,7 @@ def build_hilbert_encode_3d_impl(
     if tile_nbits == 2:
         lut = lut_3d2b_sb_so(lut_dtype)
 
-        @nb.njit(inline="always", cache=True)
+        @nb.njit(inline="always", cache=False)
         def encode_3d(x: IntScalar, y: IntScalar, z: IntScalar) -> int:
             return _hilbert_encode_3d_2bit_so(x, y, z, nbits, lut)  # type: ignore[reportReturnType]
 
@@ -108,7 +108,7 @@ def build_hilbert_encode_3d_batch_impl(
         lut = lut_3d3b_sb_so(lut_dtype)
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def encode_3d_batch_3bit_parallel(
                 xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
             ) -> None:
@@ -119,7 +119,7 @@ def build_hilbert_encode_3d_batch_impl(
 
             return encode_3d_batch_3bit_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def encode_3d_batch_3bit_serial(
             xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
         ) -> None:
@@ -135,7 +135,7 @@ def build_hilbert_encode_3d_batch_impl(
 
         if parallel:
 
-            @nb.njit(parallel=True, cache=True)
+            @nb.njit(parallel=True, cache=False)
             def encode_3d_batch_parallel(
                 xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
             ) -> None:
@@ -147,7 +147,7 @@ def build_hilbert_encode_3d_batch_impl(
 
             return encode_3d_batch_parallel
 
-        @nb.njit(parallel=False, cache=True)
+        @nb.njit(parallel=False, cache=False)
         def encode_3d_batch_serial(
             xs: UIntArray, ys: UIntArray, zs: UIntArray, out: UIntArray
         ) -> None:

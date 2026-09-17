@@ -62,7 +62,7 @@ def build_morton_encode_2d_impl(nbits: int):
 
     validate_nbits_2d(nbits)
 
-    @nb.njit(inline="always", cache=True)
+    @nb.njit(inline="always", cache=False)
     def encode_2d(x: IntScalar, y: IntScalar) -> int:
         return _morton_encode_2d(x, y, nbits)  # type: ignore[reportReturnType]
 
@@ -77,7 +77,7 @@ def build_morton_encode_2d_batch_impl(nbits: int, *, parallel: bool = False):
 
     if parallel:
 
-        @nb.njit(parallel=True, cache=True)
+        @nb.njit(parallel=True, cache=False)
         def encode_2d_batch_parallel(
             xs: UIntArray, ys: UIntArray, out: UIntArray
         ) -> None:
@@ -87,7 +87,7 @@ def build_morton_encode_2d_batch_impl(nbits: int, *, parallel: bool = False):
 
         return encode_2d_batch_parallel
 
-    @nb.njit(parallel=False, cache=True)
+    @nb.njit(parallel=False, cache=False)
     def encode_2d_batch_serial(xs: UIntArray, ys: UIntArray, out: UIntArray) -> None:
         n = xs.size
         for i in range(n):
